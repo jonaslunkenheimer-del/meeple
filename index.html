@@ -643,9 +643,12 @@ async function doLogin(){
   errEl.style.display='none';
   if(!username||!pw){errEl.textContent='Bitte Benutzername und Passwort eingeben.';errEl.style.display='block';return;}
   btn.textContent='Einloggen...';btn.disabled=true;
-  // Admin logs in with real email, others with fake internal email
+  // Convert display name to internal email for Supabase Auth
+  // Admin can log in with real email directly
   const isAdminLogin = username.includes('@');
-  const email = isAdminLogin ? username : username.toLowerCase().replace(/\s+/g,'.')+('@diemeeples.intern');
+  const email = isAdminLogin
+    ? username
+    : username.trim().toLowerCase().replace(/\s+/g, '.') + '@diemeeples.intern';
   try{
     const r = await fetch(SB_URL+'/auth/v1/token?grant_type=password',{
       method:'POST',
@@ -1211,6 +1214,16 @@ async function saveProfileName(){
     const data = await r.json();
     // Update session with new metadata
     if(_sbSession) _sbSession.user = data;
+    // Also update the internal fake email so login still works with new name
+    const newFakeEmail = newName.trim().toLowerCase().replace(/\s+/g, '.') + '@diemeeples.intern';
+    const currentEmail = _sbSession?.user?.email || '';
+    if(!currentEmail.includes('@') || currentEmail.endsWith('@diemeeples.intern')){
+      await fetch(SB_URL+'/auth/v1/user',{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)},
+        body: JSON.stringify({email: newFakeEmail})
+      }).catch(()=>{}); // non-critical, ignore errors
+    }
     // Update current name everywhere
     const oldName = currentName;
     currentName = newName;
