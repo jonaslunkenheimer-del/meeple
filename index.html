@@ -657,7 +657,6 @@ async function loadFromLink(){
   loadEl.style.display='flex';subBtn.disabled=true;
   const tid=_addTid;
   try{
-  try{
     const slug=(val.match(/boardgamegeek\.com\/boardgame\/\d+\/([^/?]+)/)||[])[1];
     const nameHint=slug?slug.replace(/-/g,' '):null;
     const d=await loadFromBggUrl(m[1], nameHint);
