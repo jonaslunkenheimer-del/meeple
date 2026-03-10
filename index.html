@@ -717,19 +717,31 @@ let _allUsers = []; // cache: [{id, email, display_name}]
 async function loadAllUsers(){
   if(_allUsers.length) return _allUsers;
   const key = getServiceKey();
-  if(!key) return [];
-  try{
-    const r = await fetch(SB_URL+'/auth/v1/admin/users?per_page=100',{
-      headers:{'apikey':key,'Authorization':'Bearer '+key}
-    });
-    if(!r.ok) return [];
-    const data = await r.json();
-    _allUsers = (data.users||[]).map(u=>({
-      id: u.id,
-      email: u.email||'',
-      display_name: u.user_metadata?.display_name || u.email?.split('@')[0] || '?'
-    }));
-  }catch(e){ console.warn('loadAllUsers:', e); }
+  if(key){
+    // Service key available – load full user list from Supabase Auth
+    try{
+      const r = await fetch(SB_URL+'/auth/v1/admin/users?per_page=100',{
+        headers:{'apikey':key,'Authorization':'Bearer '+key}
+      });
+      if(r.ok){
+        const data = await r.json();
+        _allUsers = (data.users||[]).map(u=>({
+          id: u.id,
+          email: u.email||'',
+          display_name: u.user_metadata?.display_name || u.email?.split('@')[0] || '?'
+        }));
+        return _allUsers;
+      }
+    }catch(e){ console.warn('loadAllUsers admin:', e); }
+  }
+  // Fallback: collect unique names from all termine + current user
+  const names = new Set();
+  if(currentName) names.add(currentName);
+  state.termine.forEach(t=>{
+    (t.personen||[]).forEach(p=>names.add(p));
+    if(t.creator) names.add(t.creator);
+  });
+  _allUsers = Array.from(names).map(n=>({id:n, email:'', display_name:n}));
   return _allUsers;
 }
 
@@ -789,6 +801,7 @@ async function loadState(){
 }
 
 async function saveState(){
+  _allUsers = []; // reset user cache on save
   if(SB_URL && !SB_URL.includes('%%')){
     try{
       await sbSave(state);
