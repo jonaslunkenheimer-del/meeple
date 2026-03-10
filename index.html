@@ -256,8 +256,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="name-logo">🎲</div>
     <div class="name-title">Die Meeples</div>
     <div class="name-sub">Spieleabend Planer</div>
-    <label class="name-label" for="login-email">E-Mail</label>
-    <input class="name-input" id="login-email" type="email" placeholder="max@beispiel.de" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="name-label" for="login-username">Benutzername</label>
+    <input class="name-input" id="login-username" placeholder="z.B. Max Mustermann" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
     <label class="name-label" for="login-pw" style="margin-top:10px">Passwort</label>
     <input class="name-input" id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <div class="name-error" id="name-error" style="display:none"></div>
@@ -285,10 +285,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
         <button class="tab" onclick="showTab('ergebnisse',this)">Ergebnisse</button>
       </div>
       <button id="admin-btn" onclick="openAdminModal()" style="display:none;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--gold)">👑 Admin</button>
-      <div class="user-pill" onclick="switchUser()">
+      <div class="user-pill" onclick="openProfileModal()" style="cursor:pointer" title="Profil bearbeiten">
         <div class="av av-lg" id="hdr-av"></div>
         <span class="user-pill-name" id="hdr-name"></span>
-        <span class="user-switch">wechseln</span>
+        <span class="user-switch">✏️ Profil</span>
       </div>
     </div>
   </header>
@@ -488,12 +488,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div style="font-weight:600;font-size:.9rem;margin-bottom:12px">➕ Neuen Account erstellen</div>
       <div style="display:grid;gap:10px">
         <div>
-          <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Anzeigename</label>
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Benutzername</label>
           <input class="input-field" id="admin-new-name" placeholder="z.B. Max Mustermann">
-        </div>
-        <div>
-          <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">E-Mail</label>
-          <input class="input-field" id="admin-new-email" type="email" placeholder="max@beispiel.de">
         </div>
         <div>
           <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Passwort</label>
@@ -512,6 +508,37 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div style="font-weight:600;font-size:.9rem;margin-bottom:10px">👥 Bestehende Accounts</div>
     <div id="admin-user-list" style="display:flex;flex-direction:column;gap:8px">
       <div style="color:var(--text-3);font-size:.82rem">Lade...</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="profile-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:910;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:380px;animation:up .18s ease">
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:20px">👤 Mein Profil</div>
+
+    <!-- Avatar preview -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+      <div class="av" id="profile-av" style="width:52px;height:52px;font-size:1.1rem;border-radius:14px"></div>
+      <div>
+        <div id="profile-preview-name" style="font-weight:700;font-size:1rem"></div>
+        <div style="font-size:.75rem;color:var(--text-3);margin-top:2px">Vorschau</div>
+      </div>
+    </div>
+
+    <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;font-weight:600">Anzeigename</label>
+    <input class="input-field" id="profile-name-input" placeholder="Dein Name" oninput="updateProfilePreview()" style="margin-bottom:8px">
+    <div id="profile-error" style="display:none;color:var(--red);font-size:.8rem;margin-bottom:8px"></div>
+    <div id="profile-ok" style="display:none;color:var(--green);font-size:.8rem;margin-bottom:8px"></div>
+
+    <div style="border-top:1px solid var(--border);margin:16px 0"></div>
+
+    <div style="display:flex;gap:8px;justify-content:space-between">
+      <button class="btn btn-ghost" onclick="switchUser()" style="color:var(--red)">🚪 Abmelden</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="closeProfileModal()">Abbrechen</button>
+        <button class="btn btn-blue" onclick="saveProfileName()">💾 Speichern</button>
+      </div>
     </div>
   </div>
 </div>
@@ -556,14 +583,25 @@ function sbAuthHeaders(extra){
   return {'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+tok,...(extra||{})};
 }
 
+// Username → interne Fake-E-Mail
+function usernameToEmail(name){
+  return name.toLowerCase().replace(/[^a-z0-9]/g,'')||'user'+Date.now()+'@diemeeples.intern';
+}
+function emailToUsername(email){
+  // Stored in user_metadata.display_name
+  return email; // fallback only
+}
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim();
-  const pw    = document.getElementById('login-pw').value;
-  const errEl = document.getElementById('name-error');
-  const btn   = document.getElementById('login-btn');
+  const username = document.getElementById('login-username').value.trim();
+  const pw       = document.getElementById('login-pw').value;
+  const errEl    = document.getElementById('name-error');
+  const btn      = document.getElementById('login-btn');
   errEl.style.display='none';
-  if(!email||!pw){errEl.textContent='Bitte E-Mail und Passwort eingeben.';errEl.style.display='block';return;}
+  if(!username||!pw){errEl.textContent='Bitte Benutzername und Passwort eingeben.';errEl.style.display='block';return;}
   btn.textContent='Einloggen...';btn.disabled=true;
+  // Admin logs in with real email, others with fake internal email
+  const isAdminLogin = username.includes('@');
+  const email = isAdminLogin ? username : username.toLowerCase().replace(/\s+/g,'.')+('@diemeeples.intern');
   try{
     const r = await fetch(SB_URL+'/auth/v1/token?grant_type=password',{
       method:'POST',
@@ -571,10 +609,10 @@ async function doLogin(){
       body:JSON.stringify({email,password:pw})
     });
     const data = await r.json();
-    if(!r.ok) throw new Error(data.error_description||data.msg||'Login fehlgeschlagen');
+    if(!r.ok) throw new Error(data.error_description||data.msg||'Benutzername oder Passwort falsch.');
     _sbSession = data;
-    const displayName = data.user?.user_metadata?.display_name || data.user?.email?.split('@')[0] || 'Unbekannt';
-    _isAdmin = data.user?.email === ADMIN_EMAIL;
+    const displayName = data.user?.user_metadata?.display_name || username;
+    _isAdmin = data.user?.email === ADMIN_EMAIL || data.user?.user_metadata?.is_admin===true;
     await startApp(displayName);
   }catch(e){
     errEl.textContent = e.message;
@@ -611,7 +649,7 @@ async function switchUser(){
   currentName='';_isAdmin=false;
   document.getElementById('app-screen').style.display='none';
   document.getElementById('name-screen').style.display='flex';
-  document.getElementById('login-email').value='';
+  document.getElementById('login-username').value='';
   document.getElementById('login-pw').value='';
   document.getElementById('name-error').style.display='none';
 }
@@ -641,20 +679,20 @@ async function adminCreateUser(){
   const errEl = document.getElementById('admin-create-error');
   const okEl  = document.getElementById('admin-create-ok');
   errEl.style.display='none'; okEl.style.display='none';
-  if(!name||!email||!pw){errEl.textContent='Bitte alle Felder ausfüllen.';errEl.style.display='block';return;}
+  if(!name||!pw){errEl.textContent='Bitte alle Felder ausfüllen.';errEl.style.display='block';return;}
   if(pw.length<6){errEl.textContent='Passwort muss mindestens 6 Zeichen haben.';errEl.style.display='block';return;}
+  // Generate internal fake email from username
+  const fakeEmail = name.toLowerCase().replace(/\s+/g,'.')+('@diemeeples.intern');
   try{
-    // Use Supabase Admin API via service_role – but we only have anon key
-    // Use signUp instead – admin can create users via standard signup
     const r = await fetch(SB_URL+'/auth/v1/admin/users',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)},
-      body:JSON.stringify({email,password:pw,email_confirm:true,user_metadata:{display_name:name}})
+      body:JSON.stringify({email:fakeEmail,password:pw,email_confirm:true,user_metadata:{display_name:name}})
     });
     const data = await r.json();
     if(!r.ok) throw new Error(data.message||data.msg||JSON.stringify(data));
     const pwDisplay = document.getElementById('admin-new-pw').value;
-    okEl.innerHTML = `✓ Account erstellt!<br><strong>${name}</strong> (${email})<br>Passwort: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace">${escHtml(pwDisplay)}</code>`;
+    okEl.innerHTML = `✓ Account erstellt!<br><strong>${escHtml(name)}</strong><br>Passwort: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace">${escHtml(pwDisplay)}</code>`;
     okEl.style.display='block';
     document.getElementById('admin-new-name').value='';
     document.getElementById('admin-new-email').value='';
@@ -1179,6 +1217,64 @@ async function deleteTermin(tid){
     }
   );
 }
+
+// ── Profil Modal ──
+function openProfileModal(){
+  document.getElementById('profile-name-input').value = currentName;
+  document.getElementById('profile-error').style.display = 'none';
+  document.getElementById('profile-ok').style.display   = 'none';
+  updateProfilePreview();
+  document.getElementById('profile-modal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('profile-name-input').focus(), 80);
+}
+function closeProfileModal(){
+  document.getElementById('profile-modal').style.display = 'none';
+}
+function updateProfilePreview(){
+  const name = document.getElementById('profile-name-input').value.trim() || currentName;
+  document.getElementById('profile-preview-name').textContent = name;
+  setAv(document.getElementById('profile-av'), name);
+}
+async function saveProfileName(){
+  const newName = document.getElementById('profile-name-input').value.trim();
+  const errEl   = document.getElementById('profile-error');
+  const okEl    = document.getElementById('profile-ok');
+  errEl.style.display='none'; okEl.style.display='none';
+  if(!newName){ errEl.textContent='Bitte einen Namen eingeben.'; errEl.style.display='block'; return; }
+  if(newName === currentName){ closeProfileModal(); return; }
+  try{
+    // Update display_name in Supabase Auth user_metadata
+    const r = await fetch(SB_URL+'/auth/v1/user',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)},
+      body: JSON.stringify({data:{display_name: newName}})
+    });
+    if(!r.ok){
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.message||'Fehler beim Speichern');
+    }
+    const data = await r.json();
+    // Update session with new metadata
+    if(_sbSession) _sbSession.user = data;
+    // Update current name everywhere
+    const oldName = currentName;
+    currentName = newName;
+    // Update header
+    document.getElementById('hdr-name').textContent = newName;
+    setAv(document.getElementById('hdr-av'), newName);
+    // Update termin creator field
+    const creatorField = document.getElementById('new-creator');
+    if(creatorField && creatorField.value === oldName) creatorField.value = newName;
+    okEl.textContent = '✓ Name gespeichert!';
+    okEl.style.display = 'block';
+    setTimeout(closeProfileModal, 1200);
+    notify('Name geändert: '+newName);
+  }catch(e){
+    errEl.textContent = e.message;
+    errEl.style.display='block';
+  }
+}
+
 
 // ── BGG Token Modal ──
 function openBggTokenModal(){
