@@ -466,153 +466,70 @@ function showTab(tab,btn){
   if(tab==='kalender')renderKalender();
 }
 
-// ── BGG ──
-const debT={};
-function debounce(k,fn,ms=400){clearTimeout(debT[k]);debT[k]=setTimeout(fn,ms)}
-
-// Timeout-safe fetch (works on all browsers – no AbortSignal.timeout)
-function fetchWithTimeout(url, ms=10000){
-  return new Promise((resolve,reject)=>{
-    const ctrl=new AbortController();
-    const timer=setTimeout(()=>ctrl.abort(),ms);
-    fetch(url,{signal:ctrl.signal})
-      .then(r=>{clearTimeout(timer);resolve(r)})
-      .catch(e=>{clearTimeout(timer);reject(e)});
+// ── Spielsuche via Claude API ──
+async function callClaude(prompt, maxTokens=800){
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      messages: [{role:'user', content: prompt}]
+    })
   });
+  if(!resp.ok) throw new Error(`Claude API ${resp.status}`);
+  const data = await resp.json();
+  const text = data.content.map(b=>b.text||'').join('');
+  return text.replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
 }
 
-// Parse XML from text, return null on failure
-function parseXml(text){
-  try{
-    const x=new DOMParser().parseFromString(text,'text/xml');
-    if(x.querySelector('parsererror'))return null;
-    return x;
-  }catch(e){return null}
+async function claudeSearch(query){
+  const json = await callClaude(
+    `You are a board game encyclopedia. Search for board games matching: "${query.replace(/"/g,"'")}"
+
+Return a JSON array of up to 8 best matches. Each item must have ONLY these fields:
+{"bggId":"13","name":"Catan","year":"1995","players":"3–4P","playtime":"60–120m","complexity":"2.3","rating":"7.1","bggUrl":"https://boardgamegeek.com/boardgame/13"}
+
+Rules:
+- bggId: real BGG numeric ID as string, or null if unsure
+- bggUrl: only if bggId is known, else null  
+- players: format like "2–5P" or "1P" or "2–4P"
+- playtime: format like "30m" or "60–120m"
+- complexity: number 1.0–5.0 as string
+- rating: BGG average 1–10 as string
+- NO "image" field
+Return ONLY the JSON array, nothing else.`, 1200);
+  return JSON.parse(json);
 }
 
-// Try proxies in order, return parsed XML or throw
-async function bggFetch(path){
-  const bggUrl=`https://boardgamegeek.com/xmlapi2/${path}`;
-  const proxies=[
-    // Proxy 1: corsproxy.io (most reliable, direct passthrough)
-    async ()=>{
-      const r=await fetchWithTimeout(`https://corsproxy.io/?url=${encodeURIComponent(bggUrl)}`,10000);
-      if(!r.ok)throw new Error(`HTTP ${r.status}`);
-      return parseXml(await r.text());
-    },
-    // Proxy 2: allorigins wraps response in JSON
-    async ()=>{
-      const r=await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(bggUrl)}`,10000);
-      if(!r.ok)throw new Error(`HTTP ${r.status}`);
-      const j=await r.json();
-      return parseXml(j.contents||'');
-    },
-    // Proxy 3: corsproxy.io alternative encoding (without ?url=)
-    async ()=>{
-      const r=await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(bggUrl)}`,10000);
-      if(!r.ok)throw new Error(`HTTP ${r.status}`);
-      return parseXml(await r.text());
-    },
-  ];
-  for(const tryProxy of proxies){
-    try{
-      const xml=await tryProxy();
-      if(xml)return xml;
-    }catch(e){ /* try next */ }
+async function claudeDetails(nameOrId){
+  const json = await callClaude(
+    `You are a board game encyclopedia. Give details for this board game: "${String(nameOrId).replace(/"/g,"'")}"
+
+Return a single JSON object with ONLY these fields:
+{"bggId":"13","name":"Catan","year":"1995","players":"3–4P","playtime":"60–120m","complexity":"2.3","rating":"7.1","bggUrl":"https://boardgamegeek.com/boardgame/13"}
+
+Rules:
+- bggId: real BGG numeric ID as string, or null if unsure
+- bggUrl: only if bggId is known, else null
+- players: format like "2–5P"
+- playtime: format like "60–120m"  
+- complexity: number 1.0–5.0 as string
+- rating: BGG average 1–10 as string
+- NO "image" field
+Return ONLY the JSON object, nothing else.`, 400);
+  return JSON.parse(json);
+}
+
+// Used by BGG-link tab: extract ID from URL, use as search hint
+async function loadFromBggUrl(bggId, gameName){
+  const d = await claudeDetails(gameName || bggId);
+  if(d){
+    if(bggId){ d.bggId = bggId; d.bggUrl = `https://boardgamegeek.com/boardgame/${bggId}`; }
+    d.image = null;
   }
-  throw new Error('BGG_UNREACHABLE');
+  return d;
 }
-
-async function bggSearch(q){
-  const x=await bggFetch(`search?query=${encodeURIComponent(q)}&type=boardgame`);
-  return[...x.querySelectorAll('item')].slice(0,8).map(i=>({
-    bggId:i.getAttribute('id'),
-    name:i.querySelector('name')?.getAttribute('value')||'?',
-    year:i.querySelector('yearpublished')?.getAttribute('value')||''
-  }));
-}
-async function bggThumbs(ids){
-  if(!ids.length)return{};
-  try{
-    const x=await bggFetch(`thing?id=${ids.join(',')}`);
-    const o={};
-    x.querySelectorAll('item').forEach(i=>{
-      let t=i.querySelector('thumbnail')?.textContent?.trim()||null;
-      if(t&&t.startsWith('//'))t='https:'+t;
-      o[i.getAttribute('id')]=t;
-    });
-    return o;
-  }catch(e){return{}}
-}
-async function bggDetails(id){
-  const x=await bggFetch(`thing?id=${id}&stats=1`);
-  const i=x.querySelector('item');if(!i)return null;
-  const name=i.querySelector('name[type="primary"]')?.getAttribute('value')||'?';
-  let img=i.querySelector('image')?.textContent?.trim()||null;
-  if(img&&img.startsWith('//'))img='https:'+img;
-  const y=i.querySelector('yearpublished')?.getAttribute('value')||'';
-  const mn=i.querySelector('minplayers')?.getAttribute('value')||'';
-  const mx=i.querySelector('maxplayers')?.getAttribute('value')||'';
-  const mt=i.querySelector('minplaytime')?.getAttribute('value')||'';
-  const xt=i.querySelector('maxplaytime')?.getAttribute('value')||'';
-  const w=parseFloat(i.querySelector('averageweight')?.getAttribute('value')||'0');
-  const r=parseFloat(i.querySelector('average')?.getAttribute('value')||'0');
-  return{bggId:id,name,image:img,year:y,
-    players:mn&&mx?(mn===mx?`${mn}P`:`${mn}–${mx}P`):'',
-    playtime:mt?(xt&&xt!==mt?`${mt}–${xt}m`:`${mt}m`):'',
-    complexity:w>0?w.toFixed(1):'',
-    rating:r>0?r.toFixed(1):'',
-    bggUrl:`https://boardgamegeek.com/boardgame/${id}`
-  };
-}
-
-
-// ── Termine CRUD ──
-function createTermin(){
-  const title=document.getElementById('new-title').value.trim();if(!title){notify('Bitte Titel eingeben!');return}
-  const offen=document.getElementById('new-offen').checked;
-  state.termine.unshift({id:state.nextId++,title,date:document.getElementById('new-date').value,ort:document.getElementById('new-ort').value.trim(),creator:currentName,personen:currentName?[currentName]:[],spiele:[],chat:[],offen});
-  saveState();['new-title','new-date','new-ort'].forEach(id=>document.getElementById(id).value='');
-  renderTermine();notify('Termin erstellt! 🎉')
-}
-function addPerson(tid){const inp=document.getElementById(`pi-${tid}`);const name=inp.value.trim();if(!name)return;const t=getT(tid);if(!t)return;if(t.personen.includes(name)){notify('Bereits dabei!');return}t.personen.push(name);saveState();inp.value='';rerenderCard(tid);notify(`${name} hat zugesagt! 🙌`)}
-function addSelf(tid){const t=getT(tid);if(!t)return;if(t.personen.includes(currentName)){notify('Du bist bereits dabei!');return}t.personen.push(currentName);saveState();rerenderCard(tid);notify('Zugesagt! 🙌')}
-function removePerson(tid,name){const t=getT(tid);if(!t)return;t.personen=t.personen.filter(p=>p!==name);saveState();rerenderCard(tid)}
-function deleteTermin(tid){if(!confirm('Termin löschen?'))return;state.termine=state.termine.filter(t=>t.id!==tid);saveState();renderTermine();notify('Termin gelöscht.')}
-function getT(tid){return state.termine.find(t=>t.id===tid)}
-
-// ── iCal export ──
-function exportIcal(tid){
-  const t=getT(tid);if(!t)return;
-  function icalDate(dtStr){
-    if(!dtStr)return null;
-    const d=new Date(dtStr);
-    const pad=n=>String(n).padStart(2,'0');
-    return`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
-  }
-  const dtStart=t.date?icalDate(t.date):null;
-  const dtEnd=t.date?icalDate(new Date(new Date(t.date).getTime()+3*60*60*1000)):null;
-  const now=icalDate(new Date().toISOString().slice(0,16));
-  const spieleListe=t.spiele.length?'\n\nSpiele: '+t.spiele.map(s=>s.name).join(', '):'';
-  const personenListe=t.personen.length?'\nTeilnehmer: '+t.personen.join(', '):'';
-  const desc=`Spieleabend geplant von ${t.creator}${personenListe}${spieleListe}`.replace(/\n/g,'\\n');
-  let ical=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Die Meeples//Spieleabend Planer//DE\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:meeples-${t.id}@spieleabend\r\nDTSTAMP:${now}\r\n`;
-  if(dtStart)ical+=`DTSTART:${dtStart}\r\n`;
-  if(dtEnd)ical+=`DTEND:${dtEnd}\r\n`;
-  ical+=`SUMMARY:${escHtml(t.title)}\r\n`;
-  if(t.ort)ical+=`LOCATION:${t.ort}\r\n`;
-  ical+=`DESCRIPTION:${desc}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
-  const blob=new Blob([ical],{type:'text/calendar;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`${t.title.replace(/[^a-z0-9äöü]/gi,'-')}.ics`;a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  notify('Kalender-Datei heruntergeladen! 📅')
-}
-
-// ── Chat ──
-function sendChat(tid){const inp=document.getElementById(`ci-${tid}`);const text=inp.value.trim();if(!text)return;const t=getT(tid);if(!t)return;if(!t.chat)t.chat=[];t.chat.push({id:Date.now(),author:currentName,text,ts:Date.now()});saveState();inp.value='';const box=document.getElementById(`cb-${tid}`);if(box){box.innerHTML=buildChatMsgs(t);box.scrollTop=box.scrollHeight}}
-function onChatKey(e,tid){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat(tid)}}
-function buildChatMsgs(t){if(!t.chat||!t.chat.length)return`<div class="chat-empty">Noch keine Nachrichten – fang an!</div>`;return t.chat.map(m=>{const mine=m.author===currentName;return`<div class="msg-row${mine?' mine':''}"><div class="av av-sm" style="background:${nameColor(m.author)};${mine?'display:none':''}">${nameInit(m.author)}</div><div class="bubble">${!mine?`<div class="bubble-name">${escHtml(m.author)}</div>`:''}${escHtml(m.text)}<div class="bubble-time">${formatTime(m.ts)}</div></div></div>`}).join('')}
 
 // ── Spiele ──
 function getVorschlaeger(tid){return document.getElementById(`vs-${tid}`)?.value||currentName||''}
@@ -676,33 +593,29 @@ function onAddSearch(){
   dd.style.display='block';
   clearTimeout(_debT.s);
   _debT.s=setTimeout(async()=>{
-    document.getElementById('as-loading').style.display='flex';
     try{
-      const res=await bggSearch(val);
-      document.getElementById('as-loading').style.display='none';
+      const res=await claudeSearch(val);
+      Object.assign(_asState,{res,hi:-1});
       if(!res.length){
-        dd.innerHTML=`<div style="padding:12px 14px;font-size:.82rem;color:var(--text-3)">Keine Ergebnisse für „${escHtml(val)}"</div>`;
+        dd.innerHTML=`<div style="padding:12px 14px;font-size:.82rem;color:var(--text-3)">Keine Ergebnisse f\u00fcr \u201e${escHtml(val)}\u201c</div>`;
         return;
       }
-      const th=await bggThumbs(res.map(r=>r.bggId));
-      Object.assign(_asState,{res,th,hi:-1});
       renderAsDropdown();
     }catch(e){
-      document.getElementById('as-loading').style.display='none';
       dd.style.display='none';
-      errEl.textContent='⚠️ BGG nicht erreichbar. Versuche den BGG-Link-Tab oder die manuelle Eingabe.';
+      errEl.textContent='\u26a0\ufe0f Suche fehlgeschlagen. Bitte versuche die manuelle Eingabe.';
       errEl.style.display='block';
     }
-  },400);
+  },600);
 }
 
 function renderAsDropdown(){
   const dd=document.getElementById('as-dd');
   dd.innerHTML=_asState.res.map((r,i)=>{
-    const t=_asState.th[r.bggId];
-    const img=t?`<img class="as-thumb" src="${proxyImg(t)}" onerror="this.style.display='none'">`:`<div class="as-thumb-ph">🎲</div>`;
+    const sub=[r.year,r.players,r.playtime].filter(Boolean).join(' · ');
     return`<div class="as-item${i===_asState.hi?' hi':''}" onmousedown="selectAsResult(${i})">
-      ${img}<div><div class="as-name">${escHtml(r.name)}</div><div class="as-sub">${r.year||'?'} · #${r.bggId}</div></div>
+      <div class="as-thumb-ph">🎲</div>
+      <div><div class="as-name">${escHtml(r.name)}</div><div class="as-sub">${escHtml(sub||r.bggId||'')}</div></div>
     </div>`;
   }).join('');
   dd.style.display='block';
@@ -712,25 +625,14 @@ async function selectAsResult(idx){
   const r=_asState.res[idx];if(!r)return;
   const dd=document.getElementById('as-dd');
   dd.style.display='none';
-  document.getElementById('as-query').value=r.name;
-  document.getElementById('as-loading').style.display='flex';
   const tid=_addTid;
-  try{
-    const d=await bggDetails(r.bggId);
-    document.getElementById('as-loading').style.display='none';
-    if(!d)throw new Error('no data');
-    closeAddModal();
-    const t=getT(tid);if(!t)return;
-    if(t.spiele.find(s=>s.bggId===d.bggId)){notify('Bereits in der Liste!');return}
-    d.vorschlaeger=getVorschlaeger(tid);
-    t.spiele.push({...d,id:Date.now(),votes:{}});
-    saveState();rerenderCard(tid);
-    notify(`„${d.name}" hinzugefügt! 🎮`);
-  }catch(e){
-    document.getElementById('as-loading').style.display='none';
-    document.getElementById('as-error').textContent='BGG nicht erreichbar. Bitte versuche den Link-Tab.';
-    document.getElementById('as-error').style.display='block';
-  }
+  const d={...r, image:null};
+  closeAddModal();
+  const t=getT(tid);if(!t)return;
+  d.vorschlaeger=getVorschlaeger(tid);
+  t.spiele.push({...d,id:Date.now(),votes:{}});
+  saveState();rerenderCard(tid);
+  notify(`\u201e${d.name}\u201c hinzugef\u00fcgt! \U0001f3ae`);
 }
 
 function onAddSearchKey(e){
@@ -755,18 +657,20 @@ async function loadFromLink(){
   loadEl.style.display='flex';subBtn.disabled=true;
   const tid=_addTid;
   try{
-    const d=await bggDetails(m[1]);
+  try{
+    const slug=(val.match(/boardgamegeek\.com\/boardgame\/\d+\/([^/?]+)/)||[])[1];
+    const nameHint=slug?slug.replace(/-/g,' '):null;
+    const d=await loadFromBggUrl(m[1], nameHint);
     if(!d)throw new Error('no data');
     closeAddModal();
     const t=getT(tid);if(!t)return;
-    if(t.spiele.find(s=>s.bggId===d.bggId)){notify('Bereits in der Liste!');return}
     d.vorschlaeger=getVorschlaeger(tid);
     t.spiele.push({...d,id:Date.now(),votes:{}});
     saveState();rerenderCard(tid);
-    notify(`„${d.name}" hinzugefügt! 🎮`);
+    notify(`\u201e${d.name}\u201c hinzugef\u00fcgt! \U0001f3ae`);
   }catch(e){
     loadEl.style.display='none';subBtn.disabled=false;
-    errEl.textContent='BGG nicht erreichbar oder ungültige ID. Prüfe den Link oder nutze die manuelle Eingabe.';
+    errEl.textContent='Laden fehlgeschlagen. Pr\u00fcfe den Link oder nutze die manuelle Eingabe.';
     errEl.style.display='block';
   }
 }
