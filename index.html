@@ -563,8 +563,22 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 
     <div style="border-top:1px solid var(--border);margin:16px 0"></div>
 
+    <!-- Passwort ändern -->
+    <div style="margin-bottom:16px">
+      <div style="font-weight:600;font-size:.85rem;margin-bottom:10px">🔒 Passwort ändern</div>
+      <div style="display:grid;gap:8px">
+        <input class="input-field" id="profile-pw-new" type="password" placeholder="Neues Passwort (min. 6 Zeichen)">
+        <input class="input-field" id="profile-pw-confirm" type="password" placeholder="Passwort wiederholen">
+      </div>
+      <div id="profile-pw-error" style="display:none;color:var(--red);font-size:.8rem;margin-top:6px"></div>
+      <div id="profile-pw-ok" style="display:none;color:var(--green);font-size:.8rem;margin-top:6px"></div>
+      <button class="btn btn-outline btn-sm" onclick="saveProfilePassword()" style="margin-top:8px;width:100%">Passwort speichern</button>
+    </div>
+
+    <div style="border-top:1px solid var(--border);margin:16px 0"></div>
+
     <div style="display:flex;gap:8px;justify-content:space-between">
-      <button class="btn btn-ghost" onclick="switchUser()" style="color:var(--red)">🚪 Abmelden</button>
+      <button class="btn btn-ghost" onclick="closeProfileModal();switchUser()" style="color:var(--red)">🚪 Abmelden</button>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost" onclick="closeProfileModal()">Abbrechen</button>
         <button class="btn btn-blue" onclick="saveProfileName()">💾 Speichern</button>
@@ -1216,6 +1230,38 @@ async function saveProfileName(){
   }
 }
 
+
+async function saveProfilePassword(){
+  const pw1   = document.getElementById('profile-pw-new').value;
+  const pw2   = document.getElementById('profile-pw-confirm').value;
+  const errEl = document.getElementById('profile-pw-error');
+  const okEl  = document.getElementById('profile-pw-ok');
+  errEl.style.display='none'; okEl.style.display='none';
+
+  if(!pw1){ errEl.textContent='Bitte ein neues Passwort eingeben.'; errEl.style.display='block'; return; }
+  if(pw1.length < 6){ errEl.textContent='Passwort muss mindestens 6 Zeichen haben.'; errEl.style.display='block'; return; }
+  if(pw1 !== pw2){ errEl.textContent='Passwörter stimmen nicht überein.'; errEl.style.display='block'; return; }
+
+  try{
+    const r = await fetch(SB_URL+'/auth/v1/user',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)},
+      body: JSON.stringify({password: pw1})
+    });
+    if(!r.ok){
+      const err = await r.json().catch(()=>({}));
+      throw new Error(err.message||'Fehler beim Speichern');
+    }
+    document.getElementById('profile-pw-new').value='';
+    document.getElementById('profile-pw-confirm').value='';
+    okEl.textContent='✓ Passwort geändert!';
+    okEl.style.display='block';
+    setTimeout(()=>{ okEl.style.display='none'; }, 3000);
+  }catch(e){
+    errEl.textContent = e.message;
+    errEl.style.display='block';
+  }
+}
 
 // ── BGG Token Modal ──
 function openBggTokenModal(){
