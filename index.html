@@ -255,16 +255,15 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   <div class="name-box">
     <div class="name-logo">🎲</div>
     <div class="name-title">Die Meeples</div>
-    <div class="name-sub">Wie heißt du? Das war's schon.</div>
-    <label class="name-label" for="name-input">Dein Name</label>
-    <input class="name-input" id="name-input" placeholder="z.B. Max Mustermann" autocomplete="off" onkeydown="if(event.key==='Enter')enterWithName()">
-    <div class="name-error" id="name-error">Bitte gib einen Namen ein.</div>
-    <button class="btn-name" onclick="enterWithName()">Loslegen →</button>
-    <div id="known-section" style="display:none">
-      <div class="known-section">
-        <div class="known-divider"><span>oder schnell wählen</span></div>
-        <div class="known-list" id="known-list"></div>
-      </div>
+    <div class="name-sub">Spieleabend Planer</div>
+    <label class="name-label" for="login-email">E-Mail</label>
+    <input class="name-input" id="login-email" type="email" placeholder="max@beispiel.de" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="name-label" for="login-pw" style="margin-top:10px">Passwort</label>
+    <input class="name-input" id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="name-error" id="name-error" style="display:none"></div>
+    <button class="btn-name" id="login-btn" onclick="doLogin()">Einloggen →</button>
+    <div style="margin-top:14px;font-size:.75rem;color:var(--text-3);text-align:center">
+      Noch kein Account? Wende dich an den Admin.
     </div>
   </div>
 </div>
@@ -285,6 +284,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
         <button class="tab" onclick="showTab('kalender',this)">Kalender</button>
         <button class="tab" onclick="showTab('ergebnisse',this)">Ergebnisse</button>
       </div>
+      <button id="admin-btn" onclick="openAdminModal()" style="display:none;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--gold)">👑 Admin</button>
       <div class="user-pill" onclick="switchUser()">
         <div class="av av-lg" id="hdr-av"></div>
         <span class="user-pill-name" id="hdr-name"></span>
@@ -475,6 +475,47 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
+<!-- ADMIN PANEL -->
+<div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:920;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;animation:up .18s ease">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-size:1.1rem;font-weight:700">👑 Admin – Benutzerverwaltung</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeAdminModal()">✕</button>
+    </div>
+
+    <!-- Neuen User anlegen -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px">
+      <div style="font-weight:600;font-size:.9rem;margin-bottom:12px">➕ Neuen Account erstellen</div>
+      <div style="display:grid;gap:10px">
+        <div>
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Anzeigename</label>
+          <input class="input-field" id="admin-new-name" placeholder="z.B. Max Mustermann">
+        </div>
+        <div>
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">E-Mail</label>
+          <input class="input-field" id="admin-new-email" type="email" placeholder="max@beispiel.de">
+        </div>
+        <div>
+          <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px">Passwort</label>
+          <div style="display:flex;gap:8px">
+            <input class="input-field" id="admin-new-pw" placeholder="Mindestens 6 Zeichen" style="flex:1">
+            <button class="btn btn-ghost btn-sm" onclick="genPassword()" title="Zufälliges Passwort">🎲</button>
+          </div>
+        </div>
+      </div>
+      <div id="admin-create-error" style="display:none;color:var(--red);font-size:.8rem;margin-top:8px"></div>
+      <div id="admin-create-ok" style="display:none;color:var(--green);font-size:.8rem;margin-top:8px"></div>
+      <button class="btn btn-blue" onclick="adminCreateUser()" style="margin-top:12px;width:100%">Account erstellen</button>
+    </div>
+
+    <!-- User Liste -->
+    <div style="font-weight:600;font-size:.9rem;margin-bottom:10px">👥 Bestehende Accounts</div>
+    <div id="admin-user-list" style="display:flex;flex-direction:column;gap:8px">
+      <div style="color:var(--text-3);font-size:.82rem">Lade...</div>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM MODAL -->
 <div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:380px;animation:up .18s ease">
@@ -505,30 +546,166 @@ function formatDate(dt){if(!dt)return'—';return new Date(dt).toLocaleDateStrin
 function formatTime(ts){return new Date(ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
 function notify(msg){document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
 
-// ── Known names ──
-function getKnown(){try{return JSON.parse(localStorage.getItem(SK.names)||'[]')}catch(e){return[]}}
-function saveKnown(n){let a=getKnown().filter(x=>x!==n);a.unshift(n);localStorage.setItem(SK.names,JSON.stringify(a.slice(0,6)))}
-function renderKnown(){
-  const a=getKnown(),sec=document.getElementById('known-section'),list=document.getElementById('known-list');
-  if(!a.length){sec.style.display='none';return}
-  sec.style.display='block';
-  list.innerHTML=a.map(n=>`<div class="known-chip" onclick="startApp('${n.replace(/'/g,"\\'")}')"><div class="av av-md" style="background:${nameColor(n)}">${nameInit(n)}</div>${escHtml(n)}</div>`).join('')
+// ── Supabase Auth ──
+let _sbSession = null;
+let _isAdmin   = false;
+const ADMIN_EMAIL = 'jonas.lunkenheimer@gmail.com'; // <-- deine Admin E-Mail hier eintragen
+
+function sbAuthHeaders(extra){
+  const tok = _sbSession?.access_token || SB_ANON;
+  return {'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+tok,...(extra||{})};
 }
 
-// ── Auth ──
-async function enterWithName(){const v=document.getElementById('name-input').value.trim();if(!v){document.getElementById('name-error').classList.add('show');return}document.getElementById('name-error').classList.remove('show');startApp(v)}
+async function doLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const pw    = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('name-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.style.display='none';
+  if(!email||!pw){errEl.textContent='Bitte E-Mail und Passwort eingeben.';errEl.style.display='block';return;}
+  btn.textContent='Einloggen...';btn.disabled=true;
+  try{
+    const r = await fetch(SB_URL+'/auth/v1/token?grant_type=password',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON},
+      body:JSON.stringify({email,password:pw})
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error_description||data.msg||'Login fehlgeschlagen');
+    _sbSession = data;
+    const displayName = data.user?.user_metadata?.display_name || data.user?.email?.split('@')[0] || 'Unbekannt';
+    _isAdmin = data.user?.email === ADMIN_EMAIL;
+    await startApp(displayName);
+  }catch(e){
+    errEl.textContent = e.message;
+    errEl.style.display='block';
+  }finally{
+    btn.textContent='Einloggen →';btn.disabled=false;
+  }
+}
+
 async function startApp(name){
-  currentName=name;saveKnown(name);localStorage.setItem(SK.cur,name);
+  currentName = name;
   document.getElementById('name-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   document.getElementById('new-creator').value=name;
   setAv(document.getElementById('hdr-av'),name);
   document.getElementById('hdr-name').textContent=name;
+  // Show admin button if admin
+  const adminBtn = document.getElementById('admin-btn');
+  if(adminBtn) adminBtn.style.display = _isAdmin ? 'flex' : 'none';
   try{await loadState();}catch(e){console.warn('loadState error:',e);}
   renderTermine();
   startPolling();
 }
-function switchUser(){currentName='';localStorage.removeItem(SK.cur);document.getElementById('app-screen').style.display='none';document.getElementById('name-screen').style.display='flex';document.getElementById('name-input').value='';renderKnown()}
+
+async function switchUser(){
+  // Sign out from Supabase
+  if(_sbSession){
+    await fetch(SB_URL+'/auth/v1/logout',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession.access_token||'')}
+    }).catch(()=>{});
+    _sbSession=null;
+  }
+  currentName='';_isAdmin=false;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('name-screen').style.display='flex';
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pw').value='';
+  document.getElementById('name-error').style.display='none';
+}
+
+// ── Admin: User Management ──
+function openAdminModal(){
+  if(!_isAdmin){notify('Kein Zugriff.');return;}
+  document.getElementById('admin-modal').style.display='flex';
+  document.getElementById('admin-create-error').style.display='none';
+  document.getElementById('admin-create-ok').style.display='none';
+  loadAdminUsers();
+}
+function closeAdminModal(){document.getElementById('admin-modal').style.display='none';}
+
+function genPassword(){
+  const chars='abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
+  const pw=Array.from({length:12},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  document.getElementById('admin-new-pw').value=pw;
+  document.getElementById('admin-new-pw').type='text';
+  setTimeout(()=>{document.getElementById('admin-new-pw').type='password';},3000);
+}
+
+async function adminCreateUser(){
+  const name  = document.getElementById('admin-new-name').value.trim();
+  const email = document.getElementById('admin-new-email').value.trim();
+  const pw    = document.getElementById('admin-new-pw').value;
+  const errEl = document.getElementById('admin-create-error');
+  const okEl  = document.getElementById('admin-create-ok');
+  errEl.style.display='none'; okEl.style.display='none';
+  if(!name||!email||!pw){errEl.textContent='Bitte alle Felder ausfüllen.';errEl.style.display='block';return;}
+  if(pw.length<6){errEl.textContent='Passwort muss mindestens 6 Zeichen haben.';errEl.style.display='block';return;}
+  try{
+    // Use Supabase Admin API via service_role – but we only have anon key
+    // Use signUp instead – admin can create users via standard signup
+    const r = await fetch(SB_URL+'/auth/v1/admin/users',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)},
+      body:JSON.stringify({email,password:pw,email_confirm:true,user_metadata:{display_name:name}})
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.message||data.msg||JSON.stringify(data));
+    const pwDisplay = document.getElementById('admin-new-pw').value;
+    okEl.innerHTML = `✓ Account erstellt!<br><strong>${name}</strong> (${email})<br>Passwort: <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace">${escHtml(pwDisplay)}</code>`;
+    okEl.style.display='block';
+    document.getElementById('admin-new-name').value='';
+    document.getElementById('admin-new-email').value='';
+    document.getElementById('admin-new-pw').value='';
+    loadAdminUsers();
+  }catch(e){
+    errEl.textContent='Fehler: '+e.message;
+    errEl.style.display='block';
+  }
+}
+
+async function loadAdminUsers(){
+  const listEl = document.getElementById('admin-user-list');
+  listEl.innerHTML='<div style="color:var(--text-3);font-size:.82rem">Lade...</div>';
+  try{
+    const r = await fetch(SB_URL+'/auth/v1/admin/users?per_page=50',{
+      headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)}
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.message||'Fehler beim Laden');
+    const users = data.users||[];
+    if(!users.length){listEl.innerHTML='<div style="color:var(--text-3);font-size:.82rem">Keine Accounts gefunden.</div>';return;}
+    listEl.innerHTML = users.map(u=>{
+      const name = u.user_metadata?.display_name||u.email?.split('@')[0]||'?';
+      const last = u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString('de-DE') : 'noch nie';
+      return `<div style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+        <div class="av av-md" style="background:${nameColor(name)}">${nameInit(name)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:.85rem">${escHtml(name)}</div>
+          <div style="font-size:.72rem;color:var(--text-3);font-family:'DM Mono',monospace">${escHtml(u.email||'')} · Zuletzt: ${last}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="font-size:.7rem;color:var(--red)" onclick="adminDeleteUser('${u.id}','${escHtml(name)}')">Löschen</button>
+      </div>`;
+    }).join('');
+  }catch(e){
+    listEl.innerHTML='<div style="color:var(--red);font-size:.82rem">Fehler: '+escHtml(e.message)+'</div>';
+  }
+}
+
+async function adminDeleteUser(uid, name){
+  if(!confirm(name+' wirklich löschen?')) return;
+  try{
+    const r = await fetch(SB_URL+'/auth/v1/admin/users/'+uid,{
+      method:'DELETE',
+      headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)}
+    });
+    if(!r.ok) throw new Error('Fehler '+r.status);
+    notify(name+' gelöscht.');
+    loadAdminUsers();
+  }catch(e){notify('Fehler: '+e.message);}
+}
 
 // ── Supabase Storage ──
 const SB_URL   = 'https://hsomxjwyzzgwxtjxvrts.supabase.co';
@@ -537,10 +714,11 @@ const SB_TABLE = 'spieleabend';
 const SB_ROW   = 1; // single-row store
 
 function sbHeaders(){
+  const tok = _sbSession?.access_token || SB_ANON;
   return {
     'Content-Type':  'application/json',
     'apikey':        SB_ANON,
-    'Authorization': 'Bearer ' + SB_ANON,
+    'Authorization': 'Bearer ' + tok,
     'Prefer':        'return=representation'
   };
 }
