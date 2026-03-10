@@ -497,7 +497,7 @@ const GH_SK   = {user:'gh_user', repo:'gh_repo', token:'gh_token'};
 const GH_DEFAULT = {
   user:  'jonaslunkenheimer-del',
   repo:  'meeples-data',
-  token: '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'
+  token: '%%GH_TOKEN%%'
 };
 function getGhCfg(){
   return {
@@ -506,23 +506,11 @@ function getGhCfg(){
     token: localStorage.getItem(GH_SK.token) || GH_DEFAULT.token
   };
 }
-function hasGhCfg(){ const c=getGhCfg(); return !!(c.user && c.repo && c.token); }
-
-function updateGhStatusBtn(){
-  const lbl = document.getElementById('gh-status-lbl');
-  if(!lbl) return;
-  const cfg = getGhCfg();
-  if(cfg.user && cfg.repo && cfg.token){
-    lbl.textContent = cfg.user + '/' + cfg.repo;
-    document.getElementById('gh-status-btn').style.color = 'var(--green)';
-  } else {
-    lbl.textContent = 'GitHub einrichten';
-    document.getElementById('gh-status-btn').style.color = 'var(--red)';
-  }
-}
+function hasGhCfg(){ const c=getGhCfg(); return !!(c.user&&c.repo&&c.token); }
+function updateGhStatusBtn(){}
 
 function openGhModal(){
-  const cfg = getGhCfg();
+  const cfg=getGhCfg();
   document.getElementById('gh-user').value  = cfg.user;
   document.getElementById('gh-repo').value  = cfg.repo;
   document.getElementById('gh-token').value = cfg.token;
@@ -542,27 +530,24 @@ async function saveGhConfig(){
   errEl.style.display='none';
   if(!user||!repo||!token){errEl.textContent='Bitte alle Felder ausfüllen.';errEl.style.display='block';return;}
   loadEl.style.display='flex';
-  // Test connection
   try{
-    const r = await fetch(`https://api.github.com/repos/${user}/${repo}`, {
-      headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'}
+    const r=await fetch('https://api.github.com/repos/'+user+'/'+repo,{
+      headers:{'Authorization':'token '+token,'Accept':'application/vnd.github+json'}
     });
-    if(r.status===404){throw new Error('Repository nicht gefunden. Hast du es schon angelegt?');}
+    if(r.status===404){throw new Error('Repository nicht gefunden.');}
     if(r.status===401){throw new Error('Token ungültig oder abgelaufen.');}
     if(!r.ok){throw new Error('GitHub Fehler: '+r.status);}
   }catch(e){
     loadEl.style.display='none';
-    errEl.textContent = e.message||String(e);
+    errEl.textContent=e.message||String(e);
     errEl.style.display='block';
     return;
   }
-  localStorage.setItem(GH_SK.user,  user);
-  localStorage.setItem(GH_SK.repo,  repo);
-  localStorage.setItem(GH_SK.token, token);
+  localStorage.setItem(GH_SK.user,user);
+  localStorage.setItem(GH_SK.repo,repo);
+  localStorage.setItem(GH_SK.token,token);
   loadEl.style.display='none';
   closeGhModal();
-  updateGhStatusBtn();
-  // Load latest data from GitHub
   await loadState();
   renderTermine();
   startPolling();
@@ -570,136 +555,116 @@ async function saveGhConfig(){
 }
 
 // ── GitHub API helpers ──
+async function ghRequest(method, path, body){
+  const {user,repo,token}=getGhCfg();
+  const url='https://api.github.com/repos/'+user+'/'+repo+'/contents/'+path;
+  const opts={
+    method: method,
+    headers:{
+      'Authorization':'token '+token,
+      'Accept':'application/vnd.github+json',
+      'Content-Type':'application/json',
+      'X-GitHub-Api-Version':'2022-11-28'
+    }
+  };
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(url, opts);
+  return r;
+}
+
 async function ghGet(){
-  const {user,repo,token} = getGhCfg();
-  if(!user||!repo||!token) return null;
-  const r = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${GH_FILE}`,{
-    headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'}
-  });
+  const r=await ghRequest('GET', GH_FILE);
   if(r.status===404) return {content:null, sha:null};
-  if(!r.ok) throw new Error('GitHub read error '+r.status);
-  const j = await r.json();
-  const content = JSON.parse(atob(j.content.replace(/\n/g,'')));
-  return {content, sha: j.sha};
+  if(!r.ok) throw new Error('GitHub read error '+r.status+': '+(await r.text().catch(()=>'')));
+  const j=await r.json();
+  // j.content is base64 encoded, possibly with newlines
+  const raw=j.content.replace(/\s/g,'');
+  const decoded=decodeURIComponent(escape(atob(raw)));
+  return {content: JSON.parse(decoded), sha: j.sha};
 }
 
 async function ghPut(data, sha){
-  const {user,repo,token} = getGhCfg();
-  if(!user||!repo||!token) return;
-  const body = {
-    message: 'Update Spieleabend Daten',
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2)))),
-    ...(sha ? {sha} : {})
-  };
-  const r = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${GH_FILE}`,{
-    method:'PUT',
-    headers:{
-      'Authorization':'Bearer '+token,
-      'Accept':'application/vnd.github+json',
-      'Content-Type':'application/json'
-    },
-    body: JSON.stringify(body)
-  });
-  if(!r.ok){
-    const err = await r.json().catch(()=>({}));
-    // 409 = conflict (someone else wrote first) → re-fetch sha and retry once
-    if(r.status===409){
-      const fresh = await ghGet();
-      if(fresh){
-        body.sha = fresh.sha;
-        const r2 = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${GH_FILE}`,{
-          method:'PUT',
-          headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},
-          body: JSON.stringify(body)
-        });
-        if(!r2.ok) throw new Error('GitHub write conflict, bitte nochmal speichern.');
-        return await r2.json();
-      }
+  const json=JSON.stringify(data, null, 2);
+  // Encode to base64 safely (handles UTF-8)
+  const b64=btoa(unescape(encodeURIComponent(json)));
+  const body={message:'Update Spieleabend Daten', content:b64};
+  if(sha) body.sha=sha;
+  const r=await ghRequest('PUT', GH_FILE, body);
+  if(r.status===409){
+    // Conflict: re-fetch sha and retry
+    const fresh=await ghGet();
+    if(fresh&&fresh.sha){
+      body.sha=fresh.sha;
+      const r2=await ghRequest('PUT', GH_FILE, body);
+      if(!r2.ok) throw new Error('GitHub Schreibfehler nach Konflikt: '+r2.status);
+      const j2=await r2.json();
+      return {sha: j2.content&&j2.content.sha};
     }
-    throw new Error(err.message || 'GitHub write error '+r.status);
   }
-  return await r.json();
+  if(!r.ok){
+    const errJson=await r.json().catch(()=>({}));
+    throw new Error(errJson.message||'GitHub write error '+r.status);
+  }
+  const j=await r.json();
+  return {sha: j.content&&j.content.sha};
 }
 
 // ── State ──
 let state = {termine:[], nextId:1};
-let _ghSha = null;  // last known SHA for conflict detection
+let _ghSha = null;
 
 async function loadState(){
+  if(location.protocol==='file:'){
+    showHttpsWarning();
+    try{const s=localStorage.getItem('spieleabend-v4');if(s)state=JSON.parse(s);}catch(e){}
+    return;
+  }
   if(hasGhCfg()){
-    // Check if we're on file:// – GitHub API requires HTTPS
-    if(location.protocol==='file:'){
-      showHttpsWarning();
-      try{const s=localStorage.getItem('spieleabend-v4');if(s)state=JSON.parse(s);}catch(e){}
-      return;
-    }
     try{
-      const result = await ghGet();
-      if(result && result.content){
-        state = result.content;
-        _ghSha = result.sha;
+      const result=await ghGet();
+      if(result&&result.content){
+        state=result.content;
+        _ghSha=result.sha;
+        console.log('Loaded from GitHub, SHA:', _ghSha);
+      } else {
+        // File doesn't exist yet – use empty state, will be created on first save
+        console.log('GitHub: no data file yet, starting fresh');
       }
       return;
     }catch(e){
       console.warn('GitHub load failed:', e.message);
-      notify('⚠️ GitHub nicht erreichbar – lokale Daten werden verwendet.');
+      notify('⚠️ GitHub Fehler: '+e.message);
     }
   }
-  // fallback localStorage
   try{const s=localStorage.getItem('spieleabend-v4');if(s)state=JSON.parse(s);}catch(e){}
 }
 
-function showHttpsWarning(){
-  if(document.getElementById('https-warning')) return;
-  var div = document.createElement('div');
-  div.id = 'https-warning';
-  div.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1e293b;color:#f8fafc;padding:14px 20px;border-radius:12px;font-size:.82rem;max-width:420px;width:calc(100% - 40px);z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.3);line-height:1.6;text-align:center';
-  var title = document.createElement('div');
-  title.style.cssText = 'font-weight:700;margin-bottom:6px';
-  title.textContent = '⚠️ Lokale Datei – GitHub nicht erreichbar';
-  var msg = document.createElement('div');
-  msg.style.opacity = '.85';
-  msg.innerHTML = 'Die App muss über <strong>HTTPS</strong> laufen damit GitHub funktioniert.<br>Lade sie auf <strong>GitHub Pages</strong> hoch.';
-  var link = document.createElement('div');
-  link.style.marginTop = '10px';
-  link.innerHTML = '<a href="https://pages.github.com" target="_blank" style="color:#60a5fa;text-decoration:underline">→ GitHub Pages einrichten</a>';
-  var btn = document.createElement('button');
-  btn.textContent = '✕';
-  btn.style.cssText = 'position:absolute;top:8px;right:10px;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:1rem';
-  btn.onclick = function(){ div.remove(); };
-  div.appendChild(title); div.appendChild(msg); div.appendChild(link); div.appendChild(btn);
-  document.body.appendChild(div);
-  setTimeout(function(){ if(div.parentNode) div.remove(); }, 15000);
-}
-
 async function saveState(){
-  if(hasGhCfg()){
+  if(location.protocol!=='file:'&&hasGhCfg()){
     try{
-      const result = await ghPut(state, _ghSha);
-      if(result && result.content) _ghSha = result.content.sha;
-      // also backup locally
-      try{localStorage.setItem('spieleabend-v4', JSON.stringify(state));}catch(e){}
+      const result=await ghPut(state, _ghSha);
+      if(result&&result.sha) _ghSha=result.sha;
+      try{localStorage.setItem('spieleabend-v4',JSON.stringify(state));}catch(e){}
       return;
     }catch(e){
       console.warn('GitHub save failed:', e.message);
-      notify('⚠️ GitHub-Speichern fehlgeschlagen: '+e.message);
+      notify('⚠️ Speichern fehlgeschlagen: '+e.message);
     }
   }
-  // fallback localStorage
-  try{localStorage.setItem('spieleabend-v4', JSON.stringify(state));}catch(e){}
+  try{localStorage.setItem('spieleabend-v4',JSON.stringify(state));}catch(e){}
 }
 
-// Poll every 15s for changes by others
-let _pollInterval = null;
+// Poll every 15s for changes
+let _pollInterval=null;
 function startPolling(){
   if(_pollInterval) return;
-  if(!hasGhCfg()) return;
-  _pollInterval = setInterval(async()=>{
+  if(location.protocol==='file:'||!hasGhCfg()) return;
+  _pollInterval=setInterval(async()=>{
     try{
-      const result = await ghGet();
-      if(result && result.sha && result.sha !== _ghSha){
-        state = result.content;
-        _ghSha = result.sha;
+      const result=await ghGet();
+      if(result&&result.sha&&result.sha!==_ghSha){
+        state=result.content;
+        _ghSha=result.sha;
         renderTermine();
         notify('🔄 Neue Änderungen geladen');
       }
