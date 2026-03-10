@@ -1459,7 +1459,7 @@ async function addPerson(tid){
 
 async function removePerson(tid,name){
   const t=getT(tid);if(!t)return;
-  if(!_isAdmin && t.creator!==currentName){notify('Nur der Ersteller oder Admin kann Teilnehmer entfernen.');return;}
+  if(!_isAdmin && t.creator!==currentName && name!==currentName){notify('Du kannst nur dich selbst entfernen.');return;}
   t.personen=t.personen.filter(p=>p!==name);
   await saveState();rerenderCard(tid);
 }
@@ -1544,7 +1544,7 @@ function buildTerminItem(t, open){
   const chatChip=(t.chat||[]).length?`<span class="chip">💬 ${t.chat.length}</span>`:'';
 
   // Persons
-  const personenHtml=t.personen.map(p=>`<span class="person-chip"><div class="av av-sm" style="background:${nameColor(p)}">${nameInit(p)}</div><span>${escHtml(p)}</span>${canManage?`<span class="rm" onclick="removePerson(${t.id},'${p.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">×</span>`:''}</span>`).join('');
+  const personenHtml=t.personen.map(p=>`<span class="person-chip"><div class="av av-sm" style="background:${nameColor(p)}">${nameInit(p)}</div><span>${escHtml(p)}</span>${(canManage||p===currentName)?`<span class="rm" onclick="removePerson(${t.id},'${p.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">×</span>`:''}</span>`).join('');
   const joinBtn=currentName&&!alreadyIn?`<button class="btn btn-outline btn-sm" onclick="addSelf(${t.id})" style="margin-bottom:8px">✋ Ich bin dabei</button>`:'';
 
   // Voter select
