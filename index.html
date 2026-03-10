@@ -478,9 +478,20 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 <!-- ADMIN PANEL -->
 <div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:920;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;animation:up .18s ease">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div style="font-size:1.1rem;font-weight:700">👑 Admin – Benutzerverwaltung</div>
       <button class="btn btn-ghost btn-sm" onclick="closeAdminModal()">✕</button>
+    </div>
+
+    <!-- Service Role Key -->
+    <div id="service-key-box" style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-weight:600;font-size:.82rem;margin-bottom:6px">🔑 Supabase Service Role Key</div>
+      <div style="font-size:.75rem;color:var(--text-2);margin-bottom:8px">Einmalig nötig für die Benutzerverwaltung. Zu finden unter: <strong>Supabase → Settings → API → service_role</strong></div>
+      <div style="display:flex;gap:8px">
+        <input class="input-field" id="service-key-input" type="password" placeholder="eyJhbGci..." style="flex:1;font-family:'DM Mono',monospace;font-size:.72rem">
+        <button class="btn btn-blue btn-sm" onclick="saveServiceKey()">Speichern</button>
+      </div>
+      <div id="service-key-status" style="font-size:.75rem;margin-top:6px;color:var(--text-3)"></div>
     </div>
 
     <!-- Neuen User anlegen -->
@@ -655,11 +666,43 @@ async function switchUser(){
 }
 
 // ── Admin: User Management ──
+// ── Service Key ──
+function saveServiceKey(){
+  const val = document.getElementById('service-key-input').value.trim();
+  const statusEl = document.getElementById('service-key-status');
+  if(!val){ statusEl.textContent='Bitte einen Key eingeben.'; return; }
+  localStorage.setItem(SB_SERVICE_KEY_STORAGE, val);
+  statusEl.textContent='✓ Key gespeichert!';
+  statusEl.style.color='var(--green)';
+  setTimeout(()=>{ loadAdminUsers(); }, 300);
+}
+
+
 function openAdminModal(){
   if(!_isAdmin){notify('Kein Zugriff.');return;}
   document.getElementById('admin-modal').style.display='flex';
   document.getElementById('admin-create-error').style.display='none';
   document.getElementById('admin-create-ok').style.display='none';
+  // Show current service key status
+  const keyBox   = document.getElementById('service-key-box');
+  const inp      = document.getElementById('service-key-input');
+  const statusEl = document.getElementById('service-key-status');
+  const builtIn  = SB_SERVICE_KEY_BUILT && !SB_SERVICE_KEY_BUILT.startsWith('%%');
+  if(builtIn){
+    // Key was injected via GitHub Actions – hide the input box
+    keyBox.style.display = 'none';
+  } else {
+    keyBox.style.display = 'block';
+    const saved = localStorage.getItem(SB_SERVICE_KEY_STORAGE) || '';
+    if(saved){
+      inp.value = saved;
+      statusEl.textContent = '✓ Key manuell gespeichert';
+      statusEl.style.color = 'var(--green)';
+    } else {
+      statusEl.textContent = '⚠️ Noch kein Key – bitte eintragen oder GitHub Actions einrichten.';
+      statusEl.style.color = 'var(--gold)';
+    }
+  }
   loadAdminUsers();
 }
 function closeAdminModal(){document.getElementById('admin-modal').style.display='none';}
@@ -686,7 +729,7 @@ async function adminCreateUser(){
   try{
     const r = await fetch(SB_URL+'/auth/v1/admin/users',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)},
+      headers:adminHeaders(),
       body:JSON.stringify({email:fakeEmail,password:pw,email_confirm:true,user_metadata:{display_name:name}})
     });
     const data = await r.json();
@@ -709,7 +752,7 @@ async function loadAdminUsers(){
   listEl.innerHTML='<div style="color:var(--text-3);font-size:.82rem">Lade...</div>';
   try{
     const r = await fetch(SB_URL+'/auth/v1/admin/users?per_page=50',{
-      headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)}
+      headers:adminHeaders()
     });
     const data = await r.json();
     if(!r.ok) throw new Error(data.message||'Fehler beim Laden');
@@ -737,7 +780,7 @@ async function adminDeleteUser(uid, name){
   try{
     const r = await fetch(SB_URL+'/auth/v1/admin/users/'+uid,{
       method:'DELETE',
-      headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)}
+      headers:adminHeaders()
     });
     if(!r.ok) throw new Error('Fehler '+r.status);
     notify(name+' gelöscht.');
@@ -750,6 +793,21 @@ const SB_URL   = 'https://hsomxjwyzzgwxtjxvrts.supabase.co';
 const SB_ANON  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzb214and5enpnd3h0anh2cnRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzQxMjAsImV4cCI6MjA4ODcxMDEyMH0.nFkr0yFoZLX1npisMNUDgZjJka99HJSeU7QH-G8QjQE';
 const SB_TABLE = 'spieleabend';
 const SB_ROW   = 1; // single-row store
+const SB_SERVICE_KEY_STORAGE = 'sb_service_key';
+// Injected at build time by GitHub Actions – falls back to localStorage if not set
+const SB_SERVICE_KEY_BUILT = '%%SB_SERVICE_KEY%%';
+
+function getServiceKey(){
+  // Use build-time key if injected, otherwise fall back to manually saved key
+  if(SB_SERVICE_KEY_BUILT && !SB_SERVICE_KEY_BUILT.startsWith('%%')){
+    return SB_SERVICE_KEY_BUILT;
+  }
+  return localStorage.getItem(SB_SERVICE_KEY_STORAGE) || '';
+}
+function adminHeaders(){
+  const key = getServiceKey() || SB_ANON;
+  return {'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key};
+}
 
 function sbHeaders(){
   const tok = _sbSession?.access_token || SB_ANON;
@@ -1206,7 +1264,9 @@ async function createTermin(){
 
 async function deleteTermin(tid){
   const t=getT(tid);
-  const title=t?t.title:'diesen Termin';
+  if(!t) return;
+  if(!_isAdmin && t.creator !== currentName){notify('Nur der Ersteller oder Admin kann löschen.');return;}
+  const title=t.title;
   showConfirm(
     `"${escHtml(title)}" wirklich löschen?`,
     'Alle Spiele, Abstimmungen und Chats gehen verloren.',
@@ -1321,6 +1381,7 @@ let _editTid = null;
 function openEditModal(tid){
   const t = getT(tid);
   if(!t) return;
+  if(!_isAdmin && t.creator !== currentName){notify('Nur der Ersteller oder Admin kann bearbeiten.');return;}
   _editTid = tid;
   document.getElementById('edit-title').value = t.title || '';
   document.getElementById('edit-date').value  = t.date  || '';
@@ -1446,6 +1507,7 @@ function renderTermine(){
 function buildTerminItem(t, open){
   const alreadyIn=currentName&&t.personen.includes(currentName);
   const canAddSpiel=t.offen!==false||t.creator===currentName;
+  const canManage=_isAdmin||t.creator===currentName;
 
   // Summary chips
   const dateChip=t.date?`<span class="chip">📅 ${formatDate(t.date)}</span>`:'';
@@ -1486,8 +1548,10 @@ function buildTerminItem(t, open){
     <div class="termin-body">
       <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px">
         <button class="btn btn-outline btn-sm" onclick="exportIcal(${t.id})" title="Als .ics exportieren">📅 Exportieren</button>
+        ${canManage?`
         <button class="btn btn-outline btn-sm" onclick="openEditModal(${t.id})">✏️ Bearbeiten</button>
-<button class="btn btn-ghost btn-sm" onclick="deleteTermin(${t.id})">Löschen</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteTermin(${t.id})" style="color:var(--red)">🗑 Löschen</button>
+        `:''}
       </div>
 
       <div class="lbl">Teilnehmer</div>
