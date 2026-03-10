@@ -585,28 +585,34 @@ async function ghGet(){
 
 async function ghPut(data, sha){
   const json=JSON.stringify(data, null, 2);
-  // Encode to base64 safely (handles UTF-8)
   const b64=btoa(unescape(encodeURIComponent(json)));
   const body={message:'Update Spieleabend Daten', content:b64};
   if(sha) body.sha=sha;
+  console.log('ghPut: writing to GitHub, sha=', sha||'(new file)');
   const r=await ghRequest('PUT', GH_FILE, body);
+  const respText=await r.text();
+  console.log('ghPut response:', r.status, respText.slice(0,200));
   if(r.status===409){
-    // Conflict: re-fetch sha and retry
+    console.log('ghPut: conflict, re-fetching sha...');
     const fresh=await ghGet();
     if(fresh&&fresh.sha){
       body.sha=fresh.sha;
       const r2=await ghRequest('PUT', GH_FILE, body);
-      if(!r2.ok) throw new Error('GitHub Schreibfehler nach Konflikt: '+r2.status);
-      const j2=await r2.json();
+      const t2=await r2.text();
+      if(!r2.ok) throw new Error('Konflikt beim Speichern ('+r2.status+'): '+t2.slice(0,100));
+      const j2=JSON.parse(t2);
       return {sha: j2.content&&j2.content.sha};
     }
   }
   if(!r.ok){
-    const errJson=await r.json().catch(()=>({}));
-    throw new Error(errJson.message||'GitHub write error '+r.status);
+    let errMsg='GitHub Fehler '+r.status;
+    try{ const ej=JSON.parse(respText); errMsg=ej.message||errMsg; }catch(e){}
+    throw new Error(errMsg+': '+respText.slice(0,100));
   }
-  const j=await r.json();
-  return {sha: j.content&&j.content.sha};
+  const j=JSON.parse(respText);
+  const newSha=j.content&&j.content.sha;
+  console.log('ghPut: success, new sha=', newSha);
+  return {sha: newSha};
 }
 
 // ── State ──
@@ -825,8 +831,15 @@ async function onAddSearch(){
       renderAsDropdown();
     }catch(e){
       dd.style.display='none';
-      errEl.textContent='\u26a0\ufe0f Suche fehlgeschlagen. Bitte versuche die manuelle Eingabe.';
+      const msg = e.message||String(e);
+      // 401 = API key missing (not in claude.ai context), 529 = overloaded
+      if(msg.includes('401')||msg.includes('403')){
+        errEl.textContent='\u26a0\ufe0f Spielsuche nur im claude.ai Artifact verf\u00fcgbar. Bitte nutze die manuelle Eingabe.';
+      } else {
+        errEl.textContent='\u26a0\ufe0f Suche fehlgeschlagen: '+msg.slice(0,80)+'. Bitte nutze die manuelle Eingabe.';
+      }
       errEl.style.display='block';
+      console.error('claudeSearch error:', msg);
     }
   },600);
 }
