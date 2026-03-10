@@ -283,6 +283,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
         <button class="tab active" onclick="showTab('termine',this)">Termine</button>
         <button class="tab" onclick="showTab('kalender',this)">Kalender</button>
         <button class="tab" onclick="showTab('zusagen',this)">Meine Zusagen</button>
+        <button class="tab" id="tab-btn-markt" onclick="showTab('markt',this)" style="display:none">🛒 Marktplatz</button>
       </div>
       <div class="user-pill" onclick="openProfileModal()" style="cursor:pointer" title="Profil bearbeiten">
         <div class="av av-lg" id="hdr-av"></div>
@@ -343,6 +344,58 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div id="tab-zusagen" class="tab-content">
       <div class="section-lbl">Meine Zusagen</div>
       <div id="zusagen-list"></div>
+    </div>
+
+    <!-- MARKTPLATZ TAB -->
+    <div id="tab-markt" class="tab-content">
+      <div class="form-card">
+        <div class="section-lbl">Spiel inserieren</div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Spielname</label>
+            <input class="input-field" id="markt-titel" placeholder="z.B. Catan">
+          </div>
+          <div class="form-field">
+            <label>Preis (€)</label>
+            <input class="input-field" id="markt-preis" type="number" min="0" step="0.50" placeholder="z.B. 15">
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:12px">
+          <label>Zustand &amp; Beschreibung</label>
+          <textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten, alle Karten vollständig …" style="resize:vertical;font-family:inherit"></textarea>
+        </div>
+        <div class="form-field" style="margin-bottom:16px">
+          <label>Foto hochladen</label>
+          <div id="markt-drop" onclick="document.getElementById('markt-file').click()" style="border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;background:var(--bg);transition:border-color .15s" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <div style="font-size:2rem;margin-bottom:6px">📷</div>
+            <div style="font-size:.82rem;color:var(--text-3)">Klicken zum Auswählen</div>
+            <img id="markt-preview" style="display:none;max-height:160px;max-width:100%;border-radius:8px;margin-top:12px;object-fit:contain">
+          </div>
+          <input type="file" id="markt-file" accept="image/*" style="display:none" onchange="previewMarktImg(this)">
+        </div>
+        <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
+        <button class="btn btn-blue" onclick="createInserat()">📢 Inserat erstellen</button>
+      </div>
+      <div class="section-lbl" style="margin-top:8px">Angebote</div>
+      <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MARKT CHAT MODAL -->
+<div id="markt-chat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:910;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;animation:up .18s ease">
+    <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-weight:700;font-size:1rem" id="markt-chat-title">Chat</div>
+        <div style="font-size:.75rem;color:var(--text-3)" id="markt-chat-sub"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="closeMarktChat()">✕</button>
+    </div>
+    <div id="markt-chat-box" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:200px"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
+      <input class="input-field" id="markt-chat-input" placeholder="Nachricht …" style="flex:1" onkeydown="if(event.key==='Enter')sendMarktChat()">
+      <button class="btn btn-blue btn-sm" onclick="sendMarktChat()">➤</button>
     </div>
   </div>
 </div>
@@ -685,6 +738,11 @@ async function startApp(name){
   try{await loadState();}catch(e){console.warn('loadState error:',e);}
   renderTermine();
   startPolling();
+  // Show Marktplatz tab only for admin
+  if(_isAdmin){
+    document.getElementById('tab-btn-markt').style.display='';
+    renderMarkt();
+  }
 }
 
 async function switchUser(){
@@ -858,6 +916,7 @@ function showTab(tab,btn){
   btn.classList.add('active');
   if(tab==='zusagen')renderZusagen();
   if(tab==='kalender')renderKalender();
+  if(tab==='markt')renderMarkt();
 }
 
 // ── Spielsuche via Claude API ──
@@ -1784,6 +1843,193 @@ renderKnown();
 const saved=localStorage.getItem(SK.cur);
 if(saved)startApp(saved);
 // Close modal on backdrop click
+// ══════════════════════════════════════════════
+// SPIELEMARKTPLATZ
+// ══════════════════════════════════════════════
+const SB_MARKT_TABLE = 'marktplatz';
+let _marktData = []; // [{id, titel, preis, desc, image, seller, ts, chat:[]}]
+let _marktChatId = null;
+
+// ── Storage: lese/schreibe marktplatz Zeile in Supabase ──
+async function loadMarkt(){
+  const r = await fetch(SB_URL+'/rest/v1/'+SB_MARKT_TABLE+'?id=eq.1&select=data',{
+    headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)}
+  });
+  if(!r.ok) return;
+  const rows = await r.json();
+  if(rows.length && rows[0].data) _marktData = rows[0].data;
+  else _marktData = [];
+}
+
+async function saveMarkt(){
+  await fetch(SB_URL+'/rest/v1/'+SB_MARKT_TABLE+'?id=eq.1',{
+    method:'PATCH',
+    headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON),'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({data:_marktData})
+  });
+}
+
+// ── Image: convert to base64 ──
+function previewMarktImg(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 800*1024){ document.getElementById('markt-error').textContent='Bild max. 800 KB.'; document.getElementById('markt-error').style.display='block'; input.value=''; return; }
+  document.getElementById('markt-error').style.display='none';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('markt-preview');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+    document.querySelector('#markt-drop > div:first-child').style.display = 'none';
+    document.querySelector('#markt-drop > div:nth-child(2)').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Create inserat ──
+async function createInserat(){
+  const titel = document.getElementById('markt-titel').value.trim();
+  const preis = document.getElementById('markt-preis').value.trim();
+  const desc  = document.getElementById('markt-desc').value.trim();
+  const prev  = document.getElementById('markt-preview');
+  const errEl = document.getElementById('markt-error');
+  errEl.style.display='none';
+  if(!titel){ errEl.textContent='Bitte einen Spielnamen eingeben.'; errEl.style.display='block'; return; }
+  if(!preis){ errEl.textContent='Bitte einen Preis eingeben.'; errEl.style.display='block'; return; }
+  if(!prev.src || prev.style.display==='none'){ errEl.textContent='Bitte ein Foto hochladen.'; errEl.style.display='block'; return; }
+  const id = Date.now();
+  _marktData.push({ id, titel, preis: parseFloat(preis), desc, image: prev.src, seller: currentName, ts: new Date().toISOString(), chat:[], sold:false });
+  await saveMarkt();
+  // Reset form
+  document.getElementById('markt-titel').value='';
+  document.getElementById('markt-preis').value='';
+  document.getElementById('markt-desc').value='';
+  prev.src=''; prev.style.display='none';
+  document.querySelector('#markt-drop > div:first-child').style.display='';
+  document.querySelector('#markt-drop > div:nth-child(2)').style.display='';
+  document.getElementById('markt-file').value='';
+  renderMarkt();
+  notify('Inserat erstellt ✓');
+}
+
+// ── Delete inserat ──
+async function deleteInserat(id){
+  showConfirm('Inserat löschen?', async()=>{
+    _marktData = _marktData.filter(m=>m.id!==id);
+    await saveMarkt();
+    renderMarkt();
+    notify('Inserat gelöscht.');
+  });
+}
+
+// ── Mark sold ──
+async function toggleSold(id){
+  const m = _marktData.find(m=>m.id===id);
+  if(!m) return;
+  m.sold = !m.sold;
+  await saveMarkt();
+  renderMarkt();
+}
+
+// ── Render gallery ──
+async function renderMarkt(){
+  await loadMarkt();
+  const el = document.getElementById('markt-list');
+  if(!el) return;
+  if(!_marktData.length){
+    el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🛒</div><p>Noch keine Angebote.</p></div>`;
+    return;
+  }
+  el.innerHTML = _marktData.map(m=>{
+    const canDel = _isAdmin || m.seller===currentName;
+    const date = new Date(m.ts).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative${m.sold?';opacity:.6':''}">
+      ${m.sold?'<div style="position:absolute;top:10px;left:10px;background:#e03535;color:#fff;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.05em">VERKAUFT</div>':''}
+      <div style="height:200px;overflow:hidden;background:var(--bg);cursor:pointer" onclick="openMarktImg('${m.image}')">
+        <img src="${m.image}" style="width:100%;height:100%;object-fit:cover;transition:transform .2s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform=''">
+      </div>
+      <div style="padding:14px;flex:1;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div style="font-weight:700;font-size:.95rem">${escHtml(m.titel)}</div>
+          <div style="font-size:1.05rem;font-weight:800;color:var(--green);white-space:nowrap">${m.preis.toFixed(2)} €</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="av av-sm" style="background:${nameColor(m.seller)}">${nameInit(m.seller)}</div>
+          <span style="font-size:.75rem;color:var(--text-3)">${escHtml(m.seller)} · ${date}</span>
+        </div>
+        ${m.desc?`<div style="font-size:.8rem;color:var(--text-2);line-height:1.5;border-top:1px solid var(--border);padding-top:8px;margin-top:2px">${escHtml(m.desc)}</div>`:''}
+        <div style="display:flex;gap:6px;margin-top:auto;padding-top:10px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" style="flex:1" onclick="openMarktChat(${m.id})">💬 Chat (${(m.chat||[]).length})</button>
+          ${canDel?`<button class="btn btn-outline btn-sm" onclick="toggleSold(${m.id})" title="${m.sold?'Als verfügbar markieren':'Als verkauft markieren'}">${m.sold?'↩ Verfügbar':'✓ Verkauft'}</button>`:''}
+          ${canDel?`<button class="btn btn-sm" style="background:var(--red-lt,#fef2f2);color:var(--red);border:1px solid #fca5a5" onclick="deleteInserat(${m.id})">🗑</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Image lightbox ──
+function openMarktImg(src){
+  const lb = document.createElement('div');
+  lb.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  lb.innerHTML=`<img src="${src}" style="max-width:90vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5)">`;
+  lb.onclick=()=>lb.remove();
+  document.body.appendChild(lb);
+}
+
+// ── Markt Chat ──
+function openMarktChat(id){
+  _marktChatId = id;
+  const m = _marktData.find(m=>m.id===id);
+  if(!m) return;
+  document.getElementById('markt-chat-title').textContent = m.titel;
+  document.getElementById('markt-chat-sub').textContent = 'Verkäufer: '+m.seller;
+  const modal = document.getElementById('markt-chat-modal');
+  modal.style.display='flex';
+  renderMarktChatBox(m);
+  document.getElementById('markt-chat-input').focus();
+}
+
+function closeMarktChat(){
+  document.getElementById('markt-chat-modal').style.display='none';
+  _marktChatId = null;
+}
+
+function renderMarktChatBox(m){
+  const box = document.getElementById('markt-chat-box');
+  const msgs = m.chat||[];
+  if(!msgs.length){
+    box.innerHTML='<div style="text-align:center;color:var(--text-3);font-size:.8rem;margin:auto">Noch keine Nachrichten. Schreib als Erster! 👋</div>';
+    return;
+  }
+  box.innerHTML = msgs.map(msg=>{
+    const mine = msg.author===currentName;
+    const t = new Date(msg.ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px">
+      <div style="font-size:.68rem;color:var(--text-3);margin:0 4px">${mine?'Du':escHtml(msg.author)} · ${t}</div>
+      <div style="background:${mine?'var(--blue)':'var(--surface2)'};color:${mine?'#fff':'var(--text)'};padding:8px 12px;border-radius:${mine?'14px 14px 3px 14px':'14px 14px 14px 3px'};max-width:80%;font-size:.85rem;word-break:break-word">${escHtml(msg.text)}</div>
+    </div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendMarktChat(){
+  const inp = document.getElementById('markt-chat-input');
+  const text = inp.value.trim();
+  if(!text||_marktChatId===null) return;
+  const m = _marktData.find(m=>m.id===_marktChatId);
+  if(!m) return;
+  if(!m.chat) m.chat=[];
+  m.chat.push({author:currentName, text, ts:new Date().toISOString()});
+  inp.value='';
+  await saveMarkt();
+  renderMarktChatBox(m);
+  // update chat count on card
+  const btn = document.querySelector(`[onclick="openMarktChat(${m.id})"]`);
+  if(btn) btn.textContent=`💬 Chat (${m.chat.length})`;
+}
+// ── End Marktplatz ──
+
 </script>
 </body>
 </html>
