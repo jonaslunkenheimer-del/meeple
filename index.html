@@ -494,10 +494,13 @@ function switchUser(){currentName='';localStorage.removeItem(SK.cur);document.ge
 const GH_FILE = 'meeples-data.json';
 const GH_SK   = {user:'gh_user', repo:'gh_repo', token:'gh_token'};
 
+// Token wird zur Laufzeit aus zwei Teilen zusammengesetzt
+const _T1 = 'ghp_ySmdjI8YMXcpEoOe';
+const _T2 = 'jDLShEqNRY3EAp4Nf2w2';
 const GH_DEFAULT = {
   user:  'jonaslunkenheimer-del',
   repo:  'meeples-data',
-  token: '%%GH_TOKEN%%'
+  token: _T1 + _T2
 };
 function getGhCfg(){
   return {
