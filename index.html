@@ -1582,7 +1582,8 @@ function buildTerminItem(t, open){
       <div class="lbl">Teilnehmer</div>
       ${joinBtn}
       <div class="persons-wrap">${personenHtml||`<span style="font-size:.8rem;color:var(--text-3)">Noch niemand.</span>`}</div>
-      <!-- Member picker – shown by default, manual input toggled -->
+      ${canManage?`
+      <!-- Member picker – only for admin/creator -->
       <div id="member-picker-${t.id}" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">
         <div style="font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-weight:600">👤 Mitglied auswählen</div>
         <div id="member-list-${t.id}" style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto"></div>
@@ -1590,11 +1591,12 @@ function buildTerminItem(t, open){
       <!-- Manual input – hidden by default, toggle with ✏️ -->
       <div id="manual-picker-${t.id}" style="display:none">
         <div class="input-row" style="margin-bottom:0;gap:6px">
-          <input class="input-field" id="pi-${t.id}" placeholder="Name manuell eingeben …" onkeydown="if(event.key==='Enter')addPerson(${t.id})" style="flex:1">
+          <input class="input-field" id="pi-${t.id}" placeholder="Name manuell eingeben …" onkeydown="if(event.key===\'Enter\')addPerson(${t.id})" style="flex:1">
           <button class="btn btn-outline btn-sm" onclick="addPerson(${t.id})">+ Hinzufügen</button>
         </div>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="toggleManualInput(${t.id})" style="font-size:.72rem;margin-top:6px;color:var(--text-3)">✏️ Manuell eingeben</button>
+      `:''}
 
       <div class="divider"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
