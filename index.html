@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Die Meeples</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6fb;--surface:#fff;--surface2:#f8f9fd;--border:#e4e8f0;--border-acc:#c7d4f0;
+  --blue:#3b6ef5;--blue-lt:#eef2fe;--blue-md:#d4dffb;
+  --green:#16a34a;--green-lt:#ecfdf5;--green-bd:#bbf7d0;
+  --red:#e03535;--red-lt:#fff0f0;--gold:#d97706;
+  --text:#111827;--text-2:#4b5563;--text-3:#9ca3af;
+  --radius:16px;--radius-sm:10px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 16px rgba(0,0,0,.07),0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.05);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:'Outfit',sans-serif;color:var(--text);min-height:100vh;line-height:1.5}
+
+/* ── NAME SCREEN ── */
+#name-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#eef2fe 0%,#f0fdf4 100%);padding:24px}
+.name-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:44px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);animation:up .35s ease;text-align:center}
+.name-logo{width:64px;height:64px;border-radius:18px;background:var(--blue-lt);border:1px solid var(--blue-md);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 18px}
+.name-title{font-size:1.7rem;font-weight:800;margin-bottom:4px}
+.name-sub{font-size:.88rem;color:var(--text-3);margin-bottom:30px}
+.name-label{display:block;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:7px;text-align:left;font-weight:500}
+.name-input{width:100%;padding:13px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:1rem;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s}
+.name-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,110,245,.1);background:var(--surface)}
+.name-error{font-size:.8rem;color:var(--red);margin-top:6px;text-align:left;display:none}
+.name-error.show{display:block}
+.btn-name{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 2px 8px rgba(59,110,245,.3);transition:all .16s;margin-top:16px}
+.btn-name:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.known-section{margin-top:22px}
+.known-divider{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.known-divider::before,.known-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.known-divider span{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--text-3)}
+.known-list{display:flex;flex-direction:column;gap:7px}
+.known-chip{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:30px;cursor:pointer;transition:all .15s;font-weight:600;font-size:.88rem;text-align:left}
+.known-chip:hover{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+
+/* ── AVATAR ── */
+.av{display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:700;color:#fff;text-transform:uppercase;flex-shrink:0}
+.av-lg{width:34px;height:34px;font-size:.85rem}
+.av-md{width:26px;height:26px;font-size:.68rem}
+.av-sm{width:20px;height:20px;font-size:.54rem}
+
+/* ── APP ── */
+#app-screen{display:none}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:34px;height:34px;border-radius:10px;background:var(--blue-lt);border:1px solid var(--blue-md);display:flex;align-items:center;justify-content:center;font-size:1rem}
+.brand-name{font-size:1rem;font-weight:800;letter-spacing:-.01em}
+.brand-sub{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase}
+.user-pill{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;background:var(--surface2);border:1px solid var(--border);border-radius:30px;cursor:pointer;transition:all .15s}
+.user-pill:hover{border-color:var(--border-acc);background:var(--blue-lt)}
+.user-pill-name{font-size:.83rem;font-weight:600}
+.user-switch{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--blue);text-decoration:underline}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px}
+.tab{padding:6px 18px;border:none;background:transparent;border-radius:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;color:var(--text-3);transition:all .18s}
+.tab.active{background:var(--surface);color:var(--blue);box-shadow:var(--shadow-sm)}
+
+/* ── LAYOUT ── */
+.container{max-width:1080px;margin:0 auto;padding:36px 24px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section-lbl{font-family:'DM Mono',monospace;font-size:.62rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.section-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:28px;box-shadow:var(--shadow-sm)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.form-field label{display:block;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500}
+.input-field{width:100%;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s}
+.input-field::placeholder{color:var(--text-3)}
+.input-field:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,110,245,.1);background:var(--surface)}
+.btn{padding:9px 18px;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-weight:600;font-size:.82rem;letter-spacing:.03em;cursor:pointer;transition:all .16s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,110,245,.25)}
+.btn-blue:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--border-acc);color:var(--blue)}
+.btn-outline:hover{background:var(--blue-lt)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-2)}
+.btn-ghost:hover{border-color:var(--red);color:var(--red);background:var(--red-lt)}
+.btn-sm{padding:6px 13px;font-size:.78rem}
+.btn-icon{padding:6px 11px;font-size:.78rem}
+.input-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* ── TOGGLE ── */
+.toggle-wrap{position:relative;display:inline-flex;cursor:pointer;flex-shrink:0}
+.toggle-wrap input{position:absolute;opacity:0;width:0;height:0}
+.toggle-track{width:44px;height:24px;background:var(--border);border-radius:12px;transition:background .2s;display:flex;align-items:center;padding:2px}
+.toggle-wrap input:checked+.toggle-track{background:var(--blue)}
+.toggle-thumb{width:20px;height:20px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.toggle-wrap input:checked+.toggle-track .toggle-thumb{transform:translateX(20px)}
+
+/* ── COLLAPSIBLE TERMIN CARDS ── */
+.termin-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow .2s,border-color .2s}
+.termin-item:hover{box-shadow:var(--shadow);border-color:var(--border-acc)}
+.termin-item.open{box-shadow:var(--shadow);border-color:var(--border-acc)}
+.termin-header{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;user-select:none}
+.termin-header:hover{background:var(--surface2)}
+.termin-chevron{font-size:.75rem;color:var(--text-3);transition:transform .22s;flex-shrink:0;margin-left:auto}
+.termin-item.open .termin-chevron{transform:rotate(180deg)}
+.termin-summary{flex:1;min-width:0}
+.termin-title-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.termin-title{font-size:1rem;font-weight:700}
+.chips-row{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:'DM Mono',monospace;font-size:.65rem;padding:3px 9px;border-radius:6px;border:1px solid var(--border);color:var(--text-2);background:var(--surface2)}
+.chip-green{background:var(--green-lt);border-color:var(--green-bd);color:var(--green)}
+.termin-body{padding:0 22px 22px;border-top:1px solid var(--border);display:none}
+.termin-item.open .termin-body{display:block;animation:up .2s ease}
+
+/* persons */
+.lbl{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px;font-weight:500}
+.persons-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;min-height:26px;align-items:center}
+.person-chip{display:flex;align-items:center;gap:5px;background:var(--green-lt);border:1px solid var(--green-bd);color:var(--green);border-radius:20px;padding:3px 11px;font-size:.8rem;font-weight:600}
+.person-chip .rm{cursor:pointer;opacity:.5;transition:opacity .15s}
+.person-chip .rm:hover{opacity:1}
+
+/* spiele */
+.spiele-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.spiel-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;position:relative;transition:box-shadow .2s,border-color .2s,transform .2s}
+.spiel-card:hover{box-shadow:var(--shadow);border-color:var(--border-acc);transform:translateY(-2px)}
+.spiel-card.top-ranked{border-color:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,.2),var(--shadow);background:#fffdf5}
+.top-badge{position:absolute;top:8px;left:8px;z-index:2;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#fff;font-family:'DM Mono',monospace;font-size:.56rem;font-weight:700;letter-spacing:.06em;padding:3px 7px;border-radius:5px;box-shadow:0 2px 6px rgba(245,158,11,.4);text-transform:uppercase}
+.vorschlag-chip{display:inline-flex;align-items:center;gap:4px;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--text-3);background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:2px 7px;margin-top:5px}
+.spiel-img{width:100%;height:130px;object-fit:cover;display:block}
+.spiel-img-ph{width:100%;height:130px;background:linear-gradient(135deg,var(--blue-lt),var(--green-lt));display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text-3)}
+.spiel-body{padding:10px 12px 12px}
+.spiel-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.badge{font-family:'DM Mono',monospace;font-size:.6rem;padding:2px 8px;border-radius:5px;font-weight:500;letter-spacing:.04em}
+.badge-blue{background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-md);text-decoration:none}
+.badge-green{background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd)}
+.spiel-name{font-size:.88rem;font-weight:700;margin-bottom:4px;line-height:1.3}
+.spiel-meta{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.spiel-rm{position:absolute;top:7px;right:7px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.9);border:1px solid var(--border);color:var(--text-3);font-size:.65rem;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .18s}
+.spiel-card:hover .spiel-rm{opacity:1}
+.spiel-rm:hover{color:var(--red);border-color:var(--red)}
+.voting-lbl{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;margin-top:8px}
+.stars{display:flex;gap:3px;margin-bottom:6px}
+.star{font-size:1.1rem;cursor:pointer;color:#d1d5db;transition:color .1s,transform .1s}
+.star:hover{color:#f59e0b;transform:scale(1.2)}
+.votes-row{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)}
+.vote-bar-outer{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.vote-bar-inner{height:100%;background:linear-gradient(90deg,var(--blue),#7aa4f8);border-radius:2px;transition:width .4s}
+.voter-select{width:100%;margin-bottom:14px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.85rem;color:var(--text);outline:none;cursor:pointer}
+
+/* autocomplete */
+.search-wrap{position:relative;flex:1;min-width:220px}
+.ac-dd{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1px solid var(--border-acc);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:999;max-height:320px;overflow-y:auto;display:none}
+.ac-dd.open{display:block;animation:up .15s ease}
+.ac-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .12s}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.hi{background:var(--blue-lt)}
+.ac-thumb{width:40px;height:40px;border-radius:7px;object-fit:cover;flex-shrink:0}
+.ac-thumb-ph{width:40px;height:40px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.ac-name{font-size:.84rem;font-weight:600}
+.ac-sub{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3);margin-top:1px}
+.ac-msg{padding:14px 16px;font-size:.82rem;color:var(--text-3);display:flex;align-items:center;gap:8px}
+
+/* mode badge */
+.mode-badge{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:.6rem;border-radius:5px;padding:3px 8px}
+
+/* ── CHAT ── */
+.chat-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 14px 10px;max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px;scroll-behavior:smooth}
+.chat-empty{text-align:center;padding:16px 0;color:var(--text-3);font-size:.82rem;font-style:italic}
+.msg-row{display:flex;align-items:flex-end;gap:7px}
+.msg-row.mine{flex-direction:row-reverse}
+.bubble{max-width:72%;padding:8px 12px;border-radius:16px;font-size:.88rem;line-height:1.45;word-break:break-word}
+.msg-row:not(.mine) .bubble{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg-row.mine .bubble{background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.bubble-name{font-size:.63rem;font-weight:700;margin-bottom:2px;opacity:.65}
+.bubble-time{font-family:'DM Mono',monospace;font-size:.56rem;margin-top:3px;opacity:.5;text-align:right}
+.msg-row.mine .bubble-time{color:rgba(255,255,255,.7)}
+.chat-input-row{display:flex;gap:8px;align-items:center}
+.chat-input{flex:1;padding:10px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:30px;font-family:'Outfit',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border-color .18s}
+.chat-input:focus{border-color:var(--blue)}
+.chat-send{width:38px;height:38px;border-radius:50%;background:var(--blue);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;transition:all .15s;box-shadow:0 2px 6px rgba(59,110,245,.3)}
+.chat-send:hover{filter:brightness(1.1);transform:scale(1.07)}
+
+/* ── ERGEBNISSE ── */
+.ergebnis-row{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid var(--border)}
+.ergebnis-row:last-child{border-bottom:none}
+.rank-num{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--text-3);width:22px;text-align:center;flex-shrink:0}
+.rank-num.gold{color:var(--gold);font-weight:700}
+.rank-num.silver{color:#94a3b8;font-weight:700}
+.rank-num.bronze{color:#c07a4a;font-weight:700}
+.ergebnis-img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.ergebnis-img-ph{width:42px;height:42px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.ergebnis-name{font-size:.9rem;font-weight:700;flex:1}
+.score-tag{font-family:'DM Mono',monospace;font-size:.72rem;font-weight:500;padding:4px 11px;border-radius:6px;white-space:nowrap}
+.score-tag.active{background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-md)}
+.score-tag.dim{background:var(--surface2);color:var(--text-3);border:1px solid var(--border)}
+
+/* ── CALENDAR ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.cal-month{font-size:1.15rem;font-weight:700}
+.cal-nav-btn{width:34px;height:34px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .15s}
+.cal-nav-btn:hover{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:8px 0 10px;font-weight:500}
+.cal-day{min-height:80px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 8px;position:relative;transition:border-color .15s}
+.cal-day:hover{border-color:var(--border-acc)}
+.cal-day.other-month{background:var(--surface2);opacity:.5}
+.cal-day.today .cal-day-num{background:var(--blue);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+.cal-day-num{font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:5px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.cal-event{background:var(--blue-lt);border:1px solid var(--blue-md);border-radius:5px;padding:2px 7px;font-size:.65rem;font-weight:600;color:var(--blue);margin-bottom:3px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .12s}
+.cal-event:hover{background:var(--blue-md)}
+.cal-event.no-date{background:var(--surface2);border-color:var(--border);color:var(--text-3)}
+
+/* no-date list */
+.cal-undated{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:20px}
+.cal-undated-title{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;font-weight:500}
+.undated-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.undated-row:last-child{border-bottom:none}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text-3)}
+.empty-icon{font-size:2rem;margin-bottom:8px;opacity:.5}
+.empty p{font-size:.85rem}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--border-acc);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;padding:11px 16px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:500;box-shadow:var(--shadow-lg);transform:translateY(60px);opacity:0;transition:all .26s cubic-bezier(.34,1.56,.64,1);z-index:9999;display:flex;align-items:center;gap:8px}
+.toast-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.toast.show{transform:translateY(0);opacity:1}
+@media(max-width:700px){
+  header{padding:0 16px}
+  .container{padding:20px 14px}
+  .tab-bar .tab{padding:6px 10px;font-size:.7rem}
+  .cal-grid{gap:1px}
+  .cal-day{min-height:56px;padding:4px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAME SCREEN -->
+<div id="name-screen">
+  <div class="name-box">
+    <div class="name-logo">🎲</div>
+    <div class="name-title">Die Meeples</div>
+    <div class="name-sub">Wie heißt du? Das war's schon.</div>
+    <label class="name-label" for="name-input">Dein Name</label>
+    <input class="name-input" id="name-input" placeholder="z.B. Max Mustermann" autocomplete="off" onkeydown="if(event.key==='Enter')enterWithName()">
+    <div class="name-error" id="name-error">Bitte gib einen Namen ein.</div>
+    <button class="btn-name" onclick="enterWithName()">Loslegen →</button>
+    <div id="known-section" style="display:none">
+      <div class="known-section">
+        <div class="known-divider"><span>oder schnell wählen</span></div>
+        <div class="known-list" id="known-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🎲</div>
+      <div>
+        <div class="brand-name">Die Meeples</div>
+        <div class="brand-sub">Spieleabend Planer</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div class="tab-bar">
+        <button class="tab active" onclick="showTab('termine',this)">Termine</button>
+        <button class="tab" onclick="showTab('kalender',this)">Kalender</button>
+        <button class="tab" onclick="showTab('ergebnisse',this)">Ergebnisse</button>
+      </div>
+      <div class="user-pill" onclick="switchUser()">
+        <div class="av av-lg" id="hdr-av"></div>
+        <span class="user-pill-name" id="hdr-name"></span>
+        <span class="user-switch">wechseln</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- TERMINE TAB -->
+    <div id="tab-termine" class="tab-content active">
+      <div class="form-card">
+        <div class="section-lbl">Neuen Termin erstellen</div>
+        <div class="form-grid">
+          <div class="form-field"><label>Titel</label><input class="input-field" id="new-title" placeholder="z.B. Spieleabend bei Max"></div>
+          <div class="form-field"><label>Datum &amp; Uhrzeit</label><input class="input-field" id="new-date" type="datetime-local"></div>
+          <div class="form-field"><label>Ort</label><input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …"></div>
+          <div class="form-field"><label>Ersteller</label><input class="input-field" id="new-creator" readonly></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:18px">
+          <div>
+            <div style="font-weight:600;font-size:.88rem;margin-bottom:2px">Spielvorschläge erlauben</div>
+            <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Alle Teilnehmer können Spiele hinzufügen</div>
+          </div>
+          <label class="toggle-wrap"><input type="checkbox" id="new-offen" checked><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+        </div>
+        <button class="btn btn-blue" onclick="createTermin()">+ Termin erstellen</button>
+      </div>
+      <div class="section-lbl">Alle Termine</div>
+      <div id="termine-list"></div>
+    </div>
+
+    <!-- KALENDER TAB -->
+    <div id="tab-kalender" class="tab-content">
+      <div class="form-card" style="padding:24px">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+          <div class="cal-month" id="cal-month-lbl"></div>
+          <button class="cal-nav-btn" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+          <div class="cal-dow">Mo</div><div class="cal-dow">Di</div><div class="cal-dow">Mi</div>
+          <div class="cal-dow">Do</div><div class="cal-dow">Fr</div><div class="cal-dow">Sa</div><div class="cal-dow">So</div>
+        </div>
+      </div>
+      <div id="cal-undated-wrap"></div>
+    </div>
+
+    <!-- ERGEBNISSE TAB -->
+    <div id="tab-ergebnisse" class="tab-content">
+      <div class="section-lbl">Abstimmungsergebnisse</div>
+      <div id="ergebnisse-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
+
+<script>
+const COLORS=['#3b6ef5','#16a34a','#e03535','#d97706','#7c3aed','#db2777','#0891b2','#ea580c','#4f46e5','#059669'];
+const SK={data:'spieleabend-v4',names:'sb_known_names',cur:'sb_cur_name'};
+let currentName='';
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+
+// ── Helpers ──
+function nameColor(n){let h=0;for(let i=0;i<n.length;i++)h=((h<<5)-h+n.charCodeAt(i))|0;return COLORS[Math.abs(h)%COLORS.length]}
+function nameInit(n){return n.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?'}
+function setAv(el,n){if(!el)return;el.textContent=nameInit(n);el.style.background=nameColor(n)}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function proxyImg(url){if(!url)return null;if(url.startsWith('//'))url='https:'+url;return`https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=400&fit=cover&output=webp`}
+function formatDate(dt){if(!dt)return'—';return new Date(dt).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function formatTime(ts){return new Date(ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
+function notify(msg){document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
+
+// ── Known names ──
+function getKnown(){try{return JSON.parse(localStorage.getItem(SK.names)||'[]')}catch(e){return[]}}
+function saveKnown(n){let a=getKnown().filter(x=>x!==n);a.unshift(n);localStorage.setItem(SK.names,JSON.stringify(a.slice(0,6)))}
+function renderKnown(){
+  const a=getKnown(),sec=document.getElementById('known-section'),list=document.getElementById('known-list');
+  if(!a.length){sec.style.display='none';return}
+  sec.style.display='block';
+  list.innerHTML=a.map(n=>`<div class="known-chip" onclick="startApp('${n.replace(/'/g,"\\'")}')"><div class="av av-md" style="background:${nameColor(n)}">${nameInit(n)}</div>${escHtml(n)}</div>`).join('')
+}
+
+// ── Auth ──
+function enterWithName(){const v=document.getElementById('name-input').value.trim();if(!v){document.getElementById('name-error').classList.add('show');return}document.getElementById('name-error').classList.remove('show');startApp(v)}
+function startApp(name){
+  currentName=name;saveKnown(name);localStorage.setItem(SK.cur,name);
+  document.getElementById('name-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  document.getElementById('new-creator').value=name;
+  setAv(document.getElementById('hdr-av'),name);
+  document.getElementById('hdr-name').textContent=name;
+  loadState();renderTermine();
+}
+function switchUser(){currentName='';localStorage.removeItem(SK.cur);document.getElementById('app-screen').style.display='none';document.getElementById('name-screen').style.display='flex';document.getElementById('name-input').value='';renderKnown()}
+
+// ── State ──
+let state={termine:[],nextId:1};
+function loadState(){try{const s=localStorage.getItem(SK.data);if(s)state=JSON.parse(s)}catch(e){}}
+function saveState(){try{localStorage.setItem(SK.data,JSON.stringify(state))}catch(e){}}
+
+// ── Tabs ──
+function showTab(tab,btn){
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='ergebnisse')renderErgebnisse();
+  if(tab==='kalender')renderKalender();
+}
+
+// ── BGG ──
+const debT={};
+function debounce(k,fn,ms=400){clearTimeout(debT[k]);debT[k]=setTimeout(fn,ms)}
+async function bggFetch(path){
+  const u=`https://boardgamegeek.com/xmlapi2/${path}`;
+  const px=[`https://corsproxy.io/?${encodeURIComponent(u)}`,`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`];
+  for(const p of px){try{const r=await fetch(p,{signal:AbortSignal.timeout(8000)});if(!r.ok)continue;let t;if(p.includes('allorigins')){const j=await r.json();t=j.contents}else{t=await r.text()}const x=new DOMParser().parseFromString(t,'text/xml');if(x.querySelector('parsererror'))continue;return x}catch(e){}}
+  throw new Error('Proxy failed')
+}
+async function bggSearch(q){const x=await bggFetch(`search?query=${encodeURIComponent(q)}&type=boardgame`);return[...x.querySelectorAll('item')].slice(0,8).map(i=>({bggId:i.getAttribute('id'),name:i.querySelector('name')?.getAttribute('value')||'?',year:i.querySelector('yearpublished')?.getAttribute('value')||''}))}
+async function bggThumbs(ids){if(!ids.length)return{};try{const x=await bggFetch(`thing?id=${ids.join(',')}`);const o={};x.querySelectorAll('item').forEach(i=>{let t=i.querySelector('thumbnail')?.textContent?.trim()||null;if(t?.startsWith('//'))t='https:'+t;o[i.getAttribute('id')]=t});return o}catch(e){return{}}}
+async function bggDetails(id){const x=await bggFetch(`thing?id=${id}&stats=1`);const i=x.querySelector('item');if(!i)return null;const name=i.querySelector('name[type="primary"]')?.getAttribute('value')||'?';let img=i.querySelector('image')?.textContent?.trim()||null;if(img?.startsWith('//'))img='https:'+img;const y=i.querySelector('yearpublished')?.getAttribute('value')||'';const mn=i.querySelector('minplayers')?.getAttribute('value')||'';const mx=i.querySelector('maxplayers')?.getAttribute('value')||'';const mt=i.querySelector('minplaytime')?.getAttribute('value')||'';const xt=i.querySelector('maxplaytime')?.getAttribute('value')||'';const w=parseFloat(i.querySelector('averageweight')?.getAttribute('value')||'0');const r=parseFloat(i.querySelector('average')?.getAttribute('value')||'0');return{bggId:id,name,image:img,year:y,players:mn&&mx?(mn===mx?`${mn}P`:`${mn}–${mx}P`):'',playtime:mt?(xt&&xt!==mt?`${mt}–${xt}m`:`${mt}m`):'',complexity:w>0?w.toFixed(1):'',rating:r>0?r.toFixed(1):'',bggUrl:`https://boardgamegeek.com/boardgame/${id}`}}
+
+// ── Autocomplete ──
+const acS={};
+async function onSpielInput(tid){
+  const inp=document.getElementById(`si-${tid}`),dd=document.getElementById(`dd-${tid}`),val=inp.value.trim();
+  if(/boardgamegeek\.com\/boardgame\/\d+/.test(val)){dd.classList.remove('open');return}
+  if(val.length<2){dd.classList.remove('open');return}
+  dd.innerHTML=`<div class="ac-msg"><span class="spinner"></span> Suche …</div>`;dd.classList.add('open');
+  debounce(`s${tid}`,async()=>{try{const res=await bggSearch(val);if(!res.length){dd.innerHTML=`<div class="ac-msg">Keine Ergebnisse</div>`;return}const th=await bggThumbs(res.map(r=>r.bggId));acS[tid]={res,th,hi:-1};renderAcDd(tid)}catch(e){dd.innerHTML=`<div class="ac-msg">⚠ BGG nicht erreichbar</div>`}})
+}
+function renderAcDd(tid){const dd=document.getElementById(`dd-${tid}`);const ac=acS[tid];if(!ac)return;dd.innerHTML=ac.res.map((r,i)=>{const t=ac.th[r.bggId];const img=t?`<img class="ac-thumb" src="${proxyImg(t)}" onerror="this.style.display='none'">`:`<div class="ac-thumb-ph">🎲</div>`;return`<div class="ac-item ${i===ac.hi?'hi':''}" onmousedown="selAc(${tid},${i})">${img}<div><div class="ac-name">${escHtml(r.name)}</div><div class="ac-sub">${r.year||'?'} · #${r.bggId}</div></div></div>`}).join('');dd.classList.add('open')}
+async function selAc(tid,idx){const ac=acS[tid];if(!ac)return;document.getElementById(`si-${tid}`).value=ac.res[idx].name;closeAc(tid);await addSpielById(tid,ac.res[idx].bggId)}
+function closeAc(tid){document.getElementById(`dd-${tid}`)?.classList.remove('open')}
+function onSpielKey(e,tid){const ac=acS[tid];const dd=document.getElementById(`dd-${tid}`);if(!dd?.classList.contains('open')||!ac){if(e.key==='Enter')addSpiel(tid);return}if(e.key==='ArrowDown'){e.preventDefault();ac.hi=Math.min(ac.hi+1,ac.res.length-1);renderAcDd(tid)}else if(e.key==='ArrowUp'){e.preventDefault();ac.hi=Math.max(ac.hi-1,-1);renderAcDd(tid)}else if(e.key==='Enter'){e.preventDefault();if(ac.hi>=0)selAc(tid,ac.hi);else addSpiel(tid)}else if(e.key==='Escape')closeAc(tid)}
+
+// ── Termine CRUD ──
+function createTermin(){
+  const title=document.getElementById('new-title').value.trim();if(!title){notify('Bitte Titel eingeben!');return}
+  const offen=document.getElementById('new-offen').checked;
+  state.termine.unshift({id:state.nextId++,title,date:document.getElementById('new-date').value,ort:document.getElementById('new-ort').value.trim(),creator:currentName,personen:currentName?[currentName]:[],spiele:[],chat:[],offen});
+  saveState();['new-title','new-date','new-ort'].forEach(id=>document.getElementById(id).value='');
+  renderTermine();notify('Termin erstellt! 🎉')
+}
+function addPerson(tid){const inp=document.getElementById(`pi-${tid}`);const name=inp.value.trim();if(!name)return;const t=getT(tid);if(!t)return;if(t.personen.includes(name)){notify('Bereits dabei!');return}t.personen.push(name);saveState();inp.value='';rerenderCard(tid);notify(`${name} hat zugesagt! 🙌`)}
+function addSelf(tid){const t=getT(tid);if(!t)return;if(t.personen.includes(currentName)){notify('Du bist bereits dabei!');return}t.personen.push(currentName);saveState();rerenderCard(tid);notify('Zugesagt! 🙌')}
+function removePerson(tid,name){const t=getT(tid);if(!t)return;t.personen=t.personen.filter(p=>p!==name);saveState();rerenderCard(tid)}
+function deleteTermin(tid){if(!confirm('Termin löschen?'))return;state.termine=state.termine.filter(t=>t.id!==tid);saveState();renderTermine();notify('Termin gelöscht.')}
+function getT(tid){return state.termine.find(t=>t.id===tid)}
+
+// ── iCal export ──
+function exportIcal(tid){
+  const t=getT(tid);if(!t)return;
+  function icalDate(dtStr){
+    if(!dtStr)return null;
+    const d=new Date(dtStr);
+    const pad=n=>String(n).padStart(2,'0');
+    return`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  }
+  const dtStart=t.date?icalDate(t.date):null;
+  const dtEnd=t.date?icalDate(new Date(new Date(t.date).getTime()+3*60*60*1000)):null;
+  const now=icalDate(new Date().toISOString().slice(0,16));
+  const spieleListe=t.spiele.length?'\n\nSpiele: '+t.spiele.map(s=>s.name).join(', '):'';
+  const personenListe=t.personen.length?'\nTeilnehmer: '+t.personen.join(', '):'';
+  const desc=`Spieleabend geplant von ${t.creator}${personenListe}${spieleListe}`.replace(/\n/g,'\\n');
+  let ical=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Die Meeples//Spieleabend Planer//DE\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:meeples-${t.id}@spieleabend\r\nDTSTAMP:${now}\r\n`;
+  if(dtStart)ical+=`DTSTART:${dtStart}\r\n`;
+  if(dtEnd)ical+=`DTEND:${dtEnd}\r\n`;
+  ical+=`SUMMARY:${escHtml(t.title)}\r\n`;
+  if(t.ort)ical+=`LOCATION:${t.ort}\r\n`;
+  ical+=`DESCRIPTION:${desc}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
+  const blob=new Blob([ical],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`${t.title.replace(/[^a-z0-9äöü]/gi,'-')}.ics`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  notify('Kalender-Datei heruntergeladen! 📅')
+}
+
+// ── Chat ──
+function sendChat(tid){const inp=document.getElementById(`ci-${tid}`);const text=inp.value.trim();if(!text)return;const t=getT(tid);if(!t)return;if(!t.chat)t.chat=[];t.chat.push({id:Date.now(),author:currentName,text,ts:Date.now()});saveState();inp.value='';const box=document.getElementById(`cb-${tid}`);if(box){box.innerHTML=buildChatMsgs(t);box.scrollTop=box.scrollHeight}}
+function onChatKey(e,tid){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat(tid)}}
+function buildChatMsgs(t){if(!t.chat||!t.chat.length)return`<div class="chat-empty">Noch keine Nachrichten – fang an!</div>`;return t.chat.map(m=>{const mine=m.author===currentName;return`<div class="msg-row${mine?' mine':''}"><div class="av av-sm" style="background:${nameColor(m.author)};${mine?'display:none':''}">${nameInit(m.author)}</div><div class="bubble">${!mine?`<div class="bubble-name">${escHtml(m.author)}</div>`:''}${escHtml(m.text)}<div class="bubble-time">${formatTime(m.ts)}</div></div></div>`}).join('')}
+
+// ── Spiele ──
+function getVorschlaeger(tid){return document.getElementById(`vs-${tid}`)?.value||currentName||''}
+async function addSpiel(tid){
+  const inp=document.getElementById(`si-${tid}`);const val=inp.value.trim();if(!val)return;closeAc(tid);
+  const m=val.match(/boardgamegeek\.com\/boardgame\/(\d+)/);if(m){await addSpielById(tid,m[1]);return}
+  setBL(tid,true);
+  try{const res=await bggSearch(val);if(res.length){await addSpielById(tid,res[0].bggId)}else{const t=getT(tid);if(t){t.spiele.push({id:Date.now(),name:val,image:null,bggId:null,bggUrl:null,players:'',year:'',playtime:'',complexity:'',rating:'',votes:{},vorschlaeger:getVorschlaeger(tid)});saveState();inp.value='';rerenderCard(tid);notify(`„${val}" hinzugefügt`)}}}catch(e){notify('BGG nicht erreichbar')}
+  setBL(tid,false)
+}
+async function addSpielById(tid,bggId){
+  const t=getT(tid);if(!t)return;if(t.spiele.find(s=>s.bggId===bggId)){notify('Bereits in der Liste!');return}
+  setBL(tid,true);
+  try{const d=await bggDetails(bggId);if(d){t.spiele.push({...d,id:Date.now(),votes:{},vorschlaeger:getVorschlaeger(tid)});saveState();const inp=document.getElementById(`si-${tid}`);if(inp)inp.value='';rerenderCard(tid);notify(`„${d.name}" hinzugefügt! 🎮`)}}catch(e){notify('Fehler beim Laden')}
+  setBL(tid,false)
+}
+function setBL(tid,on){const b=document.getElementById(`sb-${tid}`);if(!b)return;b.innerHTML=on?'<span class="spinner"></span>':'+ Hinzufügen';b.disabled=on}
+function removeSpiel(tid,sid){const t=getT(tid);if(!t)return;t.spiele=t.spiele.filter(s=>s.id!==sid);saveState();rerenderCard(tid)}
+
+// ── Voting ──
+function voteFromStar(tid,sid,score){
+  const t=getT(tid);let voter=currentName&&t?.personen.includes(currentName)?currentName:document.getElementById(`vsel-${tid}`)?.value||'';
+  if(!voter){notify('Bitte Person auswählen!');return}
+  const s=t?.spiele.find(s=>s.id===sid);if(!s)return;if(!s.votes)s.votes={};s.votes[voter]=score;saveState();rerenderCard(tid);notify(`${voter}: ${'★'.repeat(score)}`)
+}
+function avgScore(s){if(!s.votes||!Object.keys(s.votes).length)return 0;const v=Object.values(s.votes);return v.reduce((a,b)=>a+b,0)/v.length}
+
+// ── Collapse toggle ──
+function toggleTermin(tid){
+  const el=document.getElementById(`termin-${tid}`);
+  if(!el)return;
+  el.classList.toggle('open');
+  if(el.classList.contains('open')){const box=document.getElementById(`cb-${tid}`);if(box)box.scrollTop=box.scrollHeight}
+}
+
+// ── Smart re-render: only body of one card ──
+function rerenderCard(tid){
+  const el=document.getElementById(`termin-${tid}`);if(!el)return;
+  const t=getT(tid);if(!t)return;
+  const wasOpen=el.classList.contains('open');
+  el.outerHTML=buildTerminItem(t,wasOpen);
+  // re-attach chat scroll
+  const box=document.getElementById(`cb-${tid}`);if(box)box.scrollTop=box.scrollHeight;
+}
+
+// ── Render all termine ──
+function renderTermine(){
+  const el=document.getElementById('termine-list');
+  if(!state.termine.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🎲</div><p>Noch keine Termine!</p></div>`;return}
+  el.innerHTML=state.termine.map(t=>buildTerminItem(t,false)).join('');
+}
+
+function buildTerminItem(t, open){
+  const alreadyIn=currentName&&t.personen.includes(currentName);
+  const canAddSpiel=t.offen!==false||t.creator===currentName;
+
+  // Summary chips
+  const dateChip=t.date?`<span class="chip">📅 ${formatDate(t.date)}</span>`:'';
+  const ortChip=t.ort?`<span class="chip">📍 ${escHtml(t.ort)}</span>`:'';
+  const personChip=`<span class="chip chip-green">👥 ${t.personen.length} dabei</span>`;
+  const spieleChip=`<span class="chip">🎮 ${t.spiele.length} Spiele</span>`;
+  const modeChip=t.offen!==false?`<span class="chip" style="color:var(--green);background:var(--green-lt);border-color:var(--green-bd)">🟢 Offen</span>`:`<span class="chip" style="color:var(--gold);background:#fffbeb;border-color:#fde68a">🔒 Nur Ersteller</span>`;
+  const chatChip=(t.chat||[]).length?`<span class="chip">💬 ${t.chat.length}</span>`:'';
+
+  // Persons
+  const personenHtml=t.personen.map(p=>`<span class="person-chip"><div class="av av-sm" style="background:${nameColor(p)}">${nameInit(p)}</div><span>${escHtml(p)}</span><span class="rm" onclick="removePerson(${t.id},'${p.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">×</span></span>`).join('');
+  const joinBtn=currentName&&!alreadyIn?`<button class="btn btn-outline btn-sm" onclick="addSelf(${t.id})" style="margin-bottom:8px">✋ Ich bin dabei</button>`:'';
+
+  // Voter select
+  const vOpts=t.personen.map(p=>`<option value="${escHtml(p)}"${p===currentName?' selected':''}>${escHtml(p)}</option>`).join('');
+  const voterSel=t.personen.length?`<select class="voter-select" id="vsel-${t.id}"><option value="">— Wer stimmt ab? —</option>${vOpts}</select>`:`<p style="font-size:.8rem;color:var(--text-3);margin-bottom:12px">Füge zuerst Personen hinzu.</p>`;
+
+  const sortedS=[...t.spiele].sort((a,b)=>avgScore(b)-avgScore(a));
+  const spieleHtml=t.spiele.length?`<div class="spiele-grid">${sortedS.map(s=>buildSpielCard(t,s)).join('')}</div>`:`<div class="empty" style="padding:20px"><div class="empty-icon" style="font-size:1.5rem">🎮</div><p>Noch keine Spiele.</p></div>`;
+
+  const addSpielSection=canAddSpiel?`
+    ${t.personen.length?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><span style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap">Vorgeschlagen von</span><select id="vs-${t.id}" style="flex:1;min-width:120px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.82rem;color:var(--text);outline:none;cursor:pointer"><option value="">— wählen —</option>${t.personen.map(p=>`<option value="${escHtml(p)}"${p===currentName?' selected':''}>${escHtml(p)}</option>`).join('')}</select></div>`:''}
+    <div class="input-row" style="margin-bottom:${t.spiele.length?'18px':'0'}">
+      <div class="search-wrap">
+        <input class="input-field" id="si-${t.id}" placeholder="Spielname tippen – Autocomplete via BGG …" oninput="onSpielInput(${t.id})" onkeydown="onSpielKey(event,${t.id})" onblur="setTimeout(()=>closeAc(${t.id}),180)" autocomplete="off" style="width:100%">
+        <div class="ac-dd" id="dd-${t.id}"></div>
+      </div>
+      <button class="btn btn-blue btn-sm" id="sb-${t.id}" onclick="addSpiel(${t.id})">+ Hinzufügen</button>
+    </div>`
+  :`<p style="font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm)">🔒 Nur <strong>${escHtml(t.creator)}</strong> kann Spiele hinzufügen.</p>`;
+
+  return`<div class="termin-item${open?' open':''}" id="termin-${t.id}">
+    <div class="termin-header" onclick="toggleTermin(${t.id})">
+      <div class="av av-md" style="background:${nameColor(t.creator||'?')}">${nameInit(t.creator||'?')}</div>
+      <div class="termin-summary">
+        <div class="termin-title-row">
+          <span class="termin-title">${escHtml(t.title)}</span>
+        </div>
+        <div class="chips-row">${dateChip}${ortChip}${personChip}${spieleChip}${chatChip}${modeChip}</div>
+      </div>
+      <span class="termin-chevron">▼</span>
+    </div>
+    <div class="termin-body">
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px">
+        <button class="btn btn-outline btn-sm" onclick="exportIcal(${t.id})" title="Als .ics exportieren">📅 Exportieren</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteTermin(${t.id})">Löschen</button>
+      </div>
+
+      <div class="lbl">Teilnehmer</div>
+      ${joinBtn}
+      <div class="persons-wrap">${personenHtml||`<span style="font-size:.8rem;color:var(--text-3)">Noch niemand.</span>`}</div>
+      <div class="input-row" style="margin-bottom:0">
+        <input class="input-field" id="pi-${t.id}" placeholder="Name manuell hinzufügen …" onkeydown="if(event.key==='Enter')addPerson(${t.id})" style="flex:1">
+        <button class="btn btn-outline btn-sm" onclick="addPerson(${t.id})">+ Hinzufügen</button>
+      </div>
+
+      <div class="divider"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="lbl" style="margin-bottom:0">Spiele</div>
+      </div>
+      ${addSpielSection}
+      ${t.spiele.length?`<div class="lbl" style="margin-top:2px">Abstimmen als</div>${voterSel}`:''}
+      ${spieleHtml}
+
+      <div class="divider"></div>
+      <div class="lbl">💬 Chat</div>
+      <div class="chat-box" id="cb-${t.id}">${buildChatMsgs(t)}</div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="ci-${t.id}" placeholder="Nachricht schreiben …" onkeydown="onChatKey(event,${t.id})" autocomplete="off">
+        <button class="chat-send" onclick="sendChat(${t.id})">➤</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildSpielCard(t,s){
+  const avg=avgScore(s),vc=s.votes?Object.keys(s.votes).length:0,bw=avg>0?(avg/5*100).toFixed(0):0;
+  const pr=s.image?proxyImg(s.image):null;
+  const maxA=Math.max(...t.spiele.map(x=>avgScore(x)));
+  const isTop=vc>0&&avg===maxA&&avg>0;
+  const imgH=pr?`<img class="spiel-img" src="${pr}" alt="${escHtml(s.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:'';
+  const phH=`<div class="spiel-img-ph" ${pr?'style="display:none"':''}>🎲</div>`;
+  const stars=[1,2,3,4,5].map(i=>`<span class="star" onclick="voteFromStar(${t.id},${s.id},${i})">★</span>`).join('');
+  const vH=s.vorschlaeger?`<div class="vorschlag-chip"><div class="av" style="width:13px;height:13px;font-size:.4rem;border-radius:3px;background:${nameColor(s.vorschlaeger)}">${nameInit(s.vorschlaeger)}</div> ${escHtml(s.vorschlaeger)}</div>`:'';
+  return`<div class="spiel-card${isTop?' top-ranked':''}">
+    ${isTop?'<div class="top-badge">🏆 Top Pick</div>':''}
+    <button class="spiel-rm" onclick="removeSpiel(${t.id},${s.id})">✕</button>
+    ${imgH}${phH}
+    <div class="spiel-body">
+      <div class="spiel-badges">${s.bggUrl?`<a href="${s.bggUrl}" target="_blank" class="badge badge-blue">BGG ↗</a>`:''}${s.rating?`<span class="badge badge-green">★ ${s.rating}</span>`:''}</div>
+      <div class="spiel-name">${escHtml(s.name)}</div>
+      <div class="spiel-meta">${s.year?`<span>${s.year}</span>`:''}${s.players?`<span>${s.players}</span>`:''}${s.playtime?`<span>${s.playtime}</span>`:''}${s.complexity?`<span>⚙ ${s.complexity}</span>`:''}</div>
+      ${vH}
+      <div class="voting-lbl">Bewertung</div>
+      <div class="stars">${stars}</div>
+      <div class="votes-row"><span>${vc}×</span><div class="vote-bar-outer"><div class="vote-bar-inner" style="width:${bw}%"></div></div><span>${avg>0?avg.toFixed(1)+'/5':'—'}</span></div>
+    </div>
+  </div>`
+}
+
+// ── KALENDER ──
+const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--}renderKalender()}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++}renderKalender()}
+
+function renderKalender(){
+  document.getElementById('cal-month-lbl').textContent=`${MONATE[calMonth]} ${calYear}`;
+  const grid=document.getElementById('cal-grid');
+  // Remove old day cells (keep 7 header cells)
+  while(grid.children.length>7)grid.removeChild(grid.lastChild);
+
+  const today=new Date();
+  const firstDay=new Date(calYear,calMonth,1);
+  // Monday=0 offset
+  let startDow=firstDay.getDay()-1; if(startDow<0)startDow=6;
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+
+  // Build termine map by date string YYYY-MM-DD
+  const tMap={};
+  state.termine.forEach(t=>{
+    if(!t.date)return;
+    const d=new Date(t.date);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(!tMap[key])tMap[key]=[];
+    tMap[key].push(t);
+  });
+
+  // Total cells: fill to complete weeks
+  const totalCells=Math.ceil((startDow+daysInMonth)/7)*7;
+  for(let i=0;i<totalCells;i++){
+    const cell=document.createElement('div');
+    cell.className='cal-day';
+    let dayNum,isOther=false,thisMonth=false;
+    if(i<startDow){dayNum=daysInPrev-startDow+i+1;isOther=true}
+    else if(i>=startDow+daysInMonth){dayNum=i-startDow-daysInMonth+1;isOther=true}
+    else{dayNum=i-startDow+1;thisMonth=true}
+    if(isOther)cell.classList.add('other-month');
+    if(thisMonth&&dayNum===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear())cell.classList.add('today');
+
+    const numEl=document.createElement('div');numEl.className='cal-day-num';numEl.textContent=dayNum;cell.appendChild(numEl);
+
+    if(thisMonth){
+      const key=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+      (tMap[key]||[]).forEach(t=>{
+        const ev=document.createElement('div');
+        ev.className='cal-event';
+        const h=t.date?new Date(t.date).getHours():'';
+        const m=t.date?String(new Date(t.date).getMinutes()).padStart(2,'0'):'';
+        ev.textContent=`${h}:${m} ${t.title}`;
+        ev.title=t.title+(t.ort?` – ${t.ort}`:'');
+        ev.onclick=(e)=>{e.stopPropagation();jumpToTermin(t.id)};
+        cell.appendChild(ev);
+      });
+    }
+    grid.appendChild(cell);
+  }
+
+  // Undated termine
+  const undated=state.termine.filter(t=>!t.date);
+  const wrap=document.getElementById('cal-undated-wrap');
+  if(!undated.length){wrap.innerHTML='';return}
+  wrap.innerHTML=`<div class="cal-undated"><div class="cal-undated-title">Termine ohne Datum</div>${undated.map(t=>`<div class="undated-row"><div class="av av-sm" style="background:${nameColor(t.creator||'?')}">${nameInit(t.creator||'?')}</div><div style="flex:1"><strong style="font-size:.88rem">${escHtml(t.title)}</strong></div><button class="btn btn-outline btn-sm" onclick="jumpToTermin(${t.id})">Ansehen</button></div>`).join('')}</div>`;
+}
+
+function jumpToTermin(tid){
+  // Switch to Termine tab
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-termine').classList.add('active');
+  document.querySelectorAll('.tab')[0].classList.add('active');
+  // Open that card
+  setTimeout(()=>{
+    const el=document.getElementById(`termin-${tid}`);
+    if(el){el.classList.add('open');el.scrollIntoView({behavior:'smooth',block:'center'})}
+  },80);
+}
+
+// ── Ergebnisse ──
+function renderErgebnisse(){
+  const el=document.getElementById('ergebnisse-list');
+  if(!state.termine.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><p>Noch keine Termine.</p></div>`;return}
+  el.innerHTML=state.termine.map(t=>{
+    if(!t.spiele.length)return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin-bottom:14px;box-shadow:var(--shadow-sm)"><div style="font-weight:700;margin-bottom:12px">${escHtml(t.title)}</div><div class="empty" style="padding:16px"><p>Noch keine Spiele.</p></div></div>`;
+    const sorted=[...t.spiele].sort((a,b)=>avgScore(b)-avgScore(a));
+    const rows=sorted.map((s,i)=>{
+      const avg=avgScore(s),medal=['🥇','🥈','🥉'][i]||`${i+1}.`,rc=['gold','silver','bronze'][i]||'',pr=s.image?proxyImg(s.image):null;
+      const imgEl=pr?`<img class="ergebnis-img" src="${pr}" onerror="this.outerHTML='<div class=ergebnis-img-ph>🎲</div>'">`:`<div class="ergebnis-img-ph">🎲</div>`;
+      const bd=s.votes&&Object.keys(s.votes).length?Object.entries(s.votes).map(([p,v])=>`<span style="font-size:.68rem;color:var(--text-3);font-family:'DM Mono',monospace">${escHtml(p)} ${v}★</span>`).join(' · '):`<span style="font-size:.68rem;color:var(--text-3)">Keine Stimmen</span>`;
+      return`<div class="ergebnis-row"><div class="rank-num ${rc}">${medal}</div>${imgEl}<div style="flex:1;min-width:0"><div class="ergebnis-name">${escHtml(s.name)}</div><div style="margin-top:2px">${bd}</div></div><div class="score-tag ${avg>0?'active':'dim'}">${avg>0?avg.toFixed(1)+' / 5':'—'}</div></div>`
+    }).join('');
+    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin-bottom:14px;box-shadow:var(--shadow-sm)"><div style="font-weight:700;font-size:1rem;margin-bottom:3px">${escHtml(t.title)}</div><div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--text-3);margin-bottom:16px">${t.date?formatDate(t.date):''}</div>${rows}</div>`
+  }).join('')
+}
+
+// ── Init ──
+renderKnown();
+const saved=localStorage.getItem(SK.cur);
+if(saved)startApp(saved);
+</script>
+</body>
+</html>
