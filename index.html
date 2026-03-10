@@ -411,38 +411,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
-    <div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--text-3);margin-bottom:22px">Einmalige Einrichtung – Daten werden in deinem GitHub-Repo gespeichert und sind für alle sichtbar.</div>
-
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px;font-size:.8rem;line-height:1.7">
-      <strong>So geht's:</strong><br>
-      1. Gehe zu <a href="https://github.com/new" target="_blank" style="color:var(--blue)">github.com/new</a> → neues <strong>privates</strong> Repo anlegen<br>
-      2. Gehe zu <a href="https://github.com/settings/tokens/new?scopes=repo&description=DieMeeples" target="_blank" style="color:var(--blue)">github.com/settings/tokens/new</a><br>
-      3. Scope: <strong>repo</strong> anhaken → Token generieren → hier einfügen
-    </div>
-
-    <div style="display:grid;gap:12px;margin-bottom:18px">
-      <div>
-        <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;font-weight:500">GitHub Username</label>
-        <input class="input-field" id="gh-user" placeholder="z.B. maxmustermann">
-      </div>
-      <div>
-        <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;font-weight:500">Repository Name</label>
-        <input class="input-field" id="gh-repo" placeholder="z.B. meeples-data">
-      </div>
-      <div>
-        <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;font-weight:500">Personal Access Token</label>
-        <input class="input-field" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxx">
-      </div>
-    </div>
-    <div id="gh-error" style="display:none;color:var(--red);font-size:.8rem;margin-bottom:12px;padding:8px 12px;background:var(--red-lt);border-radius:8px"></div>
-    <div id="gh-loading" style="display:none;align-items:center;gap:8px;font-size:.83rem;color:var(--text-3);margin-bottom:12px"><span class="spinner"></span> Verbinde mit GitHub…</div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-blue" onclick="saveGhConfig()" style="flex:1">✓ Verbinden & loslegen</button>
-      <button class="btn btn-ghost" onclick="skipGhConfig()">Später</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"><div class="toast-dot"></div><span id="toast-msg"></span></div>
 
 <script>
@@ -1158,7 +1126,6 @@ renderKnown();
 const saved=localStorage.getItem(SK.cur);
 if(saved)startApp(saved);
 // Close modal on backdrop click
-document.getElementById('gh-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeGhModal();});
 </script>
 </body>
 </html>
