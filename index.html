@@ -256,8 +256,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     <div class="name-logo">🎲</div>
     <div class="name-title">Die Meeples</div>
     <div class="name-sub">Spieleabend Planer</div>
-    <label class="name-label" for="login-email">E-Mail</label>
-    <input class="name-input" id="login-email" type="email" placeholder="max@beispiel.de" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="name-label" for="login-email">Vorname</label>
+    <input class="name-input" id="login-email" placeholder="z.B. Max" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
     <label class="name-label" for="login-pw" style="margin-top:10px">Passwort</label>
     <input class="name-input" id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <div class="name-error" id="name-error" style="display:none"></div>
@@ -282,7 +282,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       <div class="tab-bar">
         <button class="tab active" onclick="showTab('termine',this)">Termine</button>
         <button class="tab" onclick="showTab('kalender',this)">Kalender</button>
-        <button class="tab" onclick="showTab('ergebnisse',this)">Ergebnisse</button>
+        <button class="tab" onclick="showTab('zusagen',this)">Meine Zusagen</button>
       </div>
       <div class="user-pill" onclick="openProfileModal()" style="cursor:pointer" title="Profil bearbeiten">
         <div class="av av-lg" id="hdr-av"></div>
@@ -333,9 +333,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
     </div>
 
     <!-- ERGEBNISSE TAB -->
-    <div id="tab-ergebnisse" class="tab-content">
-      <div class="section-lbl">Abstimmungsergebnisse</div>
-      <div id="ergebnisse-list"></div>
+    <div id="tab-zusagen" class="tab-content">
+      <div class="section-lbl">Meine Zusagen</div>
+      <div id="zusagen-list"></div>
     </div>
   </div>
 </div>
@@ -626,12 +626,14 @@ function sbAuthHeaders(extra){
 }
 
 async function doLogin(){
-  const email = document.getElementById('login-email').value.trim();
+  const input = document.getElementById('login-email').value.trim();
   const pw    = document.getElementById('login-pw').value;
   const errEl = document.getElementById('name-error');
   const btn   = document.getElementById('login-btn');
   errEl.style.display='none';
-  if(!email||!pw){errEl.textContent='Bitte E-Mail und Passwort eingeben.';errEl.style.display='block';return;}
+  if(!input||!pw){errEl.textContent='Bitte Vorname und Passwort eingeben.';errEl.style.display='block';return;}
+  // Admin logs in with full email, everyone else just types their first name
+  const email = input.includes('@') ? input : input.toLowerCase() + '@meeple.de';
   btn.textContent='Einloggen...';btn.disabled=true;
   try{
     const r = await fetch(SB_URL+'/auth/v1/token?grant_type=password',{
@@ -800,7 +802,7 @@ function showTab(tab,btn){
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   btn.classList.add('active');
-  if(tab==='ergebnisse')renderErgebnisse();
+  if(tab==='zusagen')renderZusagen();
   if(tab==='kalender')renderKalender();
 }
 
@@ -1506,7 +1508,7 @@ function buildSpielCard(t,s){
   const myVote=voter&&s.votes?s.votes[voter]||0:0;
   const stars=[1,2,3,4,5].map(i=>`<span class="star${i<=myVote?' star-active':''}" onclick="voteFromStar(${t.id},${s.id},${i})" title="${i} Stern${i>1?'e':''}">${i<=myVote?'★':'☆'}</span>`).join('');
   const vH=s.vorschlaeger?`<div class="vorschlag-chip"><div class="av" style="width:13px;height:13px;font-size:.4rem;border-radius:3px;background:${nameColor(s.vorschlaeger)}">${nameInit(s.vorschlaeger)}</div> ${escHtml(s.vorschlaeger)}</div>`:'';
-  const showVoting=t.offen!==false;
+  const showVoting = t.offen !== false; // false=festgelegt→kein Voting, true/undefined=offen→Voting
   return`<div class="spiel-card${isTop?' top-ranked':''}">
     ${isTop?'<div class="top-badge">🏆 Top Pick</div>':''}
     <button class="spiel-rm" onclick="removeSpiel(${t.id},${s.id})">✕</button>
@@ -1603,21 +1605,53 @@ function jumpToTermin(tid){
   },80);
 }
 
-// ── Ergebnisse ──
-function renderErgebnisse(){
-  const el=document.getElementById('ergebnisse-list');
-  if(!state.termine.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><p>Noch keine Termine.</p></div>`;return}
-  el.innerHTML=state.termine.map(t=>{
-    if(!t.spiele.length)return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin-bottom:14px;box-shadow:var(--shadow-sm)"><div style="font-weight:700;margin-bottom:12px">${escHtml(t.title)}</div><div class="empty" style="padding:16px"><p>Noch keine Spiele.</p></div></div>`;
-    const sorted=[...t.spiele].sort((a,b)=>avgScore(b)-avgScore(a));
-    const rows=sorted.map((s,i)=>{
-      const avg=avgScore(s),medal=['🥇','🥈','🥉'][i]||`${i+1}.`,rc=['gold','silver','bronze'][i]||'',pr=s.image?proxyImg(s.image):null;
-      const imgEl=pr?`<img class="ergebnis-img" src="${pr}" onerror="this.outerHTML='<div class=ergebnis-img-ph>🎲</div>'">`:`<div class="ergebnis-img-ph">🎲</div>`;
-      const bd=s.votes&&Object.keys(s.votes).length?Object.entries(s.votes).map(([p,v])=>`<span style="font-size:.68rem;color:var(--text-3);font-family:'DM Mono',monospace">${escHtml(p)} ${v}★</span>`).join(' · '):`<span style="font-size:.68rem;color:var(--text-3)">Keine Stimmen</span>`;
-      return`<div class="ergebnis-row"><div class="rank-num ${rc}">${medal}</div>${imgEl}<div style="flex:1;min-width:0"><div class="ergebnis-name">${escHtml(s.name)}</div><div style="margin-top:2px">${bd}</div></div><div class="score-tag ${avg>0?'active':'dim'}">${avg>0?avg.toFixed(1)+' / 5':'—'}</div></div>`
-    }).join('');
-    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 26px;margin-bottom:14px;box-shadow:var(--shadow-sm)"><div style="font-weight:700;font-size:1rem;margin-bottom:3px">${escHtml(t.title)}</div><div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--text-3);margin-bottom:16px">${t.date?formatDate(t.date):''}</div>${rows}</div>`
-  }).join('')
+// ── Meine Zusagen ──
+function renderZusagen(){
+  const el = document.getElementById('zusagen-list');
+  if(!currentName){ el.innerHTML='<div class="empty"><div class="empty-icon">👤</div><p>Nicht eingeloggt.</p></div>'; return; }
+  const meineTermine = state.termine.filter(t => t.personen && t.personen.includes(currentName));
+  if(!meineTermine.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">📅</div><p>Du hast noch bei keinem Termin zugesagt.</p><p style="font-size:.8rem;color:var(--text-3);margin-top:6px">Klick bei einem Termin auf „✋ Ich bin dabei".</p></div>`;
+    return;
+  }
+  const now = new Date();
+  const upcoming = meineTermine.filter(t => !t.date || new Date(t.date) >= now).sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  const past     = meineTermine.filter(t => t.date && new Date(t.date) < now).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  function buildCard(t){
+    const isPast = t.date && new Date(t.date) < now;
+    const dateStr = t.date ? formatDate(t.date) : 'Kein Datum';
+    const ortStr  = t.ort  ? `<span style="font-size:.75rem;color:var(--text-3)">📍 ${escHtml(t.ort)}</span>` : '';
+    const personen = t.personen.map(p=>`<div class="av av-sm" style="background:${nameColor(p)}" title="${escHtml(p)}">${nameInit(p)}</div>`).join('');
+    const spieleStr = t.spiele.length ? t.spiele.map(s=>`<span style="font-size:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 8px">${escHtml(s.name)}</span>`).join('') : '<span style="font-size:.75rem;color:var(--text-3)">Noch keine Spiele</span>';
+    return `<div onclick="jumpToTermin(${t.id})" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;box-shadow:var(--shadow-sm);cursor:pointer;transition:border-color .15s;opacity:${isPast?'.6':'1'}" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
+        <div>
+          <div style="font-weight:700;font-size:.95rem;margin-bottom:3px">${escHtml(t.title)}</div>
+          <div style="font-size:.78rem;color:var(--text-2)">📅 ${dateStr}</div>
+          ${ortStr}
+        </div>
+        <span style="font-size:.7rem;padding:3px 10px;border-radius:20px;white-space:nowrap;font-weight:600;${isPast?'background:#f3f4f6;color:var(--text-3)':'background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd)'}">${isPast?'Vergangen':'Bevorstehend'}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+        <span style="font-size:.72rem;color:var(--text-3);margin-right:2px">👥</span>
+        <div style="display:flex;gap:3px">${personen}</div>
+        <span style="font-size:.72rem;color:var(--text-3)">${t.personen.length} Personen</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${spieleStr}</div>
+    </div>`;
+  }
+
+  let html = '';
+  if(upcoming.length){
+    html += `<div style="font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">Bevorstehend (${upcoming.length})</div>`;
+    html += upcoming.map(buildCard).join('');
+  }
+  if(past.length){
+    html += `<div style="font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin:16px 0 10px">Vergangen (${past.length})</div>`;
+    html += past.map(buildCard).join('');
+  }
+  el.innerHTML = html;
 }
 
 // ── Init ──
