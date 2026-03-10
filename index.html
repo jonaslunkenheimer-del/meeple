@@ -367,8 +367,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
         <div class="form-field" style="margin-bottom:16px">
           <label>Foto hochladen</label>
           <div id="markt-drop" onclick="document.getElementById('markt-file').click()" style="border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;background:var(--bg);transition:border-color .15s" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
-            <div style="font-size:2rem;margin-bottom:6px">📷</div>
-            <div style="font-size:.82rem;color:var(--text-3)">Klicken zum Auswählen</div>
+            <div id="markt-drop-icon" style="font-size:2rem;margin-bottom:6px">📷</div>
+            <div id="markt-drop-text" style="font-size:.82rem;color:var(--text-3)">Klicken zum Auswählen</div>
             <img id="markt-preview" style="display:none;max-height:160px;max-width:100%;border-radius:8px;margin-top:12px;object-fit:contain">
           </div>
           <input type="file" id="markt-file" accept="image/*" style="display:none" onchange="previewMarktImg(this)">
@@ -1872,18 +1872,25 @@ async function saveMarkt(){
 }
 
 // ── Image: convert to base64 ──
+let _marktImgData = ''; // store base64 here
+
 function previewMarktImg(input){
   const file = input.files[0];
   if(!file) return;
-  if(file.size > 800*1024){ document.getElementById('markt-error').textContent='Bild max. 800 KB.'; document.getElementById('markt-error').style.display='block'; input.value=''; return; }
+  if(file.size > 800*1024){
+    document.getElementById('markt-error').textContent='Bild max. 800 KB.';
+    document.getElementById('markt-error').style.display='block';
+    input.value=''; return;
+  }
   document.getElementById('markt-error').style.display='none';
   const reader = new FileReader();
   reader.onload = e => {
+    _marktImgData = e.target.result;
     const prev = document.getElementById('markt-preview');
-    prev.src = e.target.result;
+    prev.src = _marktImgData;
     prev.style.display = 'block';
-    document.querySelector('#markt-drop > div:first-child').style.display = 'none';
-    document.querySelector('#markt-drop > div:nth-child(2)').style.display = 'none';
+    document.getElementById('markt-drop-icon').style.display = 'none';
+    document.getElementById('markt-drop-text').style.display = 'none';
   };
   reader.readAsDataURL(file);
 }
@@ -1898,18 +1905,19 @@ async function createInserat(){
   errEl.style.display='none';
   if(!titel){ errEl.textContent='Bitte einen Spielnamen eingeben.'; errEl.style.display='block'; return; }
   if(!preis){ errEl.textContent='Bitte einen Preis eingeben.'; errEl.style.display='block'; return; }
-  if(!prev.src || prev.style.display==='none'){ errEl.textContent='Bitte ein Foto hochladen.'; errEl.style.display='block'; return; }
+  if(!_marktImgData){ errEl.textContent='Bitte ein Foto hochladen.'; errEl.style.display='block'; return; }
   const id = Date.now();
-  _marktData.push({ id, titel, preis: parseFloat(preis), desc, image: prev.src, seller: currentName, ts: new Date().toISOString(), chat:[], sold:false });
+  _marktData.push({ id, titel, preis: parseFloat(preis), desc, image: _marktImgData, seller: currentName, ts: new Date().toISOString(), chat:[], sold:false });
   await saveMarkt();
   // Reset form
   document.getElementById('markt-titel').value='';
   document.getElementById('markt-preis').value='';
   document.getElementById('markt-desc').value='';
   prev.src=''; prev.style.display='none';
-  document.querySelector('#markt-drop > div:first-child').style.display='';
-  document.querySelector('#markt-drop > div:nth-child(2)').style.display='';
+  document.getElementById('markt-drop-icon').style.display='';
+  document.getElementById('markt-drop-text').style.display='';
   document.getElementById('markt-file').value='';
+  _marktImgData = '';
   renderMarkt();
   notify('Inserat erstellt ✓');
 }
