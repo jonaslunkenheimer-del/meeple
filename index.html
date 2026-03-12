@@ -325,6 +325,17 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="form-field" style="margin-bottom:12px"><label>Anzeigename ändern</label><input class="input-field" id="profil-displayname" placeholder="Dein Name"></div>
       <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:16px" onclick="saveDisplayName()">✓ Name speichern</button>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <label style="font-size:.75rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px">Avatar-Farbe</label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="profil-av-preview" class="av av-md" style="flex-shrink:0"></div>
+          <input type="color" id="profil-color-picker" style="width:48px;height:36px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:none" oninput="previewAvatarColor(this.value)">
+          <div style="flex:1">
+            <div style="display:flex;flex-wrap:wrap;gap:6px" id="color-presets"></div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px" onclick="saveAvatarColor()">🎨 Farbe speichern</button>
+      </div>✓ Name speichern</button>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
         <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="Neues Passwort"></div>
         <button class="btn btn-outline btn-sm" style="width:100%;" onclick="savePassword()">🔑 Passwort ändern</button>
       </div>
@@ -333,9 +344,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button class="btn btn-ghost" style="flex:1" onclick="closeProfileModal()">Schließen</button>
         <button class="btn" style="flex:1;background:var(--red);color:#fff;border-color:var(--red)" onclick="switchUser()">Abmelden</button>
       </div>
-      <div id="admin-btn-wrap" style="display:none;margin-top:10px">
-        <button class="btn btn-ghost btn-sm" style="width:100%" onclick="closeProfileModal();openAdminModal()">👑 Admin-Panel</button>
-      </div>
+
     </div>
   </div>
 </div>
@@ -545,7 +554,7 @@ var SB_SK = "__SB_SERVICE_KEY__";
 
 // ── State ──
 var currentName = "";
-var state = {termine:[], nextId:1};
+var state = {termine:[], nextId:1, userColors:{}};
 var mData = [];
 var mChatId = null;
 var mImgs = [];
@@ -572,7 +581,7 @@ function getSK(){ return (SB_SK && SB_SK.indexOf("__")!==0) ? SB_SK : ""; }
 function authHdrs(x){ var tok=(session&&session.access_token)||SB_ANON; return Object.assign({"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+tok},x||{}); }
 
 var COLORS=["#e74c3c","#3498db","#2ecc71","#9b59b6","#f39c12","#1abc9c","#e67e22","#34495e","#e91e63","#00bcd4"];
-function nameColor(n){ var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%COLORS.length; return COLORS[Math.abs(h)]; }
+function nameColor(n){ if(state.userColors&&state.userColors[n]) return state.userColors[n]; var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%COLORS.length; return COLORS[Math.abs(h)]; }
 function nameInit(n){ return n.split(" ").map(function(w){ return w[0]||""; }).join("").toUpperCase().slice(0,2)||"?"; }
 function setAv(el,name){ if(!el) return; el.style.background=nameColor(name); el.textContent=nameInit(name); }
 
@@ -680,7 +689,8 @@ async function loadState(){
   if(!r.ok) throw new Error("loadState "+r.status);
   var rows=await r.json();
   if(rows.length&&rows[0].data) state=rows[0].data;
-  if(!state.termine) state={termine:[],nextId:1};
+  if(!state.termine) state={termine:[],nextId:1,userColors:{}};
+  if(!state.userColors) state.userColors={};
 }
 async function saveState(){
   await fetch(SB_URL+"/rest/v1/"+SB_TABLE,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({id:1,data:state})});
@@ -726,11 +736,63 @@ function openProfileModal(){
   document.getElementById("profil-displayname").value=currentName;
   document.getElementById("profil-name-lbl").textContent=currentName;
   document.getElementById("profil-msg").style.display="none";
+  var currentColor=nameColor(currentName);
   setAv(document.getElementById("profil-av"),currentName);
-  document.getElementById("admin-btn-wrap").style.display=isAdmin?"block":"none";
+  // Init color picker
+  var picker=document.getElementById("profil-color-picker");
+  if(picker) picker.value=currentColor;
+  var preview=document.getElementById("profil-av-preview");
+  if(preview){ preview.style.background=currentColor; preview.textContent=nameInit(currentName); }
+  // Render presets
+  var presets=["#e74c3c","#e67e22","#f1c40f","#2ecc71","#1abc9c","#3498db","#9b59b6","#e91e63","#00bcd4","#ff5722","#607d8b","#795548"];
+  var presetsEl=document.getElementById("color-presets");
+  if(presetsEl) presetsEl.innerHTML=presets.map(function(col){
+    return "<div onclick='selectPresetColor(\""+col+"\")' style='width:22px;height:22px;border-radius:50%;background:"+col+";cursor:pointer;border:2px solid "+(col===currentColor?"#fff":"transparent")+";box-shadow:"+(col===currentColor?"0 0 0 2px var(--blue)":"none")+"'></div>";
+  }).join("");
   document.getElementById("profil-modal").style.display="flex";
 }
 function closeProfileModal(){ document.getElementById("profil-modal").style.display="none"; }
+
+function previewAvatarColor(col){
+  var preview=document.getElementById("profil-av-preview");
+  if(preview) preview.style.background=col;
+  // Update presets highlight
+  var presetsEl=document.getElementById("color-presets");
+  if(presetsEl) presetsEl.querySelectorAll("div").forEach(function(d){
+    var isSelected=d.style.background===col||d.style.backgroundColor===col;
+    d.style.border="2px solid "+(isSelected?"#fff":"transparent");
+    d.style.boxShadow=isSelected?"0 0 0 2px var(--blue)":"none";
+  });
+}
+function selectPresetColor(col){
+  var picker=document.getElementById("profil-color-picker");
+  if(picker) picker.value=col;
+  previewAvatarColor(col);
+}
+async function saveAvatarColor(){
+  var col=document.getElementById("profil-color-picker").value;
+  if(!col) return;
+  if(!state.userColors) state.userColors={};
+  state.userColors[currentName]=col;
+  // Re-render header avatar immediately
+  setAv(document.getElementById("hdr-av"),currentName);
+  setAv(document.getElementById("profil-av"),currentName);
+  openProfileModal(); // refresh presets highlight
+  refreshAllAvatars();
+  saveState();
+  var msg=document.getElementById("profil-msg");
+  msg.textContent="\u2713 Farbe gespeichert"; msg.style.color="var(--green)"; msg.style.display="block";
+  setTimeout(function(){ msg.style.display="none"; },2000);
+}
+function refreshAllAvatars(){
+  // Re-render all visible avatars in termine list and markt list
+  document.querySelectorAll(".av[style*='background']").forEach(function(el){
+    var name=el.getAttribute("data-name");
+    if(name) el.style.background=nameColor(name);
+  });
+  // Full re-render of termine is the safest way
+  renderTermine();
+}
 async function saveDisplayName(){
   var n=document.getElementById("profil-displayname").value.trim();
   if(!n) return;
