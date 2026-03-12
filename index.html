@@ -1031,7 +1031,7 @@ async function loadFromBggUrl(bggId, gameName){
 
 // ── Spiele ──
 function getVorschlaeger(tid){return document.getElementById(`vs-${tid}`)?.value||currentName||''}
-async function removeSpiel(tid,sid){const t=getT(tid);if(!t)return;t.spiele=t.spiele.filter(s=>s.id!==sid);await saveState();rerenderCard(tid)}
+async function removeSpiel(tid,sid){const t=getT(tid);if(!t)return;const s=t.spiele.find(s=>s.id===sid);if(!_isAdmin&&t.creator!==currentName&&s?.vorschlaeger!==currentName){notify('Du kannst nur deine eigenen Spiele entfernen.');return;}t.spiele=t.spiele.filter(s=>s.id!==sid);await saveState();rerenderCard(tid)}
 
 // ── Unified Add-Spiel Modal ──
 let _addTid=null;
@@ -1694,7 +1694,7 @@ function buildSpielCard(t,s){
   const showVoting = t.offen !== false; // false=festgelegt→kein Voting, true/undefined=offen→Voting
   return`<div class="spiel-card${isTop?' top-ranked':''}">
     ${isTop?'<div class="top-badge">🏆 Top Pick</div>':''}
-    <button class="spiel-rm" onclick="removeSpiel(${t.id},${s.id})">✕</button>
+    ${(_isAdmin||t.creator===currentName||s.vorschlaeger===currentName)?`<button class="spiel-rm" onclick="removeSpiel(${t.id},${s.id})">✕</button>`:''}
     ${imgH}${phH}
     <div class="spiel-body">
       <div class="spiel-badges">${s.bggUrl?`<a href="${s.bggUrl}" target="_blank" class="badge badge-blue">BGG ↗</a>`:''}${s.rating?`<span class="badge badge-green">★ ${s.rating}</span>`:''}</div>
