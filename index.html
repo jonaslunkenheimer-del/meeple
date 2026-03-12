@@ -412,6 +412,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div><div style="font-weight:600;font-size:.88rem">🔒 Privater Termin</div></div>
         <label class="toggle-wrap"><input type="checkbox" id="edit-privat"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
+        <div><div style="font-weight:600;font-size:.88rem">👥 Teilnehmerlimit</div></div>
+        <label class="toggle-wrap"><input type="checkbox" id="edit-limit-on" onchange="document.getElementById('edit-limit-wrap').style.display=this.checked?'block':'none'"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+      </div>
+      <div id="edit-limit-wrap" style="display:none;padding:12px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--radius-sm);margin-bottom:14px">
+        <label style="font-size:.78rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Maximale Teilnehmerzahl</label>
+        <input class="input-field" id="edit-limit-val" type="number" min="1" max="100" placeholder="z.B. 8">
+      </div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-ghost" onclick="closeEditModal()" style="flex:1">Abbrechen</button>
         <button class="btn btn-blue" onclick="saveEdit()" style="flex:2">✓ Speichern</button>
@@ -444,6 +452,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:22px">
         <div><div style="font-weight:600;font-size:.88rem">🔒 Privater Termin</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Nur eingeladene Personen sehen diesen Termin</div></div>
         <label class="toggle-wrap"><input type="checkbox" id="new-privat"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
+        <div><div style="font-weight:600;font-size:.88rem">👥 Teilnehmerlimit</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Max. Anzahl an Teilnehmern festlegen</div></div>
+        <label class="toggle-wrap"><input type="checkbox" id="new-limit-on" onchange="document.getElementById('new-limit-wrap').style.display=this.checked?'block':'none'"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+      </div>
+      <div id="new-limit-wrap" style="display:none;padding:12px 15px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--radius-sm);margin-bottom:10px">
+        <label style="font-size:.78rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Maximale Teilnehmerzahl</label>
+        <input class="input-field" id="new-limit-val" type="number" min="1" max="100" placeholder="z.B. 8">
       </div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-ghost" onclick="closeNewTerminModal()" style="flex:1">Abbrechen</button>
@@ -886,6 +902,9 @@ function closeNewTerminModal(){
   ["new-title","new-ort","new-date"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
   var o=document.getElementById("new-offen"); if(o) o.checked=true;
   var p=document.getElementById("new-privat"); if(p) p.checked=false;
+  var lo=document.getElementById("new-limit-on"); if(lo) lo.checked=false;
+  var lw=document.getElementById("new-limit-wrap"); if(lw) lw.style.display="none";
+  var lv=document.getElementById("new-limit-val"); if(lv) lv.value="";
 }
 async function createTermin(){
   var title=document.getElementById("new-title").value.trim();
@@ -898,6 +917,8 @@ async function createTermin(){
     creator:currentName,
     offen:document.getElementById("new-offen").checked!==false,
     privat:document.getElementById("new-privat").checked===true,
+    limitOn:document.getElementById("new-limit-on").checked===true,
+    limitVal:parseInt(document.getElementById("new-limit-val").value)||0,
     personen:[currentName], spiele:[], chat:[], qrcodes:[],
     ts:new Date().toISOString()
   };
@@ -921,6 +942,10 @@ function openEditModal(tid){
   document.getElementById("edit-ort").value=t.ort||"";
   document.getElementById("edit-offen").checked=t.offen!==false;
   document.getElementById("edit-privat").checked=!!t.privat;
+  var limitOn=!!t.limitOn;
+  document.getElementById("edit-limit-on").checked=limitOn;
+  document.getElementById("edit-limit-wrap").style.display=limitOn?"block":"none";
+  document.getElementById("edit-limit-val").value=t.limitVal||"";
   document.getElementById("edit-modal").style.display="flex";
 }
 function closeEditModal(){ document.getElementById("edit-modal").style.display="none"; editTid=null; }
@@ -932,6 +957,8 @@ async function saveEdit(){
   t.ort=document.getElementById("edit-ort").value.trim();
   t.offen=document.getElementById("edit-offen").checked;
   t.privat=document.getElementById("edit-privat").checked;
+  t.limitOn=document.getElementById("edit-limit-on").checked;
+  t.limitVal=parseInt(document.getElementById("edit-limit-val").value)||0;
   closeEditModal(); rerenderCard(editTid); toast("Gespeichert \u2713"); saveState();
 }
 
@@ -1032,7 +1059,7 @@ function buildTerminCard(t, open){
   var chips="";
   if(t.date) chips+="<span class='chip'>&#128197; "+fmtDate(t.date)+"</span>";
   if(t.ort)  chips+="<span class='chip'>&#128205; "+h(t.ort)+"</span>";
-  chips+="<span class='chip chip-green'>&#128101; "+t.personen.length+" dabei</span>";
+  chips+="<span class='chip chip-green'>&#128101; "+t.personen.length+(t.limitOn&&t.limitVal?" / "+t.limitVal:"")+" dabei</span>";
   chips+="<span class='chip'>&#127918; "+t.spiele.length+" Spiele</span>";
   if((t.chat||[]).length) chips+="<span class='chip'>&#128172; "+t.chat.length+"</span>";
   if(t.offen!==false) chips+="<span class='chip' style='color:var(--green);background:var(--green-lt);border-color:var(--green-bd)'>&#129001; Spielvorschl\u00e4ge</span>";
@@ -1089,8 +1116,15 @@ function buildTerminCard(t, open){
   // QR codes
   var qrHtml=buildQrList(t);
 
-  var joinBtn=currentName&&!alreadyIn
-    ? "<button class='btn btn-outline btn-sm' onclick='addSelf("+t.id+")' style='margin-bottom:8px'>&#9995; Ich bin dabei</button>" : "";
+  var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
+  var joinBtn="";
+  if(currentName&&!alreadyIn){
+    if(isFull){
+      joinBtn="<div style='background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-size:.83rem;color:var(--red);font-weight:600'>&#128274; Leider ist der Termin voll</div>";
+    } else {
+      joinBtn="<button class='btn btn-outline btn-sm' onclick='addSelf("+t.id+")' style='margin-bottom:8px'>&#9995; Ich bin dabei</button>";
+    }
+  }
 
   return "<div class='termin-item"+(open?" open":"")+"' id='termin-"+t.id+"'>"
     +"<div class='termin-header' onclick='toggleTermin("+t.id+")'>"
@@ -1196,6 +1230,7 @@ function buildSpielCard(t,s){
 // ── Personen ──
 async function addSelf(tid){
   var t=getT(tid); if(!t||!currentName) return;
+  if(t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal){ toast("Der Termin ist leider voll."); return; }
   if(!t.personen.includes(currentName)) t.personen.push(currentName);
   rerenderCard(tid); saveState();
 }
