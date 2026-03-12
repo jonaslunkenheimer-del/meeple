@@ -840,14 +840,14 @@ async function createTermin(){
     ts:new Date().toISOString()
   };
   state.termine.unshift(t);
-  await saveState(); closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89");
+  closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89"); saveState();
 }
 async function deleteTermin(tid){
   var t=getT(tid); if(!t) return;
   if(!isAdmin&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
   showConfirm("Termin l\u00f6schen?","\""+t.title+"\" wird entfernt.",async function(){
     state.termine=state.termine.filter(function(x){ return x.id!==tid; });
-    await saveState(); renderTermine(); toast("Gel\u00f6scht.");
+    renderTermine(); toast("Gel\u00f6scht."); saveState();
   });
 }
 function openEditModal(tid){
@@ -868,7 +868,7 @@ async function saveEdit(){
   t.ort=document.getElementById("edit-ort").value.trim();
   t.offen=document.getElementById("edit-offen").checked;
   t.privat=document.getElementById("edit-privat").checked;
-  await saveState(); closeEditModal(); rerenderCard(editTid); toast("Gespeichert \u2713");
+  closeEditModal(); rerenderCard(editTid); toast("Gespeichert \u2713"); saveState();
 }
 
 // ── Termine: Render ──
@@ -1003,15 +1003,7 @@ function buildTerminCard(t, open){
   var userCanAdd=isAdmin||t.personen.includes(currentName);
   var addSection="";
   if(userCanAdd&&(t.offen!==false||t.creator===currentName)){
-    var vsSelect="";
-    if(isAdmin&&t.personen.length){
-      var opts=t.personen.map(function(p){ return "<option value='"+h(p)+"'"+(p===currentName?" selected":"")+" >"+h(p)+"</option>"; }).join("");
-      vsSelect="<div style='display:flex;align-items:center;gap:8px;margin-bottom:12px'>"
-        +"<span style='font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em'>Vorgeschlagen von</span>"
-        +"<select id='vs-"+t.id+"' style='flex:1;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;color:var(--text);outline:none'>"
-        +"<option value=''>-- w\u00e4hlen --</option>"+opts+"</select></div>";
-    }
-    addSection=vsSelect+"<div style='display:flex;gap:8px;margin-bottom:"+(t.spiele.length?"18px":"0")+"'>"
+    addSection="<div style='display:flex;gap:8px;margin-bottom:"+(t.spiele.length?"18px":"0")+"'>"
       +"<button class='btn btn-blue btn-sm' onclick='openAddModal("+t.id+")'>+ Spiel hinzuf\u00fcgen</button></div>";
   } else if(!userCanAdd) {
     addSection="<p style='font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:var(--radius-sm)'>&#10004; Erst zusagen um Spiele vorzuschlagen!</p>";
@@ -1025,9 +1017,9 @@ function buildTerminCard(t, open){
       +"<button class='btn btn-ghost btn-sm' onclick='deleteTermin("+t.id+")' style='color:var(--red)'>&#128465; L\u00f6schen</button>"
     : "";
 
-  // Member picker
+  // Member picker — only for creator/admin on private termins
   var picker="";
-  if(canManage){
+  if(t.privat&&(isAdmin||t.creator===currentName)){
     picker="<div id='member-picker-"+t.id+"' style='background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px'>"
       +"<div style='font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-weight:600'>&#128100; Mitglied ausw\u00e4hlen</div>"
       +"<div id='member-list-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto'></div></div>"
@@ -1115,17 +1107,22 @@ function buildSpielCard(t,s){
   var pr=s.image?proxyImg(s.image):null;
   var maxA=Math.max.apply(null,t.spiele.map(function(x){ return avg(x); }));
   var isTop=vc>0&&av===maxA&&av>0;
-  var voter=currentName&&t.personen.includes(currentName)?currentName:"";
+  // Stars: hidden on private termins; interactive only for participants
+  var showStars = !t.privat;
+  var voter=showStars&&currentName&&t.personen.includes(currentName)?currentName:"";
   var myVote=voter&&s.votes?s.votes[voter]||0:0;
-  var stars="<div class='stars'>";
-  for(var i=1;i<=5;i++){
-    if(voter){
-      stars+="<span class='star' onclick='voteSpiel("+t.id+",\""+s.id+"\","+i+")' title='"+i+" Stern"+(i>1?"e":"")+"'>"+(i<=myVote?"&#9733;":"&#9734;")+"</span>";
-    } else {
-      stars+="<span class='star' style='cursor:default'>"+(i<=Math.round(av)?"&#9733;":"&#9734;")+"</span>";
+  var stars="";
+  if(showStars){
+    stars="<div class='stars'>";
+    for(var i=1;i<=5;i++){
+      if(voter){
+        stars+="<span class='star' onclick='voteSpiel("+t.id+",\""+s.id+"\","+i+")' title='"+i+" Stern"+(i>1?"e":"")+"'>"+(i<=myVote?"&#9733;":"&#9734;")+"</span>";
+      } else {
+        stars+="<span class='star' style='cursor:default'>"+(i<=Math.round(av)?"&#9733;":"&#9734;")+"</span>";
+      }
     }
+    stars+="</div>";
   }
-  stars+="</div>";
   var canDel=isAdmin||s.vorschlaeger===currentName||t.creator===currentName;
   var delBtn=canDel?"<button class='btn btn-sm' style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;margin-top:6px' onclick='deleteSpiel("+t.id+",\""+s.id+"\")'>&#128465; Entfernen</button>":"";
   var imgHtml=pr
@@ -1137,8 +1134,8 @@ function buildSpielCard(t,s){
     +"<div class='spiel-name'>"+(isTop?"&#127942; ":"")+h(s.name)+"</div>"
     +"<div class='spiel-sub'>"+(s.year?s.year+" &middot; ":"")+(s.players?s.players+" Spieler &middot; ":"")+(s.playtime?s.playtime+" Min":"")+"</div>"
     +stars
-    +"<div class='vote-bar'><div class='vote-fill' style='width:"+bw+"%'></div></div>"
-    +"<div class='vote-info'>&#8960; "+(av>0?av.toFixed(1):"--")+" &middot; "+vc+" Stimme"+(vc!==1?"n":"")+"</div>"
+    +(showStars?"<div class='vote-bar'><div class='vote-fill' style='width:"+bw+"%'></div></div>":"")
+    +(showStars?"<div class='vote-info'>&#8960; "+(av>0?av.toFixed(1):"--")+" &middot; "+vc+" Stimme"+(vc!==1?"n":"")+"</div>":"")
     +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; "+h(s.vorschlaeger)+"</div>":"")
     +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='font-size:.72rem;color:var(--blue);text-decoration:none'>BGG &rarr;</a>":"")
     +delBtn+"</div></div>";
@@ -1148,20 +1145,20 @@ function buildSpielCard(t,s){
 async function addSelf(tid){
   var t=getT(tid); if(!t||!currentName) return;
   if(!t.personen.includes(currentName)) t.personen.push(currentName);
-  await saveState(); rerenderCard(tid);
+  rerenderCard(tid); saveState();
 }
 async function addPerson(tid){
   var t=getT(tid); if(!t) return;
   var inp=document.getElementById("pi-"+tid); if(!inp) return;
   var name=inp.value.trim(); if(!name) return;
   if(!t.personen.includes(name)) t.personen.push(name);
-  inp.value=""; await saveState(); rerenderCard(tid);
+  inp.value=""; rerenderCard(tid); saveState();
 }
 async function removePerson(tid,name){
   var t=getT(tid); if(!t) return;
   if(!isAdmin&&t.creator!==currentName&&name!==currentName){ toast("Keine Berechtigung."); return; }
   t.personen=t.personen.filter(function(p){ return p!==name; });
-  await saveState(); rerenderCard(tid);
+  rerenderCard(tid); saveState();
 }
 function toggleManualInput(tid){
   var mp=document.getElementById("manual-picker-"+tid);
@@ -1200,7 +1197,7 @@ async function loadMemberPicker(tid){
 async function addPersonDirect(tid,name){
   var t=getT(tid); if(!t) return;
   if(!t.personen.includes(name)) t.personen.push(name);
-  userCache=null; await saveState(); rerenderCard(tid);
+  userCache=null; rerenderCard(tid); saveState();
 }
 
 // ── Spiele ──
@@ -1311,17 +1308,15 @@ async function confirmAddSpiel(){
     if(!window._pendingSpiel){ errEl.textContent="Bitte zuerst ein Spiel ausw\u00e4hlen."; errEl.style.display="block"; return; }
     spiel=Object.assign({id:"b"+Date.now(),votes:{}},window._pendingSpiel);
   }
-  var vs=document.getElementById("vs-"+addTid);
-  spiel.vorschlaeger=vs?vs.value||currentName:currentName;
+  spiel.vorschlaeger=currentName;
   if(spiel.bggId&&t.spiele.some(function(s){ return s.bggId&&s.bggId===spiel.bggId; })){
     errEl.textContent="Spiel bereits vorhanden."; errEl.style.display="block"; return;
   }
   t.spiele.push(spiel);
-  // Update spiele section immediately without closing the card
   window._pendingSpiel=null;
   closeAddModal();
   updateSpielSection(addTid);
-  await saveState();
+  saveState();
   toast("Spiel hinzugef\u00fcgt \u2713");
 }
 async function deleteSpiel(tid,sid){
@@ -1330,7 +1325,7 @@ async function deleteSpiel(tid,sid){
   if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
   t.spiele=t.spiele.filter(function(x){ return x.id!==sid; });
   updateSpielSection(tid);
-  await saveState();
+  saveState();
   toast("Spiel entfernt.");
 }
 async function voteSpiel(tid,sid,val){
@@ -1340,7 +1335,7 @@ async function voteSpiel(tid,sid,val){
   if(!s.votes) s.votes={};
   s.votes[currentName]=val;
   updateSpielSection(tid);
-  await saveState();
+  saveState();
 }
 
 // ── Chat Termin ──
@@ -1350,9 +1345,9 @@ async function sendChat(tid){
   inp.value="";
   if(!t.chat) t.chat=[];
   t.chat.push({id:Date.now(),author:currentName,text:text,ts:new Date().toISOString()});
-  await saveState();
   var cb=document.getElementById("cb-"+tid);
   if(cb){ cb.innerHTML=buildChatMsgs(t); cb.scrollTop=cb.scrollHeight; }
+  saveState();
 }
 
 // ── ICS ──
@@ -1493,26 +1488,28 @@ async function createInserat(){
   if(isNaN(preis)||preis<0){ errEl.textContent="G\u00fcltigen Preis eingeben."; errEl.style.display="block"; return; }
   var id=Date.now();
   mData.unshift({id:id,titel:titel,preis:preis,desc:document.getElementById("markt-desc").value.trim(),images:mImgs.slice(),bgg:document.getElementById("markt-bgg").value.trim()||null,seller:currentName,ts:new Date().toISOString(),chat:[],interesse:[],sold:false});
-  try{ await saveMarkt(); closeInseratModal(); await renderMarkt(false); toast("Inserat erstellt \u2713"); }
-  catch(e){ errEl.textContent="Fehler: "+(e.message||e); errEl.style.display="block"; }
+  closeInseratModal();
+  renderMarkt(false);
+  toast("Inserat erstellt \u2713");
+  saveMarkt();
 }
 async function toggleInteresse(id){
   var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
   if(!m.interesse) m.interesse=[];
   if(m.interesse.includes(currentName)) m.interesse=m.interesse.filter(function(n){ return n!==currentName; });
   else m.interesse.push(currentName);
-  await saveMarkt(); renderMarkt(false);
+  renderMarkt(false); saveMarkt();
 }
 async function markSold(id){
   var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
-  m.sold=true; await saveMarkt(); renderMarkt(false); toast("Als verkauft markiert \u2713");
+  m.sold=true; renderMarkt(false); toast("Als verkauft markiert \u2713"); saveMarkt();
 }
 async function deleteInserat(id){
   var m=mData.find(function(x){ return x.id===id; });
   var name=m?m.titel:"dieses Inserat";
   showConfirm("Inserat l\u00f6schen?","\""+name+"\" wirklich entfernen?",async function(){
     mData=mData.filter(function(x){ return x.id!==id; });
-    await saveMarkt(); renderMarkt(false); toast("Gel\u00f6scht.");
+    renderMarkt(false); toast("Gel\u00f6scht."); saveMarkt();
   });
 }
 function openLightbox(src){ document.getElementById("lb-img").src=src; document.getElementById("lightbox").style.display="flex"; }
@@ -1544,7 +1541,7 @@ async function sendMarktChat(){
   var inp=document.getElementById("markt-chat-input"); var text=inp.value.trim(); if(!text) return;
   inp.value=""; if(!m.chat) m.chat=[];
   m.chat.push({author:currentName,text:text,ts:new Date().toISOString()});
-  await saveMarkt(); renderMarktChatBox();
+  renderMarktChatBox(); saveMarkt();
 }
 
 // ── QR Codes ──
@@ -1573,12 +1570,12 @@ async function saveQr(){
   var t=getT(qrTid); if(!t) return;
   if(!t.qrcodes) t.qrcodes=[];
   t.qrcodes.push({url:url,label:label||"BG Stats Link",author:currentName,ts:new Date().toISOString()});
-  await saveState(); closeQrModal(); rerenderCard(qrTid); toast("QR Code hinzugef\u00fcgt \u2713");
+  closeQrModal(); rerenderCard(qrTid); toast("QR Code hinzugef\u00fcgt \u2713"); saveState();
 }
 async function removeQr(tid,idx){
   var t=getT(tid); if(!t||!t.qrcodes) return;
   t.qrcodes.splice(idx,1);
-  await saveState(); rerenderCard(tid); toast("QR Code entfernt.");
+  rerenderCard(tid); toast("QR Code entfernt."); saveState();
 }
 
 </script>
