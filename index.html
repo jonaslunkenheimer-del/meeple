@@ -740,13 +740,21 @@ function startPolling(){
       if(fresh!==lastHash){
     lastHash=fresh;
     if(rows[0].data&&rows[0].data.termine){
+      var oldTermine=state.termine;
       state=rows[0].data;
       if(!state.userColors) state.userColors={};
       renderTermine();
-      // Also rerender existing cards so joinBtn/voll-banner/personen stay current
-      (rows[0].data.termine||[]).forEach(function(t){
+      // Only update joinBtn/limit status on cards where personen changed
+      state.termine.forEach(function(t){
         var el=document.getElementById("termin-"+t.id);
-        if(el) rerenderCard(t.id);
+        if(!el) return;
+        updateJoinBtn(t.id);
+        // Update personen count chip
+        el.querySelectorAll(".chip").forEach(function(c){
+          if(c.innerHTML.indexOf("&#128101;")!==-1){
+            c.innerHTML="&#128101; "+t.personen.length+(t.limitOn&&t.limitVal?" / "+t.limitVal:"")+" dabei";
+          }
+        });
       });
     }
   }
@@ -1079,6 +1087,31 @@ function jumpToTermin(tid){
   },100);
 }
 
+// ── Targeted joinBtn update (no full card rerender) ──
+function updateJoinBtn(tid){
+  var t=getT(tid); if(!t) return;
+  var el=document.getElementById("termin-"+tid); if(!el) return;
+  var alreadyIn=currentName&&t.personen.includes(currentName);
+  var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
+  var joinHtml="";
+  if(currentName&&!alreadyIn){
+    if(isFull){
+      joinHtml="<div style='background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;font-size:.83rem;color:var(--red);font-weight:600'>&#128274; Leider ist der Termin voll</div>";
+    } else {
+      joinHtml="<button class='btn btn-outline btn-sm' onclick='addSelf("+tid+")' style='margin-bottom:8px'>&#9995; Ich bin dabei</button>";
+    }
+  }
+  var existing=el.querySelector(".btn-outline[onclick*='addSelf']")||el.querySelector("[onclick*='addSelf']")||el.querySelector("[style*='fef2f2']");
+  if(existing){
+    var tmp=document.createElement("div"); tmp.innerHTML=joinHtml;
+    if(tmp.firstElementChild) existing.replaceWith(tmp.firstElementChild);
+    else existing.remove();
+  } else if(joinHtml){
+    var lbl=el.querySelector(".lbl");
+    if(lbl){ var tmp2=document.createElement("div"); tmp2.innerHTML=joinHtml; lbl.after(tmp2.firstElementChild); }
+  }
+}
+
 function buildTerminCard(t, open){
   var canManage=isAdmin||t.creator===currentName;
   var alreadyIn=currentName&&t.personen.includes(currentName);
@@ -1260,6 +1293,7 @@ async function addSelf(tid){
   var t=getT(tid); if(!t||!currentName) return;
   if(t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal){ toast("Der Termin ist leider voll."); return; }
   if(!t.personen.includes(currentName)) t.personen.push(currentName);
+  updateJoinBtn(tid);
   rerenderCard(tid); await saveState();
 }
 async function addPerson(tid){
