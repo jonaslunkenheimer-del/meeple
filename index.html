@@ -866,13 +866,15 @@ async function doLogin(){
       body:JSON.stringify({email,password:pw})
     });
     const data = await r.json();
-    if(!r.ok) throw new Error(data.error_description||data.msg||'Benutzername oder Passwort falsch.');
+    console.log('Login response:', r.status, JSON.stringify(data).slice(0,200));
+    if(!r.ok) throw new Error(data.error_description||data.msg||data.error||'Benutzername oder Passwort falsch. (Status '+r.status+')');
     _sbSession = data;
     const displayName = data.user?.user_metadata?.display_name || input;
     _isAdmin = data.user?.email === ADMIN_EMAIL || data.user?.user_metadata?.is_admin===true;
     await startApp(displayName);
   }catch(e){
-    errEl.textContent = e.message;
+    console.error('Login error:', e);
+    errEl.textContent = e.message || 'Verbindungsfehler – bitte Seite neu laden.';
     errEl.style.display='block';
   }finally{
     btn.textContent='Einloggen →';btn.disabled=false;
@@ -1952,7 +1954,7 @@ function buildTerminItem(t, open){
         : `<div style="font-size:.8rem;color:var(--text-3);padding:8px 0">Noch kein BG Stats Link hinzugefügt.</div>`}
       </div>
     </div>
-  </div>\`;}
+  </div>`;}
 }
 
 function buildSpielCard(t,s){
