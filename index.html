@@ -878,6 +878,33 @@ function toggleTermin(tid){
   el.classList.toggle("open");
   if(!wasOpen) loadMemberPicker(tid);
 }
+function updateSpielSection(tid){
+  var t=getT(tid); if(!t) return;
+  // Update spiele grid directly
+  var sortedS=[].concat(t.spiele).sort(function(a,b){ return avg(b)-avg(a); });
+  var spieleHtml=t.spiele.length
+    ? "<div class='spiele-grid'>"+sortedS.map(function(s){ return buildSpielCard(t,s); }).join("")+"</div>"
+    : "<div class='empty' style='padding:20px'><div class='empty-icon' style='font-size:1.5rem'>&#127918;</div><p>Noch keine Spiele.</p></div>";
+  // Find the spiele container - it comes after the spiele lbl div
+  var card=document.getElementById("termin-"+tid); if(!card) return;
+  // Replace spiele-grid or empty div inside the body
+  var body=card.querySelector(".termin-body"); if(!body) return;
+  var tmp=document.createElement("div"); tmp.innerHTML=spieleHtml;
+  // Find existing spiele section (grid or empty) - it's right after the add-section
+  var existingGrid=body.querySelector(".spiele-grid");
+  var existingEmpty=body.querySelector(".empty");
+  var target=existingGrid||existingEmpty;
+  if(target){ target.outerHTML=spieleHtml; }
+  // Also update the chips in the header
+  var chipSpiele=card.querySelector(".chips-row");
+  if(chipSpiele){
+    // update spiele count chip
+    chipSpiele.querySelectorAll(".chip").forEach(function(c){
+      if(c.innerHTML.indexOf("&#127918;")!==-1) c.innerHTML="&#127918; "+t.spiele.length+" Spiele";
+    });
+  }
+}
+
 function rerenderCard(tid){
   var el=document.getElementById("termin-"+tid); if(!el) return;
   var wasOpen=el.classList.contains("open");
@@ -1290,14 +1317,21 @@ async function confirmAddSpiel(){
     errEl.textContent="Spiel bereits vorhanden."; errEl.style.display="block"; return;
   }
   t.spiele.push(spiel);
-  await saveState(); window._pendingSpiel=null; closeAddModal(); rerenderCard(addTid); toast("Spiel hinzugef\u00fcgt \u2713");
+  // Update spiele section immediately without closing the card
+  window._pendingSpiel=null;
+  closeAddModal();
+  updateSpielSection(addTid);
+  await saveState();
+  toast("Spiel hinzugef\u00fcgt \u2713");
 }
 async function deleteSpiel(tid,sid){
   var t=getT(tid); if(!t) return;
   var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
   if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
   t.spiele=t.spiele.filter(function(x){ return x.id!==sid; });
-  await saveState(); rerenderCard(tid); toast("Spiel entfernt.");
+  updateSpielSection(tid);
+  await saveState();
+  toast("Spiel entfernt.");
 }
 async function voteSpiel(tid,sid,val){
   var t=getT(tid); if(!t||!currentName) return;
@@ -1305,7 +1339,8 @@ async function voteSpiel(tid,sid,val){
   var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
   if(!s.votes) s.votes={};
   s.votes[currentName]=val;
-  await saveState(); rerenderCard(tid);
+  updateSpielSection(tid);
+  await saveState();
 }
 
 // ── Chat Termin ──
