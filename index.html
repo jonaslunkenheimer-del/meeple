@@ -690,30 +690,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 </div>
 
 <!-- BGG TOKEN MODAL -->
-<div id="bgg-token-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:910;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:460px;animation:up .18s ease">
-    <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px">🎲 BGG API Token</div>
-    <div style="font-size:.82rem;color:var(--text-2);margin-bottom:18px;line-height:1.6">
-      BoardGameGeek erfordert seit Juli 2025 einen offiziellen Token für die API.<br>
-      Beantrage ihn kostenlos unter <a href="https://boardgamegeek.com/applications" target="_blank" style="color:var(--blue)">boardgamegeek.com/applications</a> (Non-commercial Lizenz, dauert ~1 Woche).
-    </div>
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.8rem;margin-bottom:18px;line-height:1.7">
-      <strong>Schritte:</strong><br>
-      1. Auf BGG einloggen → <a href="https://boardgamegeek.com/applications" target="_blank" style="color:var(--blue)">Applications</a> → „Create Application"<br>
-      2. Name: <em>Die Meeples</em> · Typ: <strong>Non-commercial</strong><br>
-      3. Nach Genehmigung: „Tokens" → Token generieren → hier eintragen
-    </div>
-    <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;font-weight:600">BGG Bearer Token</label>
-    <input class="input-field" id="bgg-token-input" type="password" placeholder="e3f8c3ff-9926-4efc-863c-3b92acda4d32" style="margin-bottom:8px;font-family:'DM Mono',monospace">
-    <div id="bgg-token-error" style="display:none;color:var(--red);font-size:.8rem;margin-bottom:10px"></div>
-    <div id="bgg-token-saved" style="display:none;color:var(--green);font-size:.8rem;margin-bottom:10px">✓ Token gespeichert!</div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button class="btn btn-ghost" onclick="closeBggTokenModal()">Schließen</button>
-      <button class="btn btn-blue" onclick="saveBggToken()">💾 Token speichern</button>
-    </div>
-  </div>
-</div>
-
 <!-- BGG TOKEN MODAL -->
 <div id="bgg-token-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:910;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:460px;animation:up .18s ease">
