@@ -1640,6 +1640,8 @@ function renderMarktImgPreviews(){
   }).join("");
 }
 async function createInserat(){
+  var titel=document.getElementById("markt-titel").value.trim();
+  var preis=parseFloat(document.getElementById("markt-preis").value);
   var errEl=document.getElementById("markt-error"); errEl.style.display="none";
   if(!titel){ errEl.textContent="Spielname erforderlich."; errEl.style.display="block"; return; }
   if(isNaN(preis)||preis<0){ errEl.textContent="G\u00fcltigen Preis eingeben."; errEl.style.display="block"; return; }
