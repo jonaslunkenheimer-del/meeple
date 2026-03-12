@@ -176,9 +176,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div class="name-title">Die Meeples</div>
     <div class="name-sub">Spieleabend Planer</div>
     <label class="name-label" for="login-email">Vorname</label>
-    <input class="name-input" id="login-email" placeholder="z.B. Max" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    <input class="name-input" id="login-email" placeholder="z.B. Max" autocomplete="username" onkeydown="if(event.keyCode===13)doLogin()">
     <label class="name-label" for="login-pw" style="margin-top:10px">Passwort</label>
-    <input class="name-input" id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <input class="name-input" id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.keyCode===13)doLogin()">
     <div class="name-error" id="name-error"></div>
     <button class="btn-name" id="login-btn" onclick="doLogin()">Einloggen →</button>
     <div style="margin-top:14px;font-size:.75rem;color:var(--text-3);text-align:center">Noch kein Account? Wende dich an den Admin.</div>
@@ -465,7 +465,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div style="margin-bottom:20px">
         <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Bilder (optional) – URL eingeben</div>
         <div style="display:flex;gap:6px;margin-bottom:8px">
-          <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addMarktImg()}">
+          <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
           <button class="btn btn-outline btn-sm" onclick="addMarktImg()">+ Hinzufügen</button>
         </div>
         <div id="markt-img-preview-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
@@ -528,7 +528,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
     <div id="markt-chat-box" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:200px"></div>
     <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
-      <input class="chat-input" id="markt-chat-input" placeholder="Nachricht …" onkeydown="if(event.key==='Enter')sendMarktChat()" autocomplete="off">
+      <input class="chat-input" id="markt-chat-input" placeholder="Nachricht …" onkeydown="if(event.keyCode===13)sendMarktChat()" autocomplete="off">
       <button class="chat-send" onclick="sendMarktChat()">➤</button>
     </div>
   </div>
@@ -536,1093 +536,975 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <script>
 // ── Constants ──
-const SB_URL   = 'https://hsomxjwyzzgwxtjxvrts.supabase.co';
-const SB_ANON  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzb214and5enpnd3h0anh2cnRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzQxMjAsImV4cCI6MjA4ODcxMDEyMH0.nFkr0yFoZLX1npisMNUDgZjJka99HJSeU7QH-G8QjQE';
-const SB_TABLE = 'spieleabend';
-const SB_MARKT_TABLE = 'marktplatz';
-const SB_ROW   = 1;
-const SB_SERVICE_KEY_BUILT = typeof '__SB_SERVICE_KEY__' !== 'undefined' ? '__SB_SERVICE_KEY__' : '';
-const BGG_TOKEN_KEY = 'bgg_api_token';
-const ADMIN_EMAIL = 'jonas.lunkenheimer@gmail.com';
+const SB_URL   = "https://hsomxjwyzzgwxtjxvrts.supabase.co";
+const SB_ANON  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzb214and5enpnd3h0anh2cnRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzQxMjAsImV4cCI6MjA4ODcxMDEyMH0.nFkr0yFoZLX1npisMNUDgZjJka99HJSeU7QH-G8QjQE";
+const SB_TABLE = "spieleabend";
+const SB_MARKT = "marktplatz";
+const ADMIN    = "jonas.lunkenheimer@gmail.com";
+const BGG_KEY  = "bgg_api_token";
+var SB_SK = "__SB_SERVICE_KEY__";
 
 // ── State ──
-let currentName = '';
-let state = {termine:[], nextId:1};
-let _marktData = [];
-let _marktChatId = null;
-let _marktImgs = [];
-let _sbSession = null;
-let _isAdmin = false;
-let _allUsers = [];
-let _editTid = null;
-let _addTid = null;
-let _qrTid = null;
-let _asState = {results:[], hi:-1, tid:null};
-let _calYear = new Date().getFullYear();
-let _calMonth = new Date().getMonth();
-let _userCache = null;
-let _loginMode = 'vorname';
+var currentName = "";
+var state = {termine:[], nextId:1};
+var mData = [];
+var mChatId = null;
+var mImgs = [];
+var session = null;
+var isAdmin = false;
+var editTid = null;
+var addTid = null;
+var qrTid = null;
+var mChatIdx = null;
+var asResults = [], asHi = -1, asDebounce = null;
+var calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+var userCache = null;
 
 // ── Helpers ──
-function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function proxyImg(url){if(!url)return null;if(url.startsWith('//'))url='https:'+url;return 'https://images.weserv.nl/?url='+encodeURIComponent(url)+'&w=400&fit=cover&output=webp'}
-function formatDate(dt){if(!dt)return'—';return new Date(dt).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
-function formatTime(ts){return new Date(ts).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}
-function notify(msg){document.getElementById('toast-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400)}
-function getT(id){return state.termine.find(t=>t.id===id)}
-function avgScore(s){if(!s.votes||!Object.keys(s.votes).length)return 0;const v=Object.values(s.votes);return v.reduce((a,b)=>a+b,0)/v.length}
-function getBggToken(){return localStorage.getItem(BGG_TOKEN_KEY)||''}
-function getServiceKey(){return SB_SERVICE_KEY_BUILT&&!SB_SERVICE_KEY_BUILT.startsWith('__')?SB_SERVICE_KEY_BUILT:''}
-function sbAuthHeaders(extra){const tok=(_sbSession&&_sbSession.access_token)||SB_ANON;return{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+tok,...(extra||{})}}
+function h(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function proxyImg(u){ if(!u) return null; if(u.startsWith("//")) u="https:"+u; return "https://images.weserv.nl/?url="+encodeURIComponent(u)+"&w=400&fit=cover&output=webp"; }
+function fmtDate(d){ if(!d) return "\u2014"; return new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+function fmtTime(t){ return new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
+function toast(msg){ var el=document.getElementById("toast"); el.querySelector("span").textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("show"); },2400); }
+function getT(id){ return state.termine.find(function(t){ return t.id===id; }); }
+function avg(s){ if(!s.votes||!Object.keys(s.votes).length) return 0; var v=Object.values(s.votes); return v.reduce(function(a,b){ return a+b; },0)/v.length; }
+function getBggTok(){ return localStorage.getItem(BGG_KEY)||""; }
+function getSK(){ return (SB_SK && SB_SK.indexOf("__")!==0) ? SB_SK : ""; }
+function authHdrs(x){ var tok=(session&&session.access_token)||SB_ANON; return Object.assign({"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+tok},x||{}); }
 
-const NAME_COLORS=['#e74c3c','#3498db','#2ecc71','#9b59b6','#f39c12','#1abc9c','#e67e22','#34495e','#e91e63','#00bcd4'];
-function nameColor(n){let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))%NAME_COLORS.length;return NAME_COLORS[Math.abs(h)]}
-function nameInit(n){return n.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?'}
-function setAv(el,name){if(!el)return;el.style.background=nameColor(name);el.textContent=nameInit(name)}
+var COLORS=["#e74c3c","#3498db","#2ecc71","#9b59b6","#f39c12","#1abc9c","#e67e22","#34495e","#e91e63","#00bcd4"];
+function nameColor(n){ var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%COLORS.length; return COLORS[Math.abs(h)]; }
+function nameInit(n){ return n.split(" ").map(function(w){ return w[0]||""; }).join("").toUpperCase().slice(0,2)||"?"; }
+function setAv(el,name){ if(!el) return; el.style.background=nameColor(name); el.textContent=nameInit(name); }
 
-
-function buildChatMsgs(t){
-  if(!t.chat||!t.chat.length) return '<div class="chat-empty">Noch keine Nachrichten - fang an!</div>';
-  return t.chat.map(function(m){
-    var mine = m.author===currentName;
-    var nameDiv = !mine ? '<div class="bubble-name">'+escHtml(m.author)+'</div>' : '';
-    return '<div class="msg-row'+(mine?' mine':'')+'">'
-      +'<div class="av av-sm" style="background:'+nameColor(m.author)+';'+(mine?'display:none':'')+'">' +nameInit(m.author)+'</div>'
-      +'<div class="bubble">'+nameDiv+escHtml(m.text)+'<div class="bubble-time">'+formatTime(m.ts)+'</div></div>'
-      +'</div>';
-  }).join('');
-}
-
-function buildQrList(t){
-  var list = t.qrcodes||[];
-  if(!list.length) return '<div style="font-size:.8rem;color:var(--text-3);padding:8px 0">Noch kein BG Stats Link hinzugef&#252;gt.</div>';
-  return list.map(function(q,i){
-    var delBtn = (_isAdmin||q.author===currentName)
-      ? '<button onclick="removeQr('+t.id+','+i+')" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.8rem;padding:2px 4px" title="Entfernen">&#x2715;</button>'
-      : '';
-    var qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=90x90&data='+encodeURIComponent(q.url);
-    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px">'
-      +'<img src="'+qrSrc+'" style="width:80px;height:80px;border-radius:6px;border:1px solid var(--border);flex-shrink:0;background:#fff" alt="QR">'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="font-weight:600;font-size:.85rem;margin-bottom:3px">'+escHtml(q.label||'BG Stats Link')+'</div>'
-      +'<a href="'+escHtml(q.url)+'" target="_blank" style="font-size:.72rem;color:var(--blue);word-break:break-all;text-decoration:none">'+escHtml(q.url)+'</a>'
-      +'<div style="font-size:.68rem;color:var(--text-3);margin-top:3px">hinzugef&#252;gt von '+escHtml(q.author)+'</div>'
-      +'</div>'+delBtn+'</div>';
-  }).join('');
-}
-
-function buildTerminItem(t, open){
-  var alreadyIn = currentName && t.personen.includes(currentName);
-  var canAddSpiel = t.offen!==false || t.creator===currentName;
-  var canManage = _isAdmin || t.creator===currentName;
-
-  var dateChip   = t.date ? '<span class="chip">&#128197; '+formatDate(t.date)+'</span>' : '';
-  var ortChip    = t.ort  ? '<span class="chip">&#128205; '+escHtml(t.ort)+'</span>' : '';
-  var personChip = '<span class="chip chip-green">&#128101; '+t.personen.length+' dabei</span>';
-  var spieleChip = '<span class="chip">&#127918; '+t.spiele.length+' Spiele</span>';
-  var modeChip   = t.offen!==false
-    ? '<span class="chip" style="color:var(--green);background:var(--green-lt);border-color:var(--green-bd)">&#129001; Spielvorschl&#228;ge</span>'
-    : '<span class="chip" style="color:var(--gold);background:#fffbeb;border-color:#fde68a">&#128204; Spiel festgelegt</span>';
-  var privatChip = t.privat ? '<span class="chip" style="color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe">&#128274; Privat</span>' : '';
-  var chatChip   = (t.chat||[]).length ? '<span class="chip">&#128172; '+t.chat.length+'</span>' : '';
-
-  var personenHtml = t.personen.map(function(p){
-    var safeP = p.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    var rmBtn = (canManage||p===currentName)
-      ? '<span class="rm" onclick="removePerson('+t.id+',\''+safeP+'\')">&#215;</span>' : '';
-    return '<span class="person-chip"><div class="av av-sm" style="background:'+nameColor(p)+'">'+nameInit(p)+'</div><span>'+escHtml(p)+'</span>'+rmBtn+'</span>';
-  }).join('');
-
-  var joinBtn = currentName&&!alreadyIn
-    ? '<button class="btn btn-outline btn-sm" onclick="addSelf('+t.id+')" style="margin-bottom:8px">&#9995; Ich bin dabei</button>' : '';
-
-  var sortedS = [...t.spiele].sort(function(a,b){return avgScore(b)-avgScore(a);});
-  var spieleHtml = t.spiele.length
-    ? '<div class="spiele-grid">'+sortedS.map(function(s){return buildSpielCard(t,s);}).join('')+'</div>'
-    : '<div class="empty" style="padding:20px"><div class="empty-icon" style="font-size:1.5rem">&#127918;</div><p>Noch keine Spiele.</p></div>';
-
-  var addSpielSection = '';
-  if(canAddSpiel){
-    var vorschlaegerSelect = '';
-    if(_isAdmin && t.personen.length){
-      var opts = t.personen.map(function(p){
-        return '<option value="'+escHtml(p)+'"'+(p===currentName?' selected':'')+'>'+escHtml(p)+'</option>';
-      }).join('');
-      vorschlaegerSelect = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">'
-        +'<span style="font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap">Vorgeschlagen von</span>'
-        +'<select id="vs-'+t.id+'" style="flex:1;min-width:120px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;color:var(--text);outline:none;cursor:pointer">'
-        +'<option value="">&#8212; w&#228;hlen &#8212;</option>'+opts+'</select></div>';
-    }
-    addSpielSection = vorschlaegerSelect
-      +'<div style="display:flex;gap:8px;margin-bottom:'+(t.spiele.length?'18px':'0')+'">'
-      +'<button class="btn btn-blue btn-sm" onclick="openAddModal('+t.id+')">+ Spiel hinzuf&#252;gen</button>'
-      +'</div>';
-  } else {
-    addSpielSection = '<p style="font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm)">&#128204; <strong>'+escHtml(t.creator)+'</strong> hat das Spiel festgelegt.</p>';
-  }
-
-  var manageButtons = canManage
-    ? '<button class="btn btn-outline btn-sm" onclick="openEditModal('+t.id+')">&#9999;&#65039; Bearbeiten</button>'
-      +'<button class="btn btn-ghost btn-sm" onclick="deleteTermin('+t.id+')" style="color:var(--red)">&#128465; L&#246;schen</button>'
-    : '';
-
-  var memberPicker = '';
-  if(canManage){
-    memberPicker = '<div id="member-picker-'+t.id+'" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">'
-      +'<div style="font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-weight:600">&#128100; Mitglied ausw&#228;hlen</div>'
-      +'<div id="member-list-'+t.id+'" style="display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto"></div>'
-      +'</div>'
-      +'<div id="manual-picker-'+t.id+'" style="display:none">'
-      +'<div class="input-row" style="margin-bottom:0;gap:6px">'
-      +'<input class="input-field" id="pi-'+t.id+'" placeholder="Name manuell eingeben ..." onkeydown="if(event.key==='Enter')addPerson('+t.id+')" style="flex:1">'
-      +'<button class="btn btn-outline btn-sm" onclick="addPerson('+t.id+')">+ Hinzuf&#252;gen</button>'
-      +'</div></div>'
-      +'<button class="btn btn-ghost btn-sm" onclick="toggleManualInput('+t.id+')" style="font-size:.72rem;margin-top:6px;color:var(--text-3)">&#9999;&#65039; Manuell eingeben</button>';
-  }
-
-  var noPerson = personenHtml || '<span style="font-size:.8rem;color:var(--text-3)">Noch niemand.</span>';
-
-  return '<div class="termin-item'+(open?' open':'')+'" id="termin-'+t.id+'">'
-    +'<div class="termin-header" onclick="toggleTermin('+t.id+')">'
-    +'<div class="av av-md" style="background:'+nameColor(t.creator||'?')+'">'+nameInit(t.creator||'?')+'</div>'
-    +'<div class="termin-summary">'
-    +'<div class="termin-title-row"><span class="termin-title">'+escHtml(t.title)+'</span></div>'
-    +'<div style="font-size:.72rem;color:var(--text-3);margin-bottom:3px">erstellt von <strong style="color:var(--text-2)">'+escHtml(t.creator||'?')+'</strong></div>'
-    +'<div class="chips-row">'+dateChip+ortChip+personChip+spieleChip+chatChip+modeChip+privatChip+'</div>'
-    +'</div><span class="termin-chevron">&#9660;</span></div>'
-    +'<div class="termin-body">'
-    +'<div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px">'
-    +'<button class="btn btn-outline btn-sm" onclick="exportIcal('+t.id+')" title="Als .ics exportieren">&#128197; Exportieren</button>'
-    +manageButtons+'</div>'
-    +'<div class="lbl">Teilnehmer</div>'+joinBtn
-    +'<div class="persons-wrap">'+noPerson+'</div>'
-    +memberPicker
-    +'<div class="divider"></div>'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">'
-    +'<div class="lbl" style="margin-bottom:0">Spiele</div></div>'
-    +addSpielSection+spieleHtml
-    +'<div class="divider"></div>'
-    +'<div class="lbl">&#128172; Chat</div>'
-    +'<div class="chat-box" id="cb-'+t.id+'">'+buildChatMsgs(t)+'</div>'
-    +'<div class="chat-input-row">'
-    +'<input class="chat-input" id="ci-'+t.id+'" placeholder="Nachricht schreiben ..." onkeydown="onChatKey(event,'+t.id+')" autocomplete="off">'
-    +'<button class="chat-send" onclick="sendChat('+t.id+')">&#10148;</button>'
-    +'</div>'
-    +'<div class="divider"></div>'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">'
-    +'<div class="lbl" style="margin-bottom:0">&#128202; BG Stats</div>'
-    +'<button class="btn btn-outline btn-sm" onclick="openQrModal('+t.id+')">&#65291; QR Code hinzuf&#252;gen</button>'
-    +'</div>'
-    +'<div id="qr-list-'+t.id+'">'+buildQrList(t)+'</div>'
-    +'</div></div>';
-}
-
-
-
-function buildSpielCard(t,s){
-  var avg=avgScore(s),vc=s.votes?Object.keys(s.votes).length:0,bw=avg>0?(avg/5*100).toFixed(0):0;
-  var pr=s.image?proxyImg(s.image):null;
-  var maxA=Math.max(...t.spiele.map(x=>avgScore(x)));
-  var isTop=vc>0&&avg===maxA&&avg>0;
-  var voter=currentName&&t.personen.includes(currentName)?currentName:'';
-  var myVote=voter&&s.votes?s.votes[voter]||0:0;
-  var stars='<div class="stars">';
-  for(var i=1;i<=5;i++){
-    if(voter){
-      stars+='<span class="star" onclick="voteSpiel('+t.id+',''+s.id+'','+i+')" title="'+i+' Stern'+( i>1?'e':'')+'">'+(i<=myVote?'★':'☆')+'</span>';
-    } else {
-      stars+='<span class="star" style="cursor:default">'+(i<=Math.round(avg)?'★':'☆')+'</span>';
-    }
-  }
-  stars+='</div>';
-  var canDel=_isAdmin||s.vorschlaeger===currentName||t.creator===currentName;
-  var delBtn=canDel?'<button class="btn btn-sm" style="background:var(--red-lt,#fef2f2);color:var(--red);border:1px solid #fca5a5;margin-top:6px" onclick="deleteSpiel('+t.id+',''+s.id+'')">🗑 Entfernen</button>':'';
-  var imgEl=pr?'<img class="spiel-img" src="'+pr+'" alt="'+escHtml(s.name)+'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">'
-             :'';
-  var ph='<div class="spiel-img-ph" '+(pr?'style="display:none"':'')+'>🎲</div>';
-  return '<div class="spiel-card'+(isTop?' top-pick':'')+'">'+imgEl+ph
-    +'<div class="spiel-info">'
-    +'<div class="spiel-name">'+(isTop?'🏆 ':'')+escHtml(s.name)+'</div>'
-    +'<div class="spiel-sub">'+(s.year?s.year+' · ':'')+(s.players?s.players+' Spieler · ':'')+(s.playtime?s.playtime+' Min':'')+'</div>'
-    +stars
-    +'<div class="vote-bar"><div class="vote-fill" style="width:'+bw+'%"></div></div>'
-    +'<div class="vote-info">⌀ '+(avg>0?avg.toFixed(1):'–')+' · '+vc+' Stimme'+(vc!==1?'n':'')+'</div>'
-    +(s.vorschlaeger?'<div style="font-size:.7rem;color:var(--text-3);margin-top:4px">👤 '+escHtml(s.vorschlaeger)+'</div>':'')
-    +(s.bggUrl?'<a href="'+escHtml(s.bggUrl)+'" target="_blank" style="font-size:.72rem;color:var(--blue);text-decoration:none">BGG →</a>':'')
-    +delBtn+'</div></div>';
-}
-
-// ── Auth ──
+// ── Login ──
 async function doLogin(){
-  var input=document.getElementById('login-email').value.trim();
-  var pw=document.getElementById('login-pw').value;
-  var errEl=document.getElementById('name-error');
-  var btn=document.getElementById('login-btn');
-  errEl.style.display='none';
-  if(!input||!pw){errEl.textContent='Bitte Vorname und Passwort eingeben.';errEl.style.display='block';return;}
-  var email=input.includes('@')?input.toLowerCase():input.toLowerCase()+'@meeple.de';
-  btn.textContent='Einloggen...';btn.disabled=true;
+  var inp = document.getElementById("login-email").value.trim();
+  var pw  = document.getElementById("login-pw").value;
+  var err = document.getElementById("name-error");
+  err.style.display="none";
+  if(!inp||!pw){ err.textContent="Bitte Vorname und Passwort eingeben."; err.style.display="block"; return; }
+  var email = inp.indexOf("@")>-1 ? inp.toLowerCase() : inp.toLowerCase()+"@meeple.de";
+  var btn = document.getElementById("login-btn");
+  btn.textContent="Einloggen..."; btn.disabled=true;
   try{
-    var r=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_ANON},body:JSON.stringify({email,password:pw})});
-    var data=await r.json();
-    if(!r.ok) throw new Error(data.error_description||data.msg||data.error||'Benutzername oder Passwort falsch. ('+r.status+')');
-    _sbSession=data;
-    var displayName=(data.user&&data.user.user_metadata&&data.user.user_metadata.display_name)||input;
-    _isAdmin=(data.user&&data.user.email)===ADMIN_EMAIL||(data.user&&data.user.user_metadata&&data.user.user_metadata.is_admin)===true;
-    await startApp(displayName);
-  }catch(e){
-    console.error('Login error:',e);
-    errEl.textContent=e.message||'Verbindungsfehler.';
-    errEl.style.display='block';
-  }finally{
-    btn.textContent='Einloggen →';btn.disabled=false;
+    var r = await fetch(SB_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON},body:JSON.stringify({email:email,password:pw})});
+    var d = await r.json();
+    if(!r.ok) throw new Error(d.error_description||d.msg||d.error||"Falsches Passwort ("+r.status+")");
+    session = d;
+    var meta = d.user && d.user.user_metadata;
+    isAdmin = (d.user && d.user.email===ADMIN) || (meta && meta.is_admin===true);
+    var name = (meta && meta.display_name) || inp;
+    await startApp(name);
+  } catch(e){
+    err.textContent=e.message||"Verbindungsfehler."; err.style.display="block";
+  } finally {
+    btn.textContent="Einloggen \u2192"; btn.disabled=false;
   }
 }
 
 async function startApp(name){
-  currentName=name;
-  document.getElementById('name-screen').style.display='none';
-  document.getElementById('app-screen').style.display='block';
-  document.getElementById('new-creator').value=name;
-  setAv(document.getElementById('hdr-av'),name);
-  document.getElementById('hdr-name').textContent=name;
-  try{await loadState();}catch(e){console.warn('loadState:',e);}
+  currentName = name;
+  document.getElementById("name-screen").style.display="none";
+  document.getElementById("app-screen").style.display="block";
+  document.getElementById("new-creator").value=name;
+  setAv(document.getElementById("hdr-av"),name);
+  document.getElementById("hdr-name").textContent=name;
+  document.getElementById("tab-btn-markt").style.display="";
+  try{ await loadState(); }catch(e){}
   renderTermine();
   startPolling();
-  document.getElementById('tab-btn-markt').style.display='';
   await renderMarkt();
   showWhatsnew();
 }
 
 async function switchUser(){
-  if(_sbSession){
-    try{await fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession.access_token||'')}});}catch(e){}
-  }
-  _sbSession=null;_isAdmin=false;currentName='';state={termine:[],nextId:1};_marktData=[];
-  document.getElementById('app-screen').style.display='none';
-  document.getElementById('name-screen').style.display='flex';
-  document.getElementById('login-email').value='';
-  document.getElementById('login-pw').value='';
+  if(session){ try{ await fetch(SB_URL+"/auth/v1/logout",{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+(session.access_token||"")}}); }catch(e){} }
+  session=null; isAdmin=false; currentName=""; state={termine:[],nextId:1}; mData=[];
+  document.getElementById("app-screen").style.display="none";
+  document.getElementById("name-screen").style.display="flex";
+  document.getElementById("login-email").value="";
+  document.getElementById("login-pw").value="";
   closeProfileModal();
 }
 
 // ── What's New ──
-async function getAndUpdateLastLogin(){
+async function getAndUpdateLogin(){
   var now=new Date().toISOString();
   try{
-    var r=await fetch(SB_URL+'/rest/v1/user_meta?user_name=eq.'+encodeURIComponent(currentName)+'&select=last_login',{headers:{'apikey':SB_ANON,'Authorization':'Bearer '+((_sbSession&&_sbSession.access_token)||SB_ANON)}});
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(currentName)+"&select=last_login",{headers:{"apikey":SB_ANON,"Authorization":"Bearer "+((session&&session.access_token)||SB_ANON)}});
     var rows=r.ok?await r.json():[];
     var last=rows.length?rows[0].last_login:null;
-    await fetch(SB_URL+'/rest/v1/user_meta',{method:'POST',headers:{'apikey':SB_ANON,'Authorization':'Bearer '+((_sbSession&&_sbSession.access_token)||SB_ANON),'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},body:JSON.stringify({user_name:currentName,last_login:now})});
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:{"apikey":SB_ANON,"Authorization":"Bearer "+((session&&session.access_token)||SB_ANON),"Content-Type":"application/json","Prefer":"resolution=merge-duplicates"},body:JSON.stringify({user_name:currentName,last_login:now})});
     return last?new Date(last):null;
-  }catch(e){return null;}
+  }catch(e){ return null; }
 }
 
 async function showWhatsnew(){
-  var last=await getAndUpdateLastLogin();
+  var last=await getAndUpdateLogin();
   var since=last||new Date(0);
-  var newTermine=state.termine.filter(t=>t.ts&&new Date(t.ts)>since&&t.creator!==currentName);
-  var newMarkt=_marktData.filter(m=>m.ts&&new Date(m.ts)>since&&m.seller!==currentName);
-  if(!newTermine.length&&!newMarkt.length) return;
-  var html='';
-  if(newTermine.length){
-    html+='<div style="margin-bottom:16px"><div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">📅 Neue Termine ('+newTermine.length+')</div>';
-    newTermine.forEach(function(t){
-      var d=t.date?new Date(t.date).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'}):'Kein Datum';
-      html+='<div onclick="closeWhatsnew();jumpToTermin('+t.id+')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)">'
-        +'<div class="av av-md" style="background:'+nameColor(t.creator||'?')+'">'+nameInit(t.creator||'?')+'</div>'
-        +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.88rem">'+escHtml(t.title)+'</div><div style="font-size:.72rem;color:var(--text-3)">von '+escHtml(t.creator||'?')+' · '+d+'</div></div>'
-        +'<span style="font-size:.7rem;color:var(--blue)">→</span></div>';
+  var nt=state.termine.filter(function(t){ return t.ts&&new Date(t.ts)>since&&t.creator!==currentName; });
+  var nm=mData.filter(function(m){ return m.ts&&new Date(m.ts)>since&&m.seller!==currentName; });
+  if(!nt.length&&!nm.length) return;
+  var html="";
+  if(nt.length){
+    html+="<div style='margin-bottom:16px'><div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>Neue Termine ("+nt.length+")</div>";
+    nt.forEach(function(t){
+      var d=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short"}):"Kein Datum";
+      html+="<div onclick='closeWhatsnew();jumpToTermin("+t.id+")' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)'>"
+        +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
+        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.88rem'>"+h(t.title)+"</div><div style='font-size:.72rem;color:var(--text-3)'>von "+h(t.creator||"?")+" &middot; "+d+"</div></div>"
+        +"<span style='font-size:.7rem;color:var(--blue)'>&rarr;</span></div>";
     });
-    html+='</div>';
+    html+="</div>";
   }
-  if(newMarkt.length){
-    html+='<div><div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">🛒 Neue Marktplatz-Angebote ('+newMarkt.length+')</div>';
-    newMarkt.forEach(function(m){
+  if(nm.length){
+    html+="<div><div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>Neue Marktplatz-Angebote ("+nm.length+")</div>";
+    nm.forEach(function(m){
       var img=(m.images||[])[0];
-      html+='<div onclick="closeWhatsnew();showTab('markt',document.getElementById('tab-btn-markt'))" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)">'
-        +(img?'<img src="'+escHtml(img)+'" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">'
-             :'<div style="width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🎲</div>')
-        +'<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:.88rem">'+escHtml(m.titel)+'</div><div style="font-size:.72rem;color:var(--text-3)">von '+escHtml(m.seller)+' · '+m.preis.toFixed(2)+' €</div></div>'
-        +'<span style="font-size:.7rem;color:var(--blue)">→</span></div>';
+      html+="<div onclick='closeWhatsnew();showTab(\"markt\",document.getElementById(\"tab-btn-markt\"))' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)'>"
+        +(img?"<img src='"+h(img)+"' style='width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>"
+            :"<div style='width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>&#127922;</div>")
+        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.88rem'>"+h(m.titel)+"</div><div style='font-size:.72rem;color:var(--text-3)'>von "+h(m.seller)+" &middot; "+m.preis.toFixed(2)+" &euro;</div></div>"
+        +"<span style='font-size:.7rem;color:var(--blue)'>&rarr;</span></div>";
     });
-    html+='</div>';
+    html+="</div>";
   }
-  document.getElementById('whatsnew-body').innerHTML=html;
-  document.getElementById('whatsnew-modal').style.display='flex';
+  document.getElementById("whatsnew-body").innerHTML=html;
+  document.getElementById("whatsnew-modal").style.display="flex";
 }
-function closeWhatsnew(){document.getElementById('whatsnew-modal').style.display='none';}
+function closeWhatsnew(){ document.getElementById("whatsnew-modal").style.display="none"; }
 
-// ── State / Supabase ──
+// ── Supabase ──
 async function loadState(){
-  var r=await fetch(SB_URL+'/rest/v1/'+SB_TABLE+'?id=eq.'+SB_ROW+'&select=data',{headers:sbAuthHeaders()});
-  if(!r.ok) throw new Error('loadState '+r.status);
+  var r=await fetch(SB_URL+"/rest/v1/"+SB_TABLE+"?id=eq.1&select=data",{headers:authHdrs()});
+  if(!r.ok) throw new Error("loadState "+r.status);
   var rows=await r.json();
   if(rows.length&&rows[0].data) state=rows[0].data;
   if(!state.termine) state={termine:[],nextId:1};
 }
-
 async function saveState(){
-  var r=await fetch(SB_URL+'/rest/v1/'+SB_TABLE,{method:'POST',headers:{...sbAuthHeaders(),Prefer:'resolution=merge-duplicates'},body:JSON.stringify({id:SB_ROW,data:state})});
-  if(!r.ok) console.error('saveState',r.status);
+  await fetch(SB_URL+"/rest/v1/"+SB_TABLE,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({id:1,data:state})});
 }
-
+async function loadMarktData(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_MARKT+"?id=eq.1&select=data",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    mData=(rows.length&&rows[0].data)?rows[0].data:[];
+  }catch(e){ mData=[]; }
+}
+async function saveMarkt(){
+  await fetch(SB_URL+"/rest/v1/"+SB_MARKT,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({id:1,data:mData})});
+}
 function startPolling(){
-  var lastHash='';
+  var lastHash="";
   setInterval(async function(){
     try{
-      var r=await fetch(SB_URL+'/rest/v1/'+SB_TABLE+'?id=eq.'+SB_ROW+'&select=data',{headers:sbAuthHeaders()});
+      var r=await fetch(SB_URL+"/rest/v1/"+SB_TABLE+"?id=eq.1&select=data",{headers:authHdrs()});
       if(!r.ok) return;
       var rows=await r.json();
       if(!rows.length) return;
       var fresh=JSON.stringify(rows[0].data);
-      if(fresh!==lastHash){lastHash=fresh;var d=rows[0].data;if(d&&d.termine){state=d;renderTermine();}}
+      if(fresh!==lastHash){ lastHash=fresh; if(rows[0].data&&rows[0].data.termine){ state=rows[0].data; renderTermine(); } }
     }catch(e){}
   },10000);
 }
 
 // ── Tabs ──
-function showTab(name, btn){
-  document.querySelectorAll('.tab-content').forEach(function(el){el.classList.remove('active');});
-  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active');});
-  document.getElementById('tab-'+name).classList.add('active');
-  if(btn) btn.classList.add('active');
-  if(name==='kalender') renderKalender();
-  if(name==='zusagen') renderZusagen();
-  if(name==='markt') renderMarkt();
+function showTab(name,btn){
+  document.querySelectorAll(".tab-content").forEach(function(el){ el.classList.remove("active"); });
+  document.querySelectorAll(".tab").forEach(function(el){ el.classList.remove("active"); });
+  document.getElementById("tab-"+name).classList.add("active");
+  if(btn) btn.classList.add("active");
+  if(name==="kalender") renderKalender();
+  if(name==="zusagen") renderZusagen();
+  if(name==="markt") renderMarkt();
 }
 
 // ── Profile ──
 function openProfileModal(){
-  document.getElementById('profil-displayname').value=currentName;
-  document.getElementById('profil-name-lbl').textContent=currentName;
-  document.getElementById('profil-msg').style.display='none';
-  setAv(document.getElementById('profil-av'),currentName);
-  document.getElementById('admin-btn-wrap').style.display=_isAdmin?'block':'none';
-  document.getElementById('profil-modal').style.display='flex';
+  document.getElementById("profil-displayname").value=currentName;
+  document.getElementById("profil-name-lbl").textContent=currentName;
+  document.getElementById("profil-msg").style.display="none";
+  setAv(document.getElementById("profil-av"),currentName);
+  document.getElementById("admin-btn-wrap").style.display=isAdmin?"block":"none";
+  document.getElementById("profil-modal").style.display="flex";
 }
-function closeProfileModal(){document.getElementById('profil-modal').style.display='none';}
-
+function closeProfileModal(){ document.getElementById("profil-modal").style.display="none"; }
 async function saveDisplayName(){
-  var n=document.getElementById('profil-displayname').value.trim();
+  var n=document.getElementById("profil-displayname").value.trim();
   if(!n) return;
   try{
-    await fetch(SB_URL+'/auth/v1/user',{method:'PUT',headers:sbAuthHeaders(),body:JSON.stringify({data:{display_name:n}})});
+    await fetch(SB_URL+"/auth/v1/user",{method:"PUT",headers:authHdrs(),body:JSON.stringify({data:{display_name:n}})});
     currentName=n;
-    document.getElementById('hdr-name').textContent=n;
-    setAv(document.getElementById('hdr-av'),n);
-    var msg=document.getElementById('profil-msg');
-    msg.textContent='✓ Name gespeichert';msg.style.color='var(--green)';msg.style.display='block';
-    setTimeout(function(){msg.style.display='none';},2000);
-  }catch(e){notify('Fehler beim Speichern');}
+    document.getElementById("hdr-name").textContent=n;
+    setAv(document.getElementById("hdr-av"),n);
+    var msg=document.getElementById("profil-msg");
+    msg.textContent="\u2713 Name gespeichert"; msg.style.color="var(--green)"; msg.style.display="block";
+    setTimeout(function(){ msg.style.display="none"; },2000);
+  }catch(e){ toast("Fehler beim Speichern"); }
 }
-
 async function savePassword(){
-  var pw=document.getElementById('profil-pw').value;
-  if(!pw||pw.length<6){notify('Passwort mind. 6 Zeichen');return;}
+  var pw=document.getElementById("profil-pw").value;
+  if(!pw||pw.length<6){ toast("Passwort mind. 6 Zeichen"); return; }
   try{
-    var r=await fetch(SB_URL+'/auth/v1/user',{method:'PUT',headers:sbAuthHeaders(),body:JSON.stringify({password:pw})});
-    if(!r.ok) throw new Error('Fehler');
-    var msg=document.getElementById('profil-msg');
-    msg.textContent='✓ Passwort geändert';msg.style.color='var(--green)';msg.style.display='block';
-    document.getElementById('profil-pw').value='';
-    setTimeout(function(){msg.style.display='none';},2000);
-  }catch(e){notify('Fehler beim Ändern des Passworts');}
+    var r=await fetch(SB_URL+"/auth/v1/user",{method:"PUT",headers:authHdrs(),body:JSON.stringify({password:pw})});
+    if(!r.ok) throw new Error("Fehler");
+    var msg=document.getElementById("profil-msg");
+    msg.textContent="\u2713 Passwort ge\u00e4ndert"; msg.style.color="var(--green)"; msg.style.display="block";
+    document.getElementById("profil-pw").value="";
+    setTimeout(function(){ msg.style.display="none"; },2000);
+  }catch(e){ toast("Fehler beim \u00c4ndern"); }
 }
 
 // ── Admin ──
-function openAdminModal(){
-  document.getElementById('admin-modal').style.display='flex';
-  loadAdminUsers();
-  var sk=getServiceKey();
-  if(sk){document.getElementById('service-key-input').value=sk;document.getElementById('service-key-status').textContent='✓ Service Key aktiv';}
-}
-function closeAdminModal(){document.getElementById('admin-modal').style.display='none';}
-
+function openAdminModal(){ document.getElementById("admin-modal").style.display="flex"; loadAdminUsers(); }
+function closeAdminModal(){ document.getElementById("admin-modal").style.display="none"; }
 async function loadAdminUsers(){
-  var list=document.getElementById('admin-user-list');
-  list.innerHTML='<div style="font-size:.82rem;color:var(--text-3)">Lade Nutzer…</div>';
-  var sk=getServiceKey();
-  if(!sk){list.innerHTML='<div style="font-size:.82rem;color:var(--text-3)">Kein Service Key – Nutzer nicht abrufbar.</div>';return;}
+  var list=document.getElementById("admin-user-list");
+  list.innerHTML="<div style='font-size:.82rem;color:var(--text-3)'>Lade Nutzer\u2026</div>";
+  var sk=getSK(); if(!sk){ list.innerHTML="<div style='font-size:.82rem;color:var(--text-3)'>Kein Service Key.</div>"; return; }
   try{
-    var r=await fetch(SB_URL+'/auth/v1/admin/users',{headers:{'apikey':sk,'Authorization':'Bearer '+sk}});
-    var data=await r.json();
-    var users=data.users||[];
-    _allUsers=users;
+    var r=await fetch(SB_URL+"/auth/v1/admin/users",{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
+    var d=await r.json(); var users=d.users||[];
     list.innerHTML=users.map(function(u){
-      var name=(u.user_metadata&&u.user_metadata.display_name)||u.email.replace('@meeple.de','');
-      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'
-        +'<div class="av av-sm" style="background:'+nameColor(name)+'">'+nameInit(name)+'</div>'
-        +'<div style="flex:1;font-size:.85rem"><strong>'+escHtml(name)+'</strong><br><span style="font-size:.72rem;color:var(--text-3)">'+escHtml(u.email)+'</span></div>'
-        +'</div>';
-    }).join('');
-  }catch(e){list.innerHTML='<div style="color:var(--red);font-size:.82rem">Fehler: '+escHtml(e.message)+'</div>';}
+      var name=(u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de","");
+      return "<div style='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)'>"
+        +"<div class='av av-sm' style='background:"+nameColor(name)+"'>"+nameInit(name)+"</div>"
+        +"<div style='flex:1;font-size:.85rem'><strong>"+h(name)+"</strong><br><span style='font-size:.72rem;color:var(--text-3)'>"+h(u.email)+"</span></div></div>";
+    }).join("");
+  }catch(e){ list.innerHTML="<div style='color:var(--red);font-size:.82rem'>Fehler: "+h(e.message)+"</div>"; }
 }
-
 async function adminCreateUser(){
-  var vorname=document.getElementById('admin-new-vorname').value.trim();
-  var pw=document.getElementById('admin-new-pw').value;
-  var errEl=document.getElementById('admin-create-error');
-  errEl.style.display='none';
-  if(!vorname||!pw){errEl.textContent='Bitte Vorname und Passwort eingeben.';errEl.style.display='block';return;}
-  var sk=getServiceKey();
-  if(!sk){errEl.textContent='Kein Service Key vorhanden.';errEl.style.display='block';return;}
-  var email=vorname.toLowerCase()+'@meeple.de';
+  var vn=document.getElementById("admin-new-vorname").value.trim();
+  var pw=document.getElementById("admin-new-pw").value;
+  var errEl=document.getElementById("admin-create-error"); errEl.style.display="none";
+  if(!vn||!pw){ errEl.textContent="Vorname und Passwort eingeben."; errEl.style.display="block"; return; }
+  var sk=getSK(); if(!sk){ errEl.textContent="Kein Service Key."; errEl.style.display="block"; return; }
   try{
-    var r=await fetch(SB_URL+'/auth/v1/admin/users',{method:'POST',headers:{'apikey':sk,'Authorization':'Bearer '+sk,'Content-Type':'application/json'},body:JSON.stringify({email,password:pw,user_metadata:{display_name:vorname},email_confirm:true})});
-    var data=await r.json();
-    if(!r.ok) throw new Error(data.msg||data.error_description||'Fehler');
-    notify('User '+vorname+' angelegt ✓');
-    document.getElementById('admin-new-vorname').value='';
-    document.getElementById('admin-new-pw').value='';
+    var r=await fetch(SB_URL+"/auth/v1/admin/users",{method:"POST",headers:{"apikey":sk,"Authorization":"Bearer "+sk,"Content-Type":"application/json"},body:JSON.stringify({email:vn.toLowerCase()+"@meeple.de",password:pw,user_metadata:{display_name:vn},email_confirm:true})});
+    var d=await r.json(); if(!r.ok) throw new Error(d.msg||d.error_description||"Fehler");
+    toast(vn+" angelegt \u2713");
+    document.getElementById("admin-new-vorname").value="";
+    document.getElementById("admin-new-pw").value="";
     loadAdminUsers();
-  }catch(e){errEl.textContent=e.message;errEl.style.display='block';}
+  }catch(e){ errEl.textContent=e.message; errEl.style.display="block"; }
 }
 
 // ── BGG Token ──
-function openBggTokenModal(){document.getElementById('bgg-token-modal').style.display='flex';}
-function closeBggTokenModal(){document.getElementById('bgg-token-modal').style.display='none';}
+function openBggTokenModal(){ document.getElementById("bgg-token-modal").style.display="flex"; }
+function closeBggTokenModal(){ document.getElementById("bgg-token-modal").style.display="none"; }
 function saveBggToken(){
-  var val=document.getElementById('bgg-token-input').value.trim();
-  if(!val){document.getElementById('bgg-token-error').textContent='Token eingeben.';document.getElementById('bgg-token-error').style.display='block';return;}
-  localStorage.setItem(BGG_TOKEN_KEY,val);
-  document.getElementById('bgg-token-saved').style.display='block';
-  document.getElementById('bgg-token-error').style.display='none';
-  setTimeout(function(){closeBggTokenModal();},1000);
+  var v=document.getElementById("bgg-token-input").value.trim();
+  if(!v){ document.getElementById("bgg-token-error").textContent="Token eingeben."; document.getElementById("bgg-token-error").style.display="block"; return; }
+  localStorage.setItem(BGG_KEY,v);
+  document.getElementById("bgg-token-saved").style.display="block";
+  document.getElementById("bgg-token-error").style.display="none";
+  setTimeout(closeBggTokenModal,1000);
 }
 
 // ── Confirm ──
-function showConfirm(title,msg,onConfirm){
-  document.getElementById('confirm-title').textContent=title;
-  document.getElementById('confirm-msg').textContent=msg;
-  var oldBtn=document.getElementById('confirm-ok');
-  var newBtn=oldBtn.cloneNode(true);
-  oldBtn.parentNode.replaceChild(newBtn,oldBtn);
-  newBtn.onclick=function(){closeConfirm();onConfirm();};
-  document.getElementById('confirm-modal').style.display='flex';
+function showConfirm(title,msg,onOk){
+  document.getElementById("confirm-title").textContent=title;
+  document.getElementById("confirm-msg").textContent=msg;
+  var old=document.getElementById("confirm-ok");
+  var neo=old.cloneNode(true); old.parentNode.replaceChild(neo,old);
+  neo.onclick=function(){ closeConfirm(); onOk(); };
+  document.getElementById("confirm-modal").style.display="flex";
 }
-function closeConfirm(){document.getElementById('confirm-modal').style.display='none';}
+function closeConfirm(){ document.getElementById("confirm-modal").style.display="none"; }
 
-// ── Termine ──
+// ── Termine: New/Edit/Delete ──
 function openNewTerminModal(){
-  document.getElementById('new-termin-modal').style.display='flex';
-  setTimeout(function(){document.getElementById('new-title').focus();},50);
+  document.getElementById("new-termin-modal").style.display="flex";
+  setTimeout(function(){ document.getElementById("new-title").focus(); },50);
 }
 function closeNewTerminModal(){
-  document.getElementById('new-termin-modal').style.display='none';
-  ['new-title','new-ort'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  var d=document.getElementById('new-date');if(d)d.value='';
-  var o=document.getElementById('new-offen');if(o)o.checked=true;
-  var p=document.getElementById('new-privat');if(p)p.checked=false;
+  document.getElementById("new-termin-modal").style.display="none";
+  ["new-title","new-ort","new-date"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  var o=document.getElementById("new-offen"); if(o) o.checked=true;
+  var p=document.getElementById("new-privat"); if(p) p.checked=false;
 }
-
 async function createTermin(){
-  var title=document.getElementById('new-title').value.trim();
-  if(!title){document.getElementById('new-title').style.borderColor='var(--red)';return;}
-  document.getElementById('new-title').style.borderColor='';
-  var date=document.getElementById('new-date').value;
-  var ort=document.getElementById('new-ort').value.trim();
-  var creator=document.getElementById('new-creator').value.trim()||currentName;
-  var ofEl=document.getElementById('new-offen');var offen=ofEl?ofEl.checked!==false:true;
-  var prEl=document.getElementById('new-privat');var privat=prEl?prEl.checked===true:false;
-  var t={id:state.nextId++,title,date,ort,creator,offen,privat,personen:creator?[creator]:[],spiele:[],chat:[],ts:new Date().toISOString()};
+  var title=document.getElementById("new-title").value.trim();
+  if(!title){ document.getElementById("new-title").style.borderColor="var(--red)"; return; }
+  document.getElementById("new-title").style.borderColor="";
+  var t={
+    id:state.nextId++, title:title,
+    date:document.getElementById("new-date").value,
+    ort:document.getElementById("new-ort").value.trim(),
+    creator:currentName,
+    offen:document.getElementById("new-offen").checked!==false,
+    privat:document.getElementById("new-privat").checked===true,
+    personen:[currentName], spiele:[], chat:[], qrcodes:[],
+    ts:new Date().toISOString()
+  };
   state.termine.unshift(t);
-  await saveState();
-  closeNewTerminModal();
-  renderTermine();
-  notify('Termin erstellt! 🎉');
+  await saveState(); closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89");
 }
-
 async function deleteTermin(tid){
-  var t=getT(tid);if(!t) return;
-  if(!_isAdmin&&t.creator!==currentName){notify('Nur Ersteller oder Admin kann löschen.');return;}
-  showConfirm('"'+escHtml(t.title)+'" löschen?','Alle Daten gehen verloren.',async function(){
-    state.termine=state.termine.filter(function(x){return x.id!==tid;});
-    await saveState();renderTermine();notify('Termin gelöscht.');
+  var t=getT(tid); if(!t) return;
+  if(!isAdmin&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
+  showConfirm("Termin l\u00f6schen?","\""+t.title+"\" wird entfernt.",async function(){
+    state.termine=state.termine.filter(function(x){ return x.id!==tid; });
+    await saveState(); renderTermine(); toast("Gel\u00f6scht.");
   });
 }
-
 function openEditModal(tid){
-  var t=getT(tid);if(!t) return;
-  _editTid=tid;
-  document.getElementById('edit-title').value=t.title||'';
-  document.getElementById('edit-date').value=t.date||'';
-  document.getElementById('edit-ort').value=t.ort||'';
-  document.getElementById('edit-offen').checked=t.offen!==false;
-  document.getElementById('edit-privat').checked=!!t.privat;
-  document.getElementById('edit-modal').style.display='flex';
+  var t=getT(tid); if(!t) return;
+  editTid=tid;
+  document.getElementById("edit-title").value=t.title||"";
+  document.getElementById("edit-date").value=t.date||"";
+  document.getElementById("edit-ort").value=t.ort||"";
+  document.getElementById("edit-offen").checked=t.offen!==false;
+  document.getElementById("edit-privat").checked=!!t.privat;
+  document.getElementById("edit-modal").style.display="flex";
 }
-function closeEditModal(){document.getElementById('edit-modal').style.display='none';_editTid=null;}
+function closeEditModal(){ document.getElementById("edit-modal").style.display="none"; editTid=null; }
 async function saveEdit(){
-  var t=getT(_editTid);if(!t) return;
-  t.title=document.getElementById('edit-title').value.trim()||t.title;
-  t.date=document.getElementById('edit-date').value;
-  t.ort=document.getElementById('edit-ort').value.trim();
-  t.offen=document.getElementById('edit-offen').checked;
-  t.privat=document.getElementById('edit-privat').checked;
-  await saveState();closeEditModal();rerenderCard(_editTid);notify('Gespeichert ✓');
+  var t=getT(editTid); if(!t) return;
+  t.title=document.getElementById("edit-title").value.trim()||t.title;
+  t.date=document.getElementById("edit-date").value;
+  t.ort=document.getElementById("edit-ort").value.trim();
+  t.offen=document.getElementById("edit-offen").checked;
+  t.privat=document.getElementById("edit-privat").checked;
+  await saveState(); closeEditModal(); rerenderCard(editTid); toast("Gespeichert \u2713");
 }
 
+// ── Termine: Render ──
 function toggleTermin(tid){
-  var el=document.getElementById('termin-'+tid);
-  if(!el) return;
-  var wasOpen=el.classList.contains('open');
-  el.classList.toggle('open');
-  if(!wasOpen&&getT(tid)){
-    var tid2=tid;
-    loadMemberPicker(tid2);
-  }
+  var el=document.getElementById("termin-"+tid); if(!el) return;
+  var wasOpen=el.classList.contains("open");
+  el.classList.toggle("open");
+  if(!wasOpen) loadMemberPicker(tid);
 }
-
 function rerenderCard(tid){
-  var el=document.getElementById('termin-'+tid);
-  if(!el) return;
-  var wasOpen=el.classList.contains('open');
-  el.outerHTML=buildTerminItem(getT(tid),wasOpen);
+  var el=document.getElementById("termin-"+tid); if(!el) return;
+  var wasOpen=el.classList.contains("open");
+  var t=getT(tid); if(!t) return;
+  el.outerHTML=buildTerminCard(t,wasOpen);
   if(wasOpen) loadMemberPicker(tid);
 }
-
 function renderTermine(){
-  var list=document.getElementById('termine-list');
-  if(!list) return;
-  var visibleTermine=state.termine.filter(function(t){
+  var list=document.getElementById("termine-list"); if(!list) return;
+  var vis=state.termine.filter(function(t){
     if(!t.privat) return true;
-    if(_isAdmin) return true;
+    if(isAdmin) return true;
     return t.personen&&t.personen.includes(currentName);
   });
-  if(!visibleTermine.length){
-    list.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>Noch keine Termine. Erstelle den ersten!</p></div>';
+  if(!vis.length){
+    list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Termine.</p></div>";
     return;
   }
-  list.innerHTML=visibleTermine.map(function(t){return buildTerminItem(t,false);}).join('');
+  list.innerHTML=vis.map(function(t){ return buildTerminCard(t,false); }).join("");
+}
+function jumpToTermin(tid){
+  showTab("termine",document.getElementById("tab-btn-termine"));
+  setTimeout(function(){
+    var el=document.getElementById("termin-"+tid);
+    if(el){ el.scrollIntoView({behavior:"smooth",block:"start"}); if(!el.classList.contains("open")) toggleTermin(tid); }
+  },100);
 }
 
-function jumpToTermin(tid){
-  showTab('termine',document.getElementById('tab-btn-termine'));
-  setTimeout(function(){
-    var el=document.getElementById('termin-'+tid);
-    if(el){el.scrollIntoView({behavior:'smooth',block:'start'});if(!el.classList.contains('open'))toggleTermin(tid);}
-  },100);
+function buildTerminCard(t, open){
+  var canManage=isAdmin||t.creator===currentName;
+  var alreadyIn=currentName&&t.personen.includes(currentName);
+
+  // Chips
+  var chips="";
+  if(t.date) chips+="<span class='chip'>&#128197; "+fmtDate(t.date)+"</span>";
+  if(t.ort)  chips+="<span class='chip'>&#128205; "+h(t.ort)+"</span>";
+  chips+="<span class='chip chip-green'>&#128101; "+t.personen.length+" dabei</span>";
+  chips+="<span class='chip'>&#127918; "+t.spiele.length+" Spiele</span>";
+  if((t.chat||[]).length) chips+="<span class='chip'>&#128172; "+t.chat.length+"</span>";
+  if(t.offen!==false) chips+="<span class='chip' style='color:var(--green);background:var(--green-lt);border-color:var(--green-bd)'>&#129001; Spielvorschl\u00e4ge</span>";
+  else chips+="<span class='chip' style='color:var(--gold);background:#fffbeb;border-color:#fde68a'>&#128204; Festgelegt</span>";
+  if(t.privat) chips+="<span class='chip' style='color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe'>&#128274; Privat</span>";
+
+  // Personen
+  var persHtml=t.personen.map(function(p){
+    var rmBtn=(canManage||p===currentName)?"<span class='rm' onclick='removePerson("+t.id+",\""+p.replace(/"/g,"&quot;")+"\")'>&#215;</span>":"";
+    return "<span class='person-chip'><div class='av av-sm' style='background:"+nameColor(p)+"'>"+nameInit(p)+"</div><span>"+h(p)+"</span>"+rmBtn+"</span>";
+  }).join("");
+
+  // Spiele
+  var sortedS=[].concat(t.spiele).sort(function(a,b){ return avg(b)-avg(a); });
+  var spieleHtml=t.spiele.length
+    ? "<div class='spiele-grid'>"+sortedS.map(function(s){ return buildSpielCard(t,s); }).join("")+"</div>"
+    : "<div class='empty' style='padding:20px'><div class='empty-icon' style='font-size:1.5rem'>&#127918;</div><p>Noch keine Spiele.</p></div>";
+
+  // Add-Spiel section
+  var addSection="";
+  if(t.offen!==false||t.creator===currentName){
+    var vsSelect="";
+    if(isAdmin&&t.personen.length){
+      var opts=t.personen.map(function(p){ return "<option value='"+h(p)+"'"+(p===currentName?" selected":"")+" >"+h(p)+"</option>"; }).join("");
+      vsSelect="<div style='display:flex;align-items:center;gap:8px;margin-bottom:12px'>"
+        +"<span style='font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em'>Vorgeschlagen von</span>"
+        +"<select id='vs-"+t.id+"' style='flex:1;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;color:var(--text);outline:none'>"
+        +"<option value=''>-- w\u00e4hlen --</option>"+opts+"</select></div>";
+    }
+    addSection=vsSelect+"<div style='display:flex;gap:8px;margin-bottom:"+(t.spiele.length?"18px":"0")+"'>"
+      +"<button class='btn btn-blue btn-sm' onclick='openAddModal("+t.id+")'>+ Spiel hinzuf\u00fcgen</button></div>";
+  } else {
+    addSection="<p style='font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm)'>&#128204; <strong>"+h(t.creator)+"</strong> hat das Spiel festgelegt.</p>";
+  }
+
+  // Manage buttons
+  var mgmtBtns=canManage
+    ? "<button class='btn btn-outline btn-sm' onclick='openEditModal("+t.id+")'>&#9999;&#65039; Bearbeiten</button>"
+      +"<button class='btn btn-ghost btn-sm' onclick='deleteTermin("+t.id+")' style='color:var(--red)'>&#128465; L\u00f6schen</button>"
+    : "";
+
+  // Member picker
+  var picker="";
+  if(canManage){
+    picker="<div id='member-picker-"+t.id+"' style='background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px'>"
+      +"<div style='font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-weight:600'>&#128100; Mitglied ausw\u00e4hlen</div>"
+      +"<div id='member-list-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto'></div></div>"
+      +"<div id='manual-picker-"+t.id+"' style='display:none'>"
+      +"<div class='input-row' style='margin-bottom:0;gap:6px'>"
+      +"<input class='input-field' id='pi-"+t.id+"' placeholder='Name manuell eingeben ...' onkeydown='if(event.keyCode===13)addPerson("+t.id+")' style='flex:1'>"
+      +"<button class='btn btn-outline btn-sm' onclick='addPerson("+t.id+")'>+ Hinzuf\u00fcgen</button>"
+      +"</div></div>"
+      +"<button class='btn btn-ghost btn-sm' onclick='toggleManualInput("+t.id+")' style='font-size:.72rem;margin-top:6px;color:var(--text-3)'>&#9999;&#65039; Manuell eingeben</button>";
+  }
+
+  // Chat
+  var chatHtml=buildChatMsgs(t);
+
+  // QR codes
+  var qrHtml=buildQrList(t);
+
+  var joinBtn=currentName&&!alreadyIn
+    ? "<button class='btn btn-outline btn-sm' onclick='addSelf("+t.id+")' style='margin-bottom:8px'>&#9995; Ich bin dabei</button>" : "";
+
+  return "<div class='termin-item"+(open?" open":"")+"' id='termin-"+t.id+"'>"
+    +"<div class='termin-header' onclick='toggleTermin("+t.id+")'>"
+    +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
+    +"<div class='termin-summary'>"
+    +"<div class='termin-title-row'><span class='termin-title'>"+h(t.title)+"</span></div>"
+    +"<div style='font-size:.72rem;color:var(--text-3);margin-bottom:3px'>erstellt von <strong style='color:var(--text-2)'>"+h(t.creator||"?")+"</strong></div>"
+    +"<div class='chips-row'>"+chips+"</div>"
+    +"</div><span class='termin-chevron'>&#9660;</span></div>"
+    +"<div class='termin-body'>"
+    +"<div style='display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px'>"
+    +"<button class='btn btn-outline btn-sm' onclick='exportIcal("+t.id+")'>&#128197; Exportieren</button>"
+    +mgmtBtns+"</div>"
+    +"<div class='lbl'>Teilnehmer</div>"+joinBtn
+    +"<div class='persons-wrap'>"+(persHtml||"<span style='font-size:.8rem;color:var(--text-3)'>Noch niemand.</span>")+"</div>"
+    +picker
+    +"<hr class='divider'>"
+    +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:12px'>"
+    +"<div class='lbl' style='margin-bottom:0'>Spiele</div></div>"
+    +addSection+spieleHtml
+    +"<hr class='divider'>"
+    +"<div class='lbl'>&#128172; Chat</div>"
+    +"<div class='chat-box' id='cb-"+t.id+"'>"+chatHtml+"</div>"
+    +"<div class='chat-input-row'>"
+    +"<input class='chat-input' id='ci-"+t.id+"' placeholder='Nachricht schreiben ...' onkeydown='if(event.keyCode===13)sendChat("+t.id+")' autocomplete='off'>"
+    +"<button class='chat-send' onclick='sendChat("+t.id+")'>&#10148;</button></div>"
+    +"<hr class='divider'>"
+    +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px'>"
+    +"<div class='lbl' style='margin-bottom:0'>&#128202; BG Stats</div>"
+    +"<button class='btn btn-outline btn-sm' onclick='openQrModal("+t.id+")'>&#65291; QR Code</button></div>"
+    +"<div id='qr-list-"+t.id+"'>"+qrHtml+"</div>"
+    +"</div></div>";
+}
+
+function buildChatMsgs(t){
+  if(!t.chat||!t.chat.length) return "<div class='chat-empty'>Noch keine Nachrichten - fang an!</div>";
+  return t.chat.map(function(m){
+    var mine=m.author===currentName;
+    var nameDiv=!mine?"<div class='bubble-name'>"+h(m.author)+"</div>":"";
+    return "<div class='msg-row"+(mine?" mine":"")+"'>"
+      +"<div class='av av-sm' style='background:"+nameColor(m.author)+";display:"+(mine?"none":"flex")+";align-items:center;justify-content:center'>"+nameInit(m.author)+"</div>"
+      +"<div class='bubble'>"+nameDiv+h(m.text)+"<div class='bubble-time'>"+fmtTime(m.ts)+"</div></div>"
+      +"</div>";
+  }).join("");
+}
+
+function buildQrList(t){
+  var list=t.qrcodes||[];
+  if(!list.length) return "<div style='font-size:.8rem;color:var(--text-3);padding:8px 0'>Noch kein BG Stats Link.</div>";
+  return list.map(function(q,i){
+    var delBtn=(isAdmin||q.author===currentName)
+      ? "<button onclick='removeQr("+t.id+","+i+")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.8rem;padding:2px 4px'>&#x2715;</button>" : "";
+    var qrSrc="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data="+encodeURIComponent(q.url);
+    return "<div style='background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px'>"
+      +"<img src='"+qrSrc+"' style='width:80px;height:80px;border-radius:6px;border:1px solid var(--border);flex-shrink:0;background:#fff' alt='QR'>"
+      +"<div style='flex:1;min-width:0'>"
+      +"<div style='font-weight:600;font-size:.85rem;margin-bottom:3px'>"+h(q.label||"BG Stats Link")+"</div>"
+      +"<a href='"+h(q.url)+"' target='_blank' style='font-size:.72rem;color:var(--blue);word-break:break-all;text-decoration:none'>"+h(q.url)+"</a>"
+      +"<div style='font-size:.68rem;color:var(--text-3);margin-top:3px'>von "+h(q.author)+"</div>"
+      +"</div>"+delBtn+"</div>";
+  }).join("");
+}
+
+function buildSpielCard(t,s){
+  var av=avg(s), vc=s.votes?Object.keys(s.votes).length:0, bw=av>0?(av/5*100).toFixed(0):0;
+  var pr=s.image?proxyImg(s.image):null;
+  var maxA=Math.max.apply(null,t.spiele.map(function(x){ return avg(x); }));
+  var isTop=vc>0&&av===maxA&&av>0;
+  var voter=currentName&&t.personen.includes(currentName)?currentName:"";
+  var myVote=voter&&s.votes?s.votes[voter]||0:0;
+  var stars="<div class='stars'>";
+  for(var i=1;i<=5;i++){
+    if(voter){
+      stars+="<span class='star' onclick='voteSpiel("+t.id+",\""+s.id+"\","+i+")' title='"+i+" Stern"+(i>1?"e":"")+"'>"+(i<=myVote?"&#9733;":"&#9734;")+"</span>";
+    } else {
+      stars+="<span class='star' style='cursor:default'>"+(i<=Math.round(av)?"&#9733;":"&#9734;")+"</span>";
+    }
+  }
+  stars+="</div>";
+  var canDel=isAdmin||s.vorschlaeger===currentName||t.creator===currentName;
+  var delBtn=canDel?"<button class='btn btn-sm' style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;margin-top:6px' onclick='deleteSpiel("+t.id+",\""+s.id+"\")'>&#128465; Entfernen</button>":"";
+  var imgHtml=pr
+    ? "<img class='spiel-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.removeProperty(\"display\")'>"
+    +"<div class='spiel-img-ph' style='display:none'>&#127922;</div>"
+    : "<div class='spiel-img-ph'>&#127922;</div>";
+  return "<div class='spiel-card"+(isTop?" top-pick":"")+"'>"+imgHtml
+    +"<div class='spiel-info'>"
+    +"<div class='spiel-name'>"+(isTop?"&#127942; ":"")+h(s.name)+"</div>"
+    +"<div class='spiel-sub'>"+(s.year?s.year+" &middot; ":"")+(s.players?s.players+" Spieler &middot; ":"")+(s.playtime?s.playtime+" Min":"")+"</div>"
+    +stars
+    +"<div class='vote-bar'><div class='vote-fill' style='width:"+bw+"%'></div></div>"
+    +"<div class='vote-info'>&#8960; "+(av>0?av.toFixed(1):"--")+" &middot; "+vc+" Stimme"+(vc!==1?"n":"")+"</div>"
+    +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; "+h(s.vorschlaeger)+"</div>":"")
+    +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='font-size:.72rem;color:var(--blue);text-decoration:none'>BGG &rarr;</a>":"")
+    +delBtn+"</div></div>";
 }
 
 // ── Personen ──
 async function addSelf(tid){
-  var t=getT(tid);if(!t||!currentName) return;
+  var t=getT(tid); if(!t||!currentName) return;
   if(!t.personen.includes(currentName)) t.personen.push(currentName);
-  await saveState();rerenderCard(tid);
+  await saveState(); rerenderCard(tid);
 }
-
 async function addPerson(tid){
-  var t=getT(tid);if(!t) return;
-  var inp=document.getElementById('pi-'+tid);if(!inp) return;
-  var name=inp.value.trim();if(!name) return;
+  var t=getT(tid); if(!t) return;
+  var inp=document.getElementById("pi-"+tid); if(!inp) return;
+  var name=inp.value.trim(); if(!name) return;
   if(!t.personen.includes(name)) t.personen.push(name);
-  inp.value='';
-  await saveState();rerenderCard(tid);
+  inp.value=""; await saveState(); rerenderCard(tid);
 }
-
 async function removePerson(tid,name){
-  var t=getT(tid);if(!t) return;
-  if(!_isAdmin&&t.creator!==currentName&&name!==currentName){notify('Keine Berechtigung.');return;}
-  t.personen=t.personen.filter(function(p){return p!==name;});
-  await saveState();rerenderCard(tid);
+  var t=getT(tid); if(!t) return;
+  if(!isAdmin&&t.creator!==currentName&&name!==currentName){ toast("Keine Berechtigung."); return; }
+  t.personen=t.personen.filter(function(p){ return p!==name; });
+  await saveState(); rerenderCard(tid);
 }
-
 function toggleManualInput(tid){
-  var mp=document.getElementById('manual-picker-'+tid);
-  var picker=document.getElementById('member-picker-'+tid);
+  var mp=document.getElementById("manual-picker-"+tid);
+  var pk=document.getElementById("member-picker-"+tid);
   if(!mp) return;
-  var showing=mp.style.display!=='none';
-  mp.style.display=showing?'none':'block';
-  if(picker) picker.style.display=showing?'flex':'none';
+  var show=mp.style.display==="none"||mp.style.display==="";
+  mp.style.display=show?"block":"none";
+  if(pk) pk.style.display=show?"none":"block";
 }
-
 async function loadMemberPicker(tid){
-  var listEl=document.getElementById('member-list-'+tid);
-  if(!listEl) return;
-  var t=getT(tid);if(!t) return;
-  listEl.innerHTML='<span style="font-size:.78rem;color:var(--text-3)">Lade…</span>';
+  var listEl=document.getElementById("member-list-"+tid); if(!listEl) return;
+  var t=getT(tid); if(!t) return;
+  listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Lade\u2026</span>";
   var users=[];
-  var sk=getServiceKey();
-  if(sk&&!_userCache){
+  var sk=getSK();
+  if(sk&&!userCache){
     try{
-      var r=await fetch(SB_URL+'/auth/v1/admin/users?per_page=200',{headers:{'apikey':sk,'Authorization':'Bearer '+sk}});
+      var r=await fetch(SB_URL+"/auth/v1/admin/users?per_page=200",{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
       var d=await r.json();
-      _userCache=(d.users||[]).map(function(u){return (u.user_metadata&&u.user_metadata.display_name)||u.email.replace('@meeple.de','');});
+      userCache=(d.users||[]).map(function(u){ return (u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de",""); });
     }catch(e){}
   }
-  if(_userCache) users=_userCache;
-  else{
+  users=userCache||[];
+  if(!users.length){
     var all=[];
-    state.termine.forEach(function(t2){t2.personen.forEach(function(p){if(!all.includes(p))all.push(p);});});
+    state.termine.forEach(function(t2){ t2.personen.forEach(function(p){ if(all.indexOf(p)===-1) all.push(p); }); });
     users=all;
   }
-  users=users.filter(function(u){return!t.personen.includes(u);});
-  if(!users.length){listEl.innerHTML='<span style="font-size:.78rem;color:var(--text-3)">Alle bereits dabei.</span>';return;}
+  users=users.filter(function(u){ return t.personen.indexOf(u)===-1; });
+  if(!users.length){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Alle bereits dabei.</span>"; return; }
   listEl.innerHTML=users.map(function(u){
-    return '<span onclick="addPersonDirect('+tid+',''+u.replace(/'/g,"\'")+'')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer">'
-      +'<div class="av av-sm" style="background:'+nameColor(u)+'">'+nameInit(u)+'</div>'+escHtml(u)+'</span>';
-  }).join('');
+    return "<span onclick='addPersonDirect("+tid+",\""+u.replace(/"/g,"&quot;")+"\")' style='display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer'>"
+      +"<div class='av av-sm' style='background:"+nameColor(u)+"'>"+nameInit(u)+"</div>"+h(u)+"</span>";
+  }).join("");
 }
-
 async function addPersonDirect(tid,name){
-  var t=getT(tid);if(!t) return;
+  var t=getT(tid); if(!t) return;
   if(!t.personen.includes(name)) t.personen.push(name);
-  _userCache=null;
-  await saveState();rerenderCard(tid);
+  userCache=null; await saveState(); rerenderCard(tid);
 }
 
 // ── Spiele ──
 function openAddModal(tid){
-  _addTid=tid;
-  setAddTab('search');
-  document.getElementById('bgg-search-input').value='';
-  document.getElementById('as-drop').style.display='none';
-  document.getElementById('bgg-search-status').textContent='';
-  document.getElementById('add-error').style.display='none';
-  document.getElementById('spiel-preview').style.display='none';
-  _asState={results:[],hi:-1,tid:tid};
-  document.getElementById('add-modal').style.display='flex';
+  addTid=tid;
+  setAddTab("search");
+  document.getElementById("bgg-search-input").value="";
+  document.getElementById("as-drop").style.display="none";
+  document.getElementById("bgg-search-status").textContent="";
+  document.getElementById("add-error").style.display="none";
+  document.getElementById("spiel-preview").style.display="none";
+  window._pendingSpiel=null;
+  asResults=[]; asHi=-1;
+  document.getElementById("add-modal").style.display="flex";
 }
-function closeAddModal(){document.getElementById('add-modal').style.display='none';_addTid=null;}
-
+function closeAddModal(){ document.getElementById("add-modal").style.display="none"; addTid=null; }
 function setAddTab(tab){
-  ['search','link','manual'].forEach(function(t){
-    document.getElementById('add-panel-'+t).style.display=t===tab?'block':'none';
-    var btn=document.getElementById('add-tab-'+t);
-    btn.style.background=t===tab?'var(--blue)':'';
-    btn.style.color=t===tab?'#fff':'';
-    btn.style.borderColor=t===tab?'var(--blue)':'var(--border)';
+  ["search","link","manual"].forEach(function(t){
+    document.getElementById("add-panel-"+t).style.display=t===tab?"block":"none";
+    var btn=document.getElementById("add-tab-"+t);
+    btn.style.background=t===tab?"var(--blue)":"";
+    btn.style.color=t===tab?"#fff":"";
+    btn.style.borderColor=t===tab?"var(--blue)":"var(--border)";
   });
 }
-
-var _bggDebounce=null;
 function onBggInput(){
-  clearTimeout(_bggDebounce);
-  var q=document.getElementById('bgg-search-input').value.trim();
-  if(!q){document.getElementById('as-drop').style.display='none';return;}
-  _bggDebounce=setTimeout(function(){bggSearch(q);},350);
+  clearTimeout(asDebounce);
+  var q=document.getElementById("bgg-search-input").value.trim();
+  if(!q){ document.getElementById("as-drop").style.display="none"; return; }
+  asDebounce=setTimeout(function(){ bggSearch(q); },350);
 }
 function onBggKey(e){
-  var drop=document.getElementById('as-drop');
-  if(e.key==='ArrowDown'){e.preventDefault();_asState.hi=Math.min(_asState.hi+1,_asState.results.length-1);renderAsDrop();}
-  else if(e.key==='ArrowUp'){e.preventDefault();_asState.hi=Math.max(_asState.hi-1,0);renderAsDrop();}
-  else if(e.key==='Enter'){e.preventDefault();if(_asState.hi>=0)selectAsResult(_asState.hi);}
-  else if(e.key==='Escape'){drop.style.display='none';}
+  if(e.keyCode===40){ e.preventDefault(); asHi=Math.min(asHi+1,asResults.length-1); renderAsDrop(); }
+  else if(e.keyCode===38){ e.preventDefault(); asHi=Math.max(asHi-1,0); renderAsDrop(); }
+  else if(e.keyCode===13){ e.preventDefault(); if(asHi>=0) selectAs(asHi); }
+  else if(e.keyCode===27){ document.getElementById("as-drop").style.display="none"; }
 }
-
 async function bggSearch(q){
-  var tok=getBggToken();
-  var status=document.getElementById('bgg-search-status');
-  status.textContent='Suche…';
-  var drop=document.getElementById('as-drop');
-  drop.innerHTML='';drop.style.display='none';
+  var tok=getBggTok(); var status=document.getElementById("bgg-search-status");
+  status.textContent="Suche\u2026";
+  document.getElementById("as-drop").innerHTML=""; document.getElementById("as-drop").style.display="none";
   try{
-    var headers={'Accept':'application/json'};
-    if(tok) headers['Authorization']='Bearer '+tok;
-    var r=await fetch('https://boardgamegeek.com/search/boardgame?q='+encodeURIComponent(q)+'&showcount=8',{headers});
-    if(r.status===401){status.textContent='Token fehlt.';openBggTokenModal();return;}
+    var headers={"Accept":"application/json"}; if(tok) headers["Authorization"]="Bearer "+tok;
+    var r=await fetch("https://boardgamegeek.com/search/boardgame?q="+encodeURIComponent(q)+"&showcount=8",{headers:headers});
+    if(r.status===401){ status.textContent="Token fehlt."; openBggTokenModal(); return; }
     if(!r.ok) throw new Error(r.status);
-    var data=await r.json();
-    var items=(data.items||[]).slice(0,8);
-    _asState.results=items;_asState.hi=-1;
-    status.textContent=items.length?'':'Keine Ergebnisse.';
+    var d=await r.json(); var items=(d.items||[]).slice(0,8);
+    asResults=items; asHi=-1;
+    status.textContent=items.length?"":"Keine Ergebnisse.";
     renderAsDrop();
-  }catch(e){status.textContent='Fehler: '+e.message;}
+  }catch(e){ status.textContent="Fehler: "+e.message; }
 }
-
 function renderAsDrop(){
-  var drop=document.getElementById('as-drop');
-  if(!_asState.results.length){drop.style.display='none';return;}
-  drop.innerHTML=_asState.results.map(function(r,i){
-    var thumb=(r.images&&r.images.thumb)?'<img class="as-thumb" src="'+escHtml(r.images.thumb)+'" onerror="this.style.display='none'">'
-                             :'<div class="as-thumb" style="background:var(--surface2);display:flex;align-items:center;justify-content:center">🎲</div>';
-    var sub=[r.yearpublished,r.minplayers&&r.maxplayers?r.minplayers+'-'+r.maxplayers+' Spieler':null].filter(Boolean).join(' · ');
-    return '<div class="as-item'+(i===_asState.hi?' hi':'')+'" onmousedown="selectAsResult('+i+')">'
-      +thumb+'<div><div style="font-weight:600">'+escHtml(r.name)+'</div><div style="font-size:.72rem;color:var(--text-3)">'+escHtml(sub)+'</div></div></div>';
-  }).join('');
-  drop.style.display='block';
+  var drop=document.getElementById("as-drop");
+  if(!asResults.length){ drop.style.display="none"; return; }
+  drop.innerHTML=asResults.map(function(r,i){
+    var thumb=r.images&&r.images.thumb
+      ? "<img class='as-thumb' src='"+h(r.images.thumb)+"' onerror='this.style.display=\"none\"'>"
+      : "<div class='as-thumb' style='background:var(--surface2);display:flex;align-items:center;justify-content:center'>&#127922;</div>";
+    var sub=[r.yearpublished,(r.minplayers&&r.maxplayers)?r.minplayers+"-"+r.maxplayers+" Spieler":null].filter(Boolean).join(" &middot; ");
+    return "<div class='as-item"+(i===asHi?" hi":"")+"' onmousedown='selectAs("+i+")'>"
+      +thumb+"<div><div style='font-weight:600'>"+h(r.name)+"</div><div style='font-size:.72rem;color:var(--text-3)'>"+sub+"</div></div></div>";
+  }).join("");
+  drop.style.display="block";
 }
-
-function selectAsResult(i){
-  var r=_asState.results[i];if(!r) return;
-  document.getElementById('bgg-search-input').value=r.name;
-  document.getElementById('as-drop').style.display='none';
-  showSpielPreview({name:r.name,year:r.yearpublished,players:r.minplayers&&r.maxplayers?r.minplayers+'-'+r.maxplayers+' Spieler':null,image:(r.images&&r.images.medium)||(r.images&&r.images.thumb),bggId:r.id,bggUrl:'https://boardgamegeek.com/boardgame/'+r.id});
+function selectAs(i){
+  var r=asResults[i]; if(!r) return;
+  document.getElementById("bgg-search-input").value=r.name;
+  document.getElementById("as-drop").style.display="none";
+  showSpielPreview({name:r.name,year:r.yearpublished,players:(r.minplayers&&r.maxplayers)?r.minplayers+"-"+r.maxplayers+" Spieler":null,image:r.images&&(r.images.medium||r.images.thumb),bggId:r.id,bggUrl:"https://boardgamegeek.com/boardgame/"+r.id});
 }
-
 async function loadBggLink(){
-  var url=document.getElementById('bgg-link-input').value.trim();
-  var status=document.getElementById('bgg-link-status');
-  var m=url.match(/boardgame\/(\d+)/);
-  if(!m){status.textContent='Ungültige BGG URL.';return;}
-  var id=m[1];
-  status.textContent='Lade…';
+  var url=document.getElementById("bgg-link-input").value.trim();
+  var status=document.getElementById("bgg-link-status");
+  var m=url.match(/boardgame\/(\d+)/); if(!m){ status.textContent="Ung\u00fcltige BGG URL."; return; }
+  var id=m[1]; status.textContent="Lade\u2026";
   try{
-    var tok=getBggToken();
-    var headers={'Accept':'application/json'};
-    if(tok) headers['Authorization']='Bearer '+tok;
-    var r=await fetch('https://boardgamegeek.com/boardgame/'+id,{headers});
+    var tok=getBggTok(); var headers={"Accept":"application/json"}; if(tok) headers["Authorization"]="Bearer "+tok;
+    var r=await fetch("https://boardgamegeek.com/boardgame/"+id,{headers:headers});
     if(!r.ok) throw new Error(r.status);
-    var data=await r.json();
-    var g=data;
-    showSpielPreview({name:g.name||('Spiel #'+id),year:g.yearpublished,players:g.minplayers&&g.maxplayers?g.minplayers+'-'+g.maxplayers+' Spieler':null,image:(g.images&&g.images.medium),bggId:id,bggUrl:url});
-    status.textContent='';
-  }catch(e){status.textContent='Fehler: '+e.message;}
+    var g=await r.json();
+    showSpielPreview({name:g.name||("Spiel #"+id),year:g.yearpublished,players:(g.minplayers&&g.maxplayers)?g.minplayers+"-"+g.maxplayers+" Spieler":null,image:g.images&&g.images.medium,bggId:id,bggUrl:url});
+    status.textContent="";
+  }catch(e){ status.textContent="Fehler: "+e.message; }
 }
-
 function showSpielPreview(data){
   window._pendingSpiel=data;
-  var img=document.getElementById('sp-img');
-  if(data.image){img.src=proxyImg(data.image);img.style.display='block';}else{img.style.display='none';}
-  document.getElementById('sp-name').textContent=data.name;
-  document.getElementById('sp-sub').textContent=[data.year,data.players,data.playtime].filter(Boolean).join(' · ');
-  document.getElementById('spiel-preview').style.display='flex';
+  var img=document.getElementById("sp-img");
+  if(data.image){ img.src=proxyImg(data.image); img.style.display="block"; } else { img.style.display="none"; }
+  document.getElementById("sp-name").textContent=data.name;
+  document.getElementById("sp-sub").textContent=[data.year,data.players,data.playtime].filter(Boolean).join(" \u00b7 ");
+  document.getElementById("spiel-preview").style.display="flex";
 }
-
 async function confirmAddSpiel(){
-  var t=getT(_addTid);if(!t) return;
-  var errEl=document.getElementById('add-error');errEl.style.display='none';
+  var t=getT(addTid); if(!t) return;
+  var errEl=document.getElementById("add-error"); errEl.style.display="none";
   var spiel=null;
-  var activePanel=document.querySelector('[id^="add-panel-"]:not([style*="display: none"])');
-  var tabId=activePanel?activePanel.id.replace('add-panel-',''):'search';
-  if(tabId==='manual'){
-    var name=document.getElementById('man-name').value.trim();
-    if(!name){errEl.textContent='Spielname erforderlich.';errEl.style.display='block';return;}
-    spiel={id:'m'+Date.now(),name,year:document.getElementById('man-year').value,players:document.getElementById('man-players').value,playtime:document.getElementById('man-time').value,image:document.getElementById('man-img').value,bggUrl:document.getElementById('man-bgg').value,votes:{}};
-  } else {
-    if(!window._pendingSpiel){errEl.textContent='Bitte zuerst ein Spiel auswählen.';errEl.style.display='block';return;}
-    spiel=Object.assign({id:'b'+Date.now(),votes:{}},window._pendingSpiel);
+  var panels=["search","link","manual"]; var activeTab="search";
+  for(var p=0;p<panels.length;p++){
+    var el=document.getElementById("add-panel-"+panels[p]);
+    if(el&&el.style.display!=="none"){ activeTab=panels[p]; break; }
   }
-  var vs=document.getElementById('vs-'+_addTid);
+  if(activeTab==="manual"){
+    var name=document.getElementById("man-name").value.trim();
+    if(!name){ errEl.textContent="Spielname erforderlich."; errEl.style.display="block"; return; }
+    spiel={id:"m"+Date.now(),name:name,year:document.getElementById("man-year").value,players:document.getElementById("man-players").value,playtime:document.getElementById("man-time").value,image:document.getElementById("man-img").value,bggUrl:document.getElementById("man-bgg").value,votes:{}};
+  } else {
+    if(!window._pendingSpiel){ errEl.textContent="Bitte zuerst ein Spiel ausw\u00e4hlen."; errEl.style.display="block"; return; }
+    spiel=Object.assign({id:"b"+Date.now(),votes:{}},window._pendingSpiel);
+  }
+  var vs=document.getElementById("vs-"+addTid);
   spiel.vorschlaeger=vs?vs.value||currentName:currentName;
-  if(t.spiele.some(function(s){return s.bggId&&s.bggId===spiel.bggId;})){errEl.textContent='Spiel bereits vorhanden.';errEl.style.display='block';return;}
+  if(spiel.bggId&&t.spiele.some(function(s){ return s.bggId&&s.bggId===spiel.bggId; })){
+    errEl.textContent="Spiel bereits vorhanden."; errEl.style.display="block"; return;
+  }
   t.spiele.push(spiel);
-  await saveState();
-  window._pendingSpiel=null;
-  closeAddModal();rerenderCard(_addTid);notify('Spiel hinzugefügt ✓');
+  await saveState(); window._pendingSpiel=null; closeAddModal(); rerenderCard(addTid); toast("Spiel hinzugef\u00fcgt \u2713");
 }
-
 async function deleteSpiel(tid,sid){
-  var t=getT(tid);if(!t) return;
-  var s=t.spiele.find(function(x){return x.id===sid;});if(!s) return;
-  if(!_isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName){notify('Keine Berechtigung.');return;}
-  t.spiele=t.spiele.filter(function(x){return x.id!==sid;});
-  await saveState();rerenderCard(tid);notify('Spiel entfernt.');
+  var t=getT(tid); if(!t) return;
+  var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
+  if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
+  t.spiele=t.spiele.filter(function(x){ return x.id!==sid; });
+  await saveState(); rerenderCard(tid); toast("Spiel entfernt.");
 }
-
 async function voteSpiel(tid,sid,val){
-  var t=getT(tid);if(!t||!currentName) return;
-  if(!t.personen.includes(currentName)){notify('Du musst dabei sein um abzustimmen!');return;}
-  var s=t.spiele.find(function(x){return x.id===sid;});if(!s) return;
+  var t=getT(tid); if(!t||!currentName) return;
+  if(!t.personen.includes(currentName)){ toast("Du musst dabei sein um abzustimmen!"); return; }
+  var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
   if(!s.votes) s.votes={};
   s.votes[currentName]=val;
-  await saveState();rerenderCard(tid);
+  await saveState(); rerenderCard(tid);
 }
 
 // ── Chat Termin ──
 async function sendChat(tid){
-  var t=getT(tid);if(!t||!currentName) return;
-  var inp=document.getElementById('ci-'+tid);
-  var text=inp.value.trim();if(!text) return;
-  inp.value='';
+  var t=getT(tid); if(!t||!currentName) return;
+  var inp=document.getElementById("ci-"+tid); var text=inp.value.trim(); if(!text) return;
+  inp.value="";
   if(!t.chat) t.chat=[];
-  t.chat.push({id:Date.now(),author:currentName,text,ts:new Date().toISOString()});
+  t.chat.push({id:Date.now(),author:currentName,text:text,ts:new Date().toISOString()});
   await saveState();
-  var cb=document.getElementById('cb-'+tid);
-  if(cb){cb.innerHTML=buildChatMsgs(t);cb.scrollTop=cb.scrollHeight;}
+  var cb=document.getElementById("cb-"+tid);
+  if(cb){ cb.innerHTML=buildChatMsgs(t); cb.scrollTop=cb.scrollHeight; }
 }
-function onChatKey(e,tid){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat(tid);}}
 
-// ── ICS Export ──
+// ── ICS ──
 function exportIcal(tid){
-  var t=getT(tid);if(!t||!t.date) return;
-  var start=new Date(t.date);
-  var end=new Date(start.getTime()+3*60*60*1000);
-  function fmt(d){return d.toISOString().replace(/[-:]/g,'').replace('.000','');}
-  var ics='BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:'+fmt(start)+'
-DTEND:'+fmt(end)+'
-SUMMARY:'+t.title+'
-LOCATION:'+(t.ort||'')+'
-END:VEVENT
-END:VCALENDAR';
-  var a=document.createElement('a');a.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);a.download=t.title+'.ics';a.click();
+  var t=getT(tid); if(!t||!t.date) return;
+  var s=new Date(t.date); var e=new Date(s.getTime()+3*60*60*1000);
+  function fmt(d){ return d.toISOString().replace(/[-:]/g,"").replace(".000",""); }
+  var ics="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nDTSTART:"+fmt(s)+"\r\nDTEND:"+fmt(e)+"\r\nSUMMARY:"+t.title+"\r\nLOCATION:"+(t.ort||"")+"\r\nEND:VEVENT\r\nEND:VCALENDAR";
+  var a=document.createElement("a"); a.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics); a.download=t.title+".ics"; a.click();
 }
 
 // ── Kalender ──
 function renderKalender(){
-  var lbl=document.getElementById('cal-month-lbl');
-  var grid=document.getElementById('cal-grid');
+  var lbl=document.getElementById("cal-month-lbl"); var grid=document.getElementById("cal-grid");
   if(!lbl||!grid) return;
-  lbl.textContent=new Date(_calYear,_calMonth).toLocaleDateString('de-DE',{month:'long',year:'numeric'});
-  var cells=grid.querySelectorAll('.cal-day');
-  cells.forEach(function(c){c.remove();});
+  lbl.textContent=new Date(calYear,calMonth).toLocaleDateString("de-DE",{month:"long",year:"numeric"});
+  grid.querySelectorAll(".cal-day").forEach(function(c){ c.remove(); });
   var today=new Date();
-  var first=new Date(_calYear,_calMonth,1);
-  var dow=first.getDay()===0?6:first.getDay()-1;
-  var daysInMonth=new Date(_calYear,_calMonth+1,0).getDate();
-  for(var i=0;i<dow;i++){var cell=document.createElement('div');cell.className='cal-day other-month';grid.appendChild(cell);}
-  for(var d=1;d<=daysInMonth;d++){
-    var cell=document.createElement('div');
-    cell.className='cal-day'+(today.getFullYear()===_calYear&&today.getMonth()===_calMonth&&today.getDate()===d?' today':'');
-    cell.innerHTML='<div style="font-size:.7rem;font-weight:700">'+d+'</div>';
-    var dayTermine=state.termine.filter(function(t){
-      if(t.privat&&!_isAdmin&&!t.personen.includes(currentName)) return false;
+  var dow=new Date(calYear,calMonth,1).getDay(); dow=dow===0?6:dow-1;
+  var dim=new Date(calYear,calMonth+1,0).getDate();
+  for(var i=0;i<dow;i++){ var c=document.createElement("div"); c.className="cal-day other-month"; grid.appendChild(c); }
+  for(var d=1;d<=dim;d++){
+    var c=document.createElement("div");
+    c.className="cal-day"+(today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d?" today":"");
+    c.innerHTML="<div style='font-size:.7rem;font-weight:700'>"+d+"</div>";
+    var dayT=state.termine.filter(function(t){
+      if(t.privat&&!isAdmin&&!t.personen.includes(currentName)) return false;
       if(!t.date) return false;
       var td=new Date(t.date);
-      return td.getFullYear()===_calYear&&td.getMonth()===_calMonth&&td.getDate()===d;
+      return td.getFullYear()===calYear&&td.getMonth()===calMonth&&td.getDate()===d;
     });
-    dayTermine.forEach(function(t){
-      var ev=document.createElement('div');
-      ev.className='cal-event';
-      var h=new Date(t.date).getHours();
-      var m=String(new Date(t.date).getMinutes()).padStart(2,'0');
-      ev.textContent=h+':'+m+' '+t.title;
-      ev.onclick=function(e){e.stopPropagation();jumpToTermin(t.id);};
-      cell.appendChild(ev);
+    dayT.forEach(function(t){
+      var ev=document.createElement("div"); ev.className="cal-event";
+      var hr=new Date(t.date).getHours(), min=String(new Date(t.date).getMinutes()).padStart(2,"0");
+      ev.textContent=hr+":"+min+" "+t.title;
+      ev.onclick=function(e){ e.stopPropagation(); jumpToTermin(t.id); };
+      c.appendChild(ev);
     });
-    grid.appendChild(cell);
+    grid.appendChild(c);
   }
 }
-function calPrev(){_calMonth--;if(_calMonth<0){_calMonth=11;_calYear--;}renderKalender();}
-function calNext(){_calMonth++;if(_calMonth>11){_calMonth=0;_calYear++;}renderKalender();}
+function calPrev(){ calMonth--; if(calMonth<0){ calMonth=11; calYear--; } renderKalender(); }
+function calNext(){ calMonth++; if(calMonth>11){ calMonth=0; calYear++; } renderKalender(); }
 
 // ── Zusagen ──
 function renderZusagen(){
-  var list=document.getElementById('zusagen-list');if(!list) return;
-  var mine=state.termine.filter(function(t){return t.personen&&t.personen.includes(currentName);});
-  mine.sort(function(a,b){return new Date(a.date||0)-new Date(b.date||0);});
-  if(!mine.length){list.innerHTML='<div class="empty"><div class="empty-icon">🗓</div><p>Du hast noch keine Zusagen.</p></div>';return;}
+  var list=document.getElementById("zusagen-list"); if(!list) return;
+  var mine=state.termine.filter(function(t){ return t.personen&&t.personen.includes(currentName); });
+  mine.sort(function(a,b){ return new Date(a.date||0)-new Date(b.date||0); });
+  if(!mine.length){ list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Zusagen.</p></div>"; return; }
   var now=new Date();
   list.innerHTML=mine.map(function(t){
-    var dt=t.date?new Date(t.date):null;
-    var isPast=dt&&dt<now;
+    var dt=t.date?new Date(t.date):null; var past=dt&&dt<now;
     var diff=dt?Math.ceil((dt-now)/(1000*60*60*24)):null;
-    var badge='';
-    if(diff===0) badge='<span style="background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700">🔥 Heute!</span>';
-    else if(diff===1) badge='<span style="background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700">⏰ Morgen!</span>';
-    else if(diff&&diff>0) badge='<span style="background:#eff6ff;color:#3b82f6;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700">in '+diff+' Tagen</span>';
-    return '<div onclick="jumpToTermin('+t.id+')" style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;cursor:pointer;opacity:'+(isPast?'.6':'1')+'">'
-      +'<div style="background:'+(isPast?'#9ca3af':'var(--blue)')+';padding:12px 16px;display:flex;justify-content:space-between;align-items:center">'
-      +'<div style="color:#fff">'
-      +(dt?'<div style="font-size:.72rem;opacity:.85">'+dt.toLocaleDateString('de-DE',{weekday:'long'})+'</div>':'')
-      +(dt?'<div style="font-size:1.1rem;font-weight:800">'+dt.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'})+'</div>':'')
-      +(dt?'<div style="font-size:.8rem;opacity:.9">'+dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr</div>':'<div style="font-size:.9rem;font-weight:600">Kein Datum</div>')
-      +'</div>'+badge+'</div>'
-      +'<div style="padding:12px 16px"><div style="font-weight:700;font-size:.95rem;margin-bottom:3px">'+escHtml(t.title)+'</div>'
-      +(t.ort?'<div style="font-size:.78rem;color:var(--text-3)">📍 '+escHtml(t.ort)+'</div>':'')
-      +'<div style="font-size:.72rem;color:var(--text-3);margin-top:3px">👥 '+t.personen.length+' dabei · 🎲 '+t.spiele.length+' Spiele</div></div></div>';
-  }).join('');
+    var badge="";
+    if(diff===0) badge="<span style='background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#128293; Heute!</span>";
+    else if(diff===1) badge="<span style='background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#9200; Morgen!</span>";
+    else if(diff&&diff>0) badge="<span style='background:#eff6ff;color:#3b82f6;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>in "+diff+" Tagen</span>";
+    return "<div onclick='jumpToTermin("+t.id+")' style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;cursor:pointer;opacity:"+(past?".6":"1")+"'>"
+      +"<div style='background:"+(past?"#9ca3af":"var(--blue)")+";padding:12px 16px;display:flex;justify-content:space-between;align-items:center'>"
+      +"<div style='color:#fff'>"
+      +(dt?"<div style='font-size:.72rem;opacity:.85'>"+dt.toLocaleDateString("de-DE",{weekday:"long"})+"</div><div style='font-size:1.1rem;font-weight:800'>"+dt.toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"})+"</div><div style='font-size:.8rem;opacity:.9'>"+dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr</div>":"<div style='font-size:.9rem;font-weight:600'>Kein Datum</div>")
+      +"</div>"+badge+"</div>"
+      +"<div style='padding:12px 16px'><div style='font-weight:700;font-size:.95rem;margin-bottom:3px'>"+h(t.title)+"</div>"
+      +(t.ort?"<div style='font-size:.78rem;color:var(--text-3)'>&#128205; "+h(t.ort)+"</div>":"")
+      +"<div style='font-size:.72rem;color:var(--text-3);margin-top:3px'>&#128101; "+t.personen.length+" dabei &middot; &#127918; "+t.spiele.length+" Spiele</div></div></div>";
+  }).join("");
 }
 
 // ── Marktplatz ──
-async function loadMarkt(){
-  try{
-    var r=await fetch(SB_URL+'/rest/v1/'+SB_MARKT_TABLE+'?id=eq.1&select=data',{headers:sbAuthHeaders()});
-    if(!r.ok) return;
-    var rows=await r.json();
-    if(rows.length&&rows[0].data) _marktData=rows[0].data;
-    else _marktData=[];
-  }catch(e){_marktData=[];}
-}
-
-async function saveMarkt(){
-  await fetch(SB_URL+'/rest/v1/'+SB_MARKT_TABLE,{method:'POST',headers:{...sbAuthHeaders(),Prefer:'resolution=merge-duplicates'},body:JSON.stringify({id:1,data:_marktData})});
-}
-
 async function renderMarkt(){
-  await loadMarkt();
-  var list=document.getElementById('markt-list');if(!list) return;
-  if(!_marktData.length){
-    list.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🛒</div><p>Noch keine Angebote.</p></div>';
-    return;
+  await loadMarktData();
+  var list=document.getElementById("markt-list"); if(!list) return;
+  if(!mData.length){
+    list.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>&#128722;</div><p>Noch keine Angebote.</p></div>"; return;
   }
-  list.innerHTML=_marktData.map(function(m){
-    var canDel=_isAdmin||m.seller===currentName;
-    var isSeller=m.seller===currentName;
+  list.innerHTML=mData.map(function(m){
+    var canDel=isAdmin||m.seller===currentName; var isSeller=m.seller===currentName;
     var imgs=m.images||[];
-    var imgHtml=imgs.length?'<div style="position:relative;height:160px;overflow:hidden;cursor:zoom-in" onclick="openLightbox(''+escHtml(imgs[0])+'')">'
-      +'<img src="'+escHtml(imgs[0])+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'">'
-      +(imgs.length>1?'<div style="position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,.5);color:#fff;font-size:.65rem;padding:2px 7px;border-radius:10px">+'+( imgs.length-1)+' Fotos</div>':'')
-      +'</div>':'';
+    var imgHtml=imgs.length?"<div style='position:relative;height:160px;overflow:hidden;cursor:zoom-in' onclick='openLightbox(\""+h(imgs[0])+"\")'>"
+      +"<img src='"+h(imgs[0])+"' style='width:100%;height:100%;object-fit:cover'>"
+      +(imgs.length>1?"<div style='position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,.5);color:#fff;font-size:.65rem;padding:2px 7px;border-radius:10px'>+"+(imgs.length-1)+" Fotos</div>":"")
+      +"</div>":"";
     var interessenten=m.interesse||[];
-    var canInterest=!isSeller&&!m.sold;
     var hasInterest=interessenten.includes(currentName);
-    var interestBtn=canInterest
-      ?'<button onclick="toggleInteresse('+m.id+')" style="flex:1;padding:7px 10px;border-radius:8px;border:1.5px solid '+(hasInterest?'var(--green)':'var(--border)')+';background:'+(hasInterest?'var(--green-lt)':'transparent')+';color:'+(hasInterest?'var(--green)':'var(--text-2)')+';font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer">'+(hasInterest?'✓ Interesse':'🙋 Interesse')+'</button>':'';
-    var soldBadge=m.sold?'<div class="markt-sold-badge">✓ Verkauft</div>':'';
-    return '<div class="markt-card'+(m.sold?' markt-sold':'')+'" id="markt-card-'+m.id+'">'+imgHtml
-      +'<div class="markt-body">'
-      +soldBadge
-      +'<div class="markt-name">'+escHtml(m.titel)+'</div>'
-      +'<div class="markt-price">'+m.preis.toFixed(2)+' €</div>'
-      +(m.desc?'<div style="font-size:.8rem;color:var(--text-2);margin-bottom:8px;line-height:1.5">'+escHtml(m.desc)+'</div>':'')
-      +'<div style="font-size:.72rem;color:var(--text-3);margin-bottom:8px">Verkäufer: '+escHtml(m.seller)+' · '+new Date(m.ts).toLocaleDateString('de-DE')+'</div>'
-      +(isSeller&&interessenten.length?'<div style="font-size:.75rem;color:var(--blue);margin-bottom:8px;background:#eff6ff;padding:6px 10px;border-radius:6px">🙋 Interesse von: '+interessenten.map(escHtml).join(', ')+'</div>':'')
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'
+    var interestBtn=(!isSeller&&!m.sold)
+      ? "<button onclick='toggleInteresse("+m.id+")' style='flex:1;padding:7px 10px;border-radius:8px;border:1.5px solid "+(hasInterest?"var(--green)":"var(--border)")+";background:"+(hasInterest?"var(--green-lt)":"transparent")+";color:"+(hasInterest?"var(--green)":"var(--text-2)")+";font-family:Outfit,sans-serif;font-size:.78rem;font-weight:600;cursor:pointer'>"+(hasInterest?"\u2713 Interesse":"&#128587; Interesse")+"</button>" : "";
+    return "<div class='markt-card"+(m.sold?" markt-sold":"")+"' id='markt-card-"+m.id+"'>"+imgHtml
+      +"<div class='markt-body'>"
+      +(m.sold?"<div class='markt-sold-badge'>\u2713 Verkauft</div>":"")
+      +"<div class='markt-name'>"+h(m.titel)+"</div>"
+      +"<div class='markt-price'>"+m.preis.toFixed(2)+" &euro;</div>"
+      +(m.desc?"<div style='font-size:.8rem;color:var(--text-2);margin-bottom:8px;line-height:1.5'>"+h(m.desc)+"</div>":"")
+      +"<div style='font-size:.72rem;color:var(--text-3);margin-bottom:8px'>Verk\u00e4ufer: "+h(m.seller)+" &middot; "+new Date(m.ts).toLocaleDateString("de-DE")+"</div>"
+      +(isSeller&&interessenten.length?"<div style='font-size:.75rem;color:var(--blue);margin-bottom:8px;background:#eff6ff;padding:6px 10px;border-radius:6px'>&#128587; Interesse von: "+interessenten.map(h).join(", ")+"</div>":"")
+      +"<div style='display:flex;gap:6px;flex-wrap:wrap;margin-top:8px'>"
       +interestBtn
-      +(m.bgg?'<a href="'+escHtml(m.bgg)+'" target="_blank" class="btn btn-outline btn-sm">BGG</a>':'')
-      +'<button class="btn btn-ghost btn-sm" onclick="openMarktChat('+m.id+')">💬 Chat</button>'
-      +(!m.sold&&isSeller?'<button class="btn btn-sm" style="background:var(--green-lt);color:var(--green);border-color:var(--green-bd)" onclick="markSold('+m.id+')">✓ Verkauft</button>':'')
-      +(canDel?'<button class="btn btn-sm" style="background:var(--red-lt,#fef2f2);color:var(--red);border:1px solid #fca5a5" onclick="deleteInserat('+m.id+')">🗑</button>':'')
-      +'</div>'
-      +(imgs.length>1?'<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">'+imgs.slice(1).map(function(img){return'<img src="'+escHtml(img)+'" style="width:48px;height:48px;object-fit:cover;border-radius:6px;cursor:zoom-in;border:1px solid var(--border)" onclick="openLightbox(''+escHtml(img)+'')" onerror="this.style.display='none'">';}).join('')+'</div>':'')
-      +'</div></div>';
-  }).join('');
+      +(m.bgg?"<a href='"+h(m.bgg)+"' target='_blank' class='btn btn-outline btn-sm'>BGG</a>":"")
+      +"<button class='btn btn-ghost btn-sm' onclick='openMarktChat("+m.id+")'>&#128172; Chat</button>"
+      +(!m.sold&&isSeller?"<button class='btn btn-sm' style='background:var(--green-lt);color:var(--green);border-color:var(--green-bd)' onclick='markSold("+m.id+")'>&#10003; Verkauft</button>":"")
+      +(canDel?"<button class='btn btn-sm' style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5' onclick='deleteInserat("+m.id+")'>&#128465;</button>":"")
+      +"</div>"
+      +(imgs.length>1?"<div style='display:flex;gap:4px;margin-top:8px;flex-wrap:wrap'>"+imgs.slice(1).map(function(img){ return "<img src='"+h(img)+"' style='width:48px;height:48px;object-fit:cover;border-radius:6px;cursor:zoom-in;border:1px solid var(--border)' onclick='openLightbox(\""+h(img)+"\")'>";}).join("")+"</div>":"")
+      +"</div></div>";
+  }).join("");
 }
 
 function openInseratModal(){
-  _marktImgs=[];
-  document.getElementById('markt-titel').value='';
-  document.getElementById('markt-preis').value='';
-  document.getElementById('markt-desc').value='';
-  document.getElementById('markt-bgg').value='';
-  document.getElementById('markt-img-url').value='';
-  document.getElementById('markt-img-preview-wrap').innerHTML='';
-  document.getElementById('markt-error').style.display='none';
-  document.getElementById('inserat-modal').style.display='flex';
-  setTimeout(function(){document.getElementById('markt-titel').focus();},50);
+  mImgs=[];
+  ["markt-titel","markt-preis","markt-desc","markt-bgg","markt-img-url"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  document.getElementById("markt-img-preview-wrap").innerHTML="";
+  document.getElementById("markt-error").style.display="none";
+  document.getElementById("inserat-modal").style.display="flex";
+  setTimeout(function(){ document.getElementById("markt-titel").focus(); },50);
 }
-function closeInseratModal(){document.getElementById('inserat-modal').style.display='none';}
-
+function closeInseratModal(){ document.getElementById("inserat-modal").style.display="none"; }
 function addMarktImg(){
-  var inp=document.getElementById('markt-img-url');
-  var url=inp.value.trim();
-  var errEl=document.getElementById('markt-error');
-  if(!url||!url.startsWith('http')){errEl.textContent='Bitte eine gültige URL eingeben.';errEl.style.display='block';return;}
-  errEl.style.display='none';
-  _marktImgs.push(url);inp.value='';
-  renderMarktImgPreviews();
+  var inp=document.getElementById("markt-img-url"); var url=inp.value.trim();
+  var errEl=document.getElementById("markt-error");
+  if(!url||url.indexOf("http")!==0){ errEl.textContent="G\u00fcltige URL eingeben."; errEl.style.display="block"; return; }
+  errEl.style.display="none"; mImgs.push(url); inp.value=""; renderMarktImgPreviews();
 }
-function removeMarktImg(idx){_marktImgs.splice(idx,1);renderMarktImgPreviews();}
+function removeMarktImg(idx){ mImgs.splice(idx,1); renderMarktImgPreviews(); }
 function renderMarktImgPreviews(){
-  var wrap=document.getElementById('markt-img-preview-wrap');if(!wrap) return;
-  if(!_marktImgs.length){wrap.innerHTML='';return;}
-  wrap.innerHTML=_marktImgs.map(function(url,i){
-    return '<div style="position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'
-      +'<img src="'+escHtml(url)+'" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='var(--surface2)'">'
-      +'<button onclick="removeMarktImg('+i+')" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:.6rem;cursor:pointer">✕</button>'
-      +'</div>';
-  }).join('');
+  var wrap=document.getElementById("markt-img-preview-wrap"); if(!wrap) return;
+  wrap.innerHTML=mImgs.map(function(url,i){
+    return "<div style='position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid var(--border)'>"
+      +"<img src='"+h(url)+"' style='width:100%;height:100%;object-fit:cover'>"
+      +"<button onclick='removeMarktImg("+i+")' style='position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:.6rem;cursor:pointer'>&#x2715;</button>"
+      +"</div>";
+  }).join("");
 }
-
 async function createInserat(){
-  var titel=document.getElementById('markt-titel').value.trim();
-  var preis=parseFloat(document.getElementById('markt-preis').value);
-  var errEl=document.getElementById('markt-error');
-  errEl.style.display='none';
-  if(!titel){errEl.textContent='Spielname erforderlich.';errEl.style.display='block';return;}
-  if(isNaN(preis)||preis<0){errEl.textContent='Gültigen Preis eingeben.';errEl.style.display='block';return;}
-  var desc=document.getElementById('markt-desc').value.trim();
-  var bgg=document.getElementById('markt-bgg').value.trim();
+  var titel=document.getElementById("markt-titel").value.trim();
+  var preis=parseFloat(document.getElementById("markt-preis").value);
+  var errEl=document.getElementById("markt-error"); errEl.style.display="none";
+  if(!titel){ errEl.textContent="Spielname erforderlich."; errEl.style.display="block"; return; }
+  if(isNaN(preis)||preis<0){ errEl.textContent="G\u00fcltigen Preis eingeben."; errEl.style.display="block"; return; }
   var id=Date.now();
-  _marktData.unshift({id,titel,preis,desc,images:[..._marktImgs],bgg:bgg||null,seller:currentName,ts:new Date().toISOString(),chat:[],interesse:[],sold:false});
-  try{
-    await saveMarkt();
-    closeInseratModal();
-    await renderMarkt();
-    notify('Inserat erstellt ✓');
-  }catch(e){
-    errEl.textContent='Fehler beim Speichern: '+(e.message||e);
-    errEl.style.display='block';
-  }
+  mData.unshift({id:id,titel:titel,preis:preis,desc:document.getElementById("markt-desc").value.trim(),images:mImgs.slice(),bgg:document.getElementById("markt-bgg").value.trim()||null,seller:currentName,ts:new Date().toISOString(),chat:[],interesse:[],sold:false});
+  try{ await saveMarkt(); closeInseratModal(); await renderMarkt(); toast("Inserat erstellt \u2713"); }
+  catch(e){ errEl.textContent="Fehler: "+(e.message||e); errEl.style.display="block"; }
 }
-
 async function toggleInteresse(id){
-  var m=_marktData.find(function(x){return x.id===id;});if(!m) return;
+  var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
   if(!m.interesse) m.interesse=[];
-  if(m.interesse.includes(currentName)) m.interesse=m.interesse.filter(function(n){return n!==currentName;});
+  if(m.interesse.includes(currentName)) m.interesse=m.interesse.filter(function(n){ return n!==currentName; });
   else m.interesse.push(currentName);
-  await saveMarkt();renderMarkt();
+  await saveMarkt(); renderMarkt();
 }
-
 async function markSold(id){
-  var m=_marktData.find(function(x){return x.id===id;});if(!m) return;
-  m.sold=true;await saveMarkt();renderMarkt();notify('Als verkauft markiert ✓');
+  var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
+  m.sold=true; await saveMarkt(); renderMarkt(); toast("Als verkauft markiert \u2713");
 }
-
 async function deleteInserat(id){
-  var m=_marktData.find(function(x){return x.id===id;});
-  var name=m?escHtml(m.titel):'dieses Inserat';
-  showConfirm('Inserat löschen?','Möchtest du "'+name+'" wirklich entfernen?',async function(){
-    _marktData=_marktData.filter(function(x){return x.id!==id;});
-    await saveMarkt();renderMarkt();notify('Inserat gelöscht.');
+  var m=mData.find(function(x){ return x.id===id; });
+  var name=m?m.titel:"dieses Inserat";
+  showConfirm("Inserat l\u00f6schen?","\""+name+"\" wirklich entfernen?",async function(){
+    mData=mData.filter(function(x){ return x.id!==id; });
+    await saveMarkt(); renderMarkt(); toast("Gel\u00f6scht.");
   });
 }
-
-function openLightbox(src){document.getElementById('lb-img').src=src;document.getElementById('lightbox').style.display='flex';}
+function openLightbox(src){ document.getElementById("lb-img").src=src; document.getElementById("lightbox").style.display="flex"; }
 
 // ── Markt Chat ──
 function openMarktChat(id){
-  _marktChatId=id;
-  var m=_marktData.find(function(x){return x.id===id;});if(!m) return;
-  document.getElementById('markt-chat-title').textContent='💬 '+m.titel;
+  mChatId=id;
+  var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
+  document.getElementById("markt-chat-title").textContent="\uD83D\uDCAC "+m.titel;
   renderMarktChatBox();
-  document.getElementById('markt-chat-modal').style.display='flex';
+  document.getElementById("markt-chat-modal").style.display="flex";
 }
-function closeMarktChat(){document.getElementById('markt-chat-modal').style.display='none';_marktChatId=null;}
+function closeMarktChat(){ document.getElementById("markt-chat-modal").style.display="none"; mChatId=null; }
 function renderMarktChatBox(){
-  var m=_marktData.find(function(x){return x.id===_marktChatId;});if(!m) return;
-  var box=document.getElementById('markt-chat-box');
-  if(!m.chat||!m.chat.length){box.innerHTML='<div class="chat-empty">Noch keine Nachrichten.</div>';return;}
+  var m=mData.find(function(x){ return x.id===mChatId; }); if(!m) return;
+  var box=document.getElementById("markt-chat-box");
+  if(!m.chat||!m.chat.length){ box.innerHTML="<div class='chat-empty'>Noch keine Nachrichten.</div>"; return; }
   box.innerHTML=m.chat.map(function(msg){
     var mine=msg.author===currentName;
-    return '<div class="msg-row'+(mine?' mine':'')+'">'
-      +'<div class="av av-sm" style="background:'+nameColor(msg.author)+';'+(mine?'display:none':'')+'">'+nameInit(msg.author)+'</div>'
-      +'<div class="bubble">'+(!mine?'<div class="bubble-name">'+escHtml(msg.author)+'</div>':'')+escHtml(msg.text)+'<div class="bubble-time">'+formatTime(msg.ts)+'</div></div>'
-      +'</div>';
-  }).join('');
+    return "<div class='msg-row"+(mine?" mine":"")+"'>"
+      +"<div class='av av-sm' style='background:"+nameColor(msg.author)+";display:"+(mine?"none":"flex")+";align-items:center;justify-content:center'>"+nameInit(msg.author)+"</div>"
+      +"<div class='bubble'>"+(!mine?"<div class='bubble-name'>"+h(msg.author)+"</div>":"")+h(msg.text)+"<div class='bubble-time'>"+fmtTime(msg.ts)+"</div></div>"
+      +"</div>";
+  }).join("");
   box.scrollTop=box.scrollHeight;
 }
 async function sendMarktChat(){
-  var m=_marktData.find(function(x){return x.id===_marktChatId;});if(!m||!currentName) return;
-  var inp=document.getElementById('markt-chat-input');
-  var text=inp.value.trim();if(!text) return;
-  inp.value='';
-  if(!m.chat) m.chat=[];
-  m.chat.push({author:currentName,text,ts:new Date().toISOString()});
-  await saveMarkt();renderMarktChatBox();
+  var m=mData.find(function(x){ return x.id===mChatId; }); if(!m||!currentName) return;
+  var inp=document.getElementById("markt-chat-input"); var text=inp.value.trim(); if(!text) return;
+  inp.value=""; if(!m.chat) m.chat=[];
+  m.chat.push({author:currentName,text:text,ts:new Date().toISOString()});
+  await saveMarkt(); renderMarktChatBox();
 }
 
 // ── QR Codes ──
 function openQrModal(tid){
-  _qrTid=tid;
-  document.getElementById('qr-label').value='';
-  document.getElementById('qr-url').value='';
-  document.getElementById('qr-preview-wrap').style.display='none';
-  document.getElementById('qr-error').style.display='none';
-  document.getElementById('qr-modal').style.display='flex';
-  setTimeout(function(){document.getElementById('qr-url').focus();},50);
+  qrTid=tid;
+  document.getElementById("qr-label").value="";
+  document.getElementById("qr-url").value="";
+  document.getElementById("qr-preview-wrap").style.display="none";
+  document.getElementById("qr-error").style.display="none";
+  document.getElementById("qr-modal").style.display="flex";
+  setTimeout(function(){ document.getElementById("qr-url").focus(); },50);
 }
-function closeQrModal(){document.getElementById('qr-modal').style.display='none';_qrTid=null;}
+function closeQrModal(){ document.getElementById("qr-modal").style.display="none"; qrTid=null; }
 function updateQrPreview(){
-  var url=document.getElementById('qr-url').value.trim();
-  var wrap=document.getElementById('qr-preview-wrap');
-  var img=document.getElementById('qr-preview-img');
-  if(!url||!url.startsWith('http')){wrap.style.display='none';return;}
-  img.src='https://api.qrserver.com/v1/create-qr-code/?size=120x120&data='+encodeURIComponent(url);
-  wrap.style.display='block';
+  var url=document.getElementById("qr-url").value.trim();
+  var wrap=document.getElementById("qr-preview-wrap");
+  if(!url||url.indexOf("http")!==0){ wrap.style.display="none"; return; }
+  document.getElementById("qr-preview-img").src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data="+encodeURIComponent(url);
+  wrap.style.display="block";
 }
 async function saveQr(){
-  var url=document.getElementById('qr-url').value.trim();
-  var label=document.getElementById('qr-label').value.trim();
-  var errEl=document.getElementById('qr-error');
-  errEl.style.display='none';
-  if(!url){errEl.textContent='Bitte einen Link eingeben.';errEl.style.display='block';return;}
-  if(!url.startsWith('http')){errEl.textContent='Bitte eine gültige URL eingeben.';errEl.style.display='block';return;}
-  var t=getT(_qrTid);if(!t) return;
+  var url=document.getElementById("qr-url").value.trim();
+  var label=document.getElementById("qr-label").value.trim();
+  var errEl=document.getElementById("qr-error"); errEl.style.display="none";
+  if(!url||url.indexOf("http")!==0){ errEl.textContent="G\u00fcltige URL eingeben."; errEl.style.display="block"; return; }
+  var t=getT(qrTid); if(!t) return;
   if(!t.qrcodes) t.qrcodes=[];
-  t.qrcodes.push({url,label:label||'BG Stats Link',author:currentName,ts:new Date().toISOString()});
-  await saveState();closeQrModal();rerenderCard(_qrTid);notify('QR Code hinzugefügt ✓');
+  t.qrcodes.push({url:url,label:label||"BG Stats Link",author:currentName,ts:new Date().toISOString()});
+  await saveState(); closeQrModal(); rerenderCard(qrTid); toast("QR Code hinzugef\u00fcgt \u2713");
 }
 async function removeQr(tid,idx){
-  var t=getT(tid);if(!t||!t.qrcodes) return;
+  var t=getT(tid); if(!t||!t.qrcodes) return;
   t.qrcodes.splice(idx,1);
-  await saveState();rerenderCard(tid);notify('QR Code entfernt.');
+  await saveState(); rerenderCard(tid); toast("QR Code entfernt.");
 }
+
 </script>
 </body>
 </html>
