@@ -667,7 +667,13 @@ async function getAndUpdateLogin(){
 async function showWhatsnew(){
   var last=await getAndUpdateLogin();
   var since=last||new Date(0);
-  var nt=state.termine.filter(function(t){ return t.ts&&new Date(t.ts)>since&&t.creator!==currentName; });
+  var nt=state.termine.filter(function(t){ 
+    if(t.ts&&new Date(t.ts)>since&&t.creator!==currentName){
+      if(t.privat&&!t.personen.includes(currentName)) return false;
+      return true;
+    }
+    return false;
+  });
   var nm=mData.filter(function(m){ return m.ts&&new Date(m.ts)>since&&m.seller!==currentName; });
   if(!nt.length&&!nm.length) return;
   var html="";
@@ -731,7 +737,19 @@ function startPolling(){
       var rows=await r.json();
       if(!rows.length) return;
       var fresh=JSON.stringify(rows[0].data);
-      if(fresh!==lastHash){ lastHash=fresh; if(rows[0].data&&rows[0].data.termine){ state=rows[0].data; renderTermine(); } }
+      if(fresh!==lastHash){
+    lastHash=fresh;
+    if(rows[0].data&&rows[0].data.termine){
+      state=rows[0].data;
+      if(!state.userColors) state.userColors={};
+      renderTermine();
+      // Also rerender existing cards so joinBtn/voll-banner/personen stay current
+      (rows[0].data.termine||[]).forEach(function(t){
+        var el=document.getElementById("termin-"+t.id);
+        if(el) rerenderCard(t.id);
+      });
+    }
+  }
     }catch(e){}
   },10000);
 }
@@ -930,7 +948,7 @@ async function deleteTermin(tid){
   if(!isAdmin&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
   showConfirm("Termin l\u00f6schen?","\""+t.title+"\" wird entfernt.",async function(){
     state.termine=state.termine.filter(function(x){ return x.id!==tid; });
-    renderTermine(); toast("Gel\u00f6scht."); saveState();
+    renderTermine(); toast("Gel\u00f6scht."); await saveState();
   });
 }
 function openEditModal(tid){
@@ -1045,9 +1063,19 @@ function renderTermine(){
 }
 function jumpToTermin(tid){
   showTab("termine",document.getElementById("tab-btn-termine"));
+  // Small delay to let tab switch complete, then ensure card is fresh and open it
   setTimeout(function(){
     var el=document.getElementById("termin-"+tid);
-    if(el){ el.scrollIntoView({behavior:"smooth",block:"start"}); if(!el.classList.contains("open")) toggleTermin(tid); }
+    if(!el) return;
+    // Re-render card so joinBtn reflects current user state
+    rerenderCard(tid);
+    setTimeout(function(){
+      var el2=document.getElementById("termin-"+tid);
+      if(el2){
+        el2.scrollIntoView({behavior:"smooth",block:"start"});
+        if(!el2.classList.contains("open")) toggleTermin(tid);
+      }
+    },50);
   },100);
 }
 
@@ -1232,7 +1260,7 @@ async function addSelf(tid){
   var t=getT(tid); if(!t||!currentName) return;
   if(t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal){ toast("Der Termin ist leider voll."); return; }
   if(!t.personen.includes(currentName)) t.personen.push(currentName);
-  rerenderCard(tid); saveState();
+  rerenderCard(tid); await saveState();
 }
 async function addPerson(tid){
   var t=getT(tid); if(!t) return;
