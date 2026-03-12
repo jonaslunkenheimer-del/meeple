@@ -726,7 +726,10 @@ async function loadMarktData(){
   }catch(e){ mData=[]; }
 }
 async function saveMarkt(){
-  await fetch(SB_URL+"/rest/v1/"+SB_MARKT,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({id:1,data:mData})});
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_MARKT,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates","Content-Type":"application/json"}),body:JSON.stringify({id:1,data:mData})});
+    if(!r.ok){ var err=await r.text(); console.error("saveMarkt failed:",r.status,err); toast("Fehler beim Speichern: "+r.status); }
+  }catch(e){ console.error("saveMarkt error:",e); toast("Netzwerkfehler beim Speichern"); }
 }
 function startPolling(){
   var lastHash="";
