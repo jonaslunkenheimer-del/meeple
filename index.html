@@ -463,6 +463,20 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   </div>
 </div>
 
+<!-- WHATS NEW MODAL -->
+<div id="whatsnew-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:920;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:460px;animation:up .25s ease;overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:22px 24px 18px">
+      <div style="font-size:1.4rem;margin-bottom:4px">🎉</div>
+      <div style="font-size:1.1rem;font-weight:800;color:#fff">Neuigkeiten seit deinem letzten Besuch</div>
+    </div>
+    <div id="whatsnew-body" style="padding:20px 24px;max-height:60vh;overflow-y:auto"></div>
+    <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+      <button class="btn btn-blue" onclick="closeWhatsnew()">Alles klar! 👍</button>
+    </div>
+  </div>
+</div>
+
 <!-- MARKT CHAT MODAL -->
 <div id="markt-chat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:910;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;animation:up .18s ease">
@@ -824,7 +838,92 @@ async function startApp(name){
   startPolling();
   // Show Marktplatz tab for all users
   document.getElementById('tab-btn-markt').style.display='';
-  renderMarkt();
+  await renderMarkt();
+  // Show what's new since last login
+  showWhatsnew();
+}
+
+async function getAndUpdateLastLogin(){
+  // Read last login from Supabase user_meta table, then update to now
+  const now = new Date().toISOString();
+  try{
+    // Try to read existing row
+    const r = await fetch(SB_URL+'/rest/v1/user_meta?user_name=eq.'+encodeURIComponent(currentName)+'&select=last_login',{
+      headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON)}
+    });
+    const rows = r.ok ? await r.json() : [];
+    const last = rows.length ? rows[0].last_login : null;
+
+    // Upsert new timestamp
+    await fetch(SB_URL+'/rest/v1/user_meta',{
+      method:'POST',
+      headers:{'apikey':SB_ANON,'Authorization':'Bearer '+(_sbSession?.access_token||SB_ANON),'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body: JSON.stringify({user_name: currentName, last_login: now})
+    });
+    return last ? new Date(last) : null;
+  } catch(e){
+    console.warn('getAndUpdateLastLogin:', e);
+    return null;
+  }
+}
+
+async function showWhatsnew(){
+  const last = await getAndUpdateLastLogin();
+  if(!last) return; // first login ever – no popup
+
+  const newTermine = state.termine.filter(t => {
+    if(!t.ts) return false;
+    return new Date(t.ts) > last && t.creator !== currentName;
+  });
+  const newMarkt = _marktData.filter(m => {
+    if(!m.ts) return false;
+    return new Date(m.ts) > last && m.seller !== currentName;
+  });
+
+  if(!newTermine.length && !newMarkt.length) return; // nothing new
+
+  let html = '';
+
+  if(newTermine.length){
+    html += `<div style="margin-bottom:16px">
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">📅 Neue Termine (${newTermine.length})</div>
+      ${newTermine.map(t=>{
+        const d = t.date ? new Date(t.date).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'short'}) : 'Kein Datum';
+        return `<div onclick="closeWhatsnew();jumpToTermin(${t.id})" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg);transition:border-color .15s" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div class="av av-md" style="background:${nameColor(t.creator||'?')}">${nameInit(t.creator||'?')}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(t.title)}</div>
+            <div style="font-size:.72rem;color:var(--text-3)">von ${escHtml(t.creator||'?')} · ${d}</div>
+          </div>
+          <span style="font-size:.7rem;color:var(--blue)">→</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  if(newMarkt.length){
+    html += `<div>
+      <div style="font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">🛒 Neue Marktplatz-Angebote (${newMarkt.length})</div>
+      ${newMarkt.map(m=>{
+        const img = (m.images||[])[0];
+        return `<div onclick="closeWhatsnew();showTab('markt',document.getElementById('tab-btn-markt'))" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg);transition:border-color .15s" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
+          ${img?`<img src="${escHtml(img)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0" onerror="this.style.display='none'">`:`<div style="width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🎲</div>`}
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(m.titel)}</div>
+            <div style="font-size:.72rem;color:var(--text-3)">von ${escHtml(m.seller)} · ${m.preis.toFixed(2)} €</div>
+          </div>
+          <span style="font-size:.7rem;color:var(--blue)">→</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  document.getElementById('whatsnew-body').innerHTML = html;
+  document.getElementById('whatsnew-modal').style.display = 'flex';
+}
+
+function closeWhatsnew(){
+  document.getElementById('whatsnew-modal').style.display = 'none';
 }
 
 async function switchUser(){
@@ -1336,7 +1435,7 @@ async function createTermin(){
   const creator=document.getElementById('new-creator').value.trim()||currentName;
   const offen=document.getElementById('new-offen')?.checked!==false;
   const privat=document.getElementById('new-privat')?.checked===true;
-  const t={id:state.nextId++,title,date,ort,creator,offen,privat,personen:creator?[creator]:[],spiele:[],chat:[]};
+  const t={id:state.nextId++,title,date,ort,creator,offen,privat,personen:creator?[creator]:[],spiele:[],chat:[],ts:new Date().toISOString()};
   state.termine.unshift(t);
   await saveState();
   ['new-title','new-ort'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
