@@ -772,7 +772,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 </div>
 
 <!-- CONFIRM MODAL -->
-<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;align-items:center;justify-content:center;padding:20px">
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:950;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:380px;animation:up .18s ease">
     <div style="font-size:1.05rem;font-weight:700;margin-bottom:8px" id="confirm-title"></div>
     <div style="font-size:.85rem;color:var(--text-2);margin-bottom:22px" id="confirm-msg"></div>
@@ -1671,7 +1671,11 @@ function showConfirm(title, msg, onConfirm){
   const el=document.getElementById('confirm-modal');
   document.getElementById('confirm-title').textContent=title;
   document.getElementById('confirm-msg').textContent=msg;
-  document.getElementById('confirm-ok').onclick=()=>{closeConfirm();onConfirm();};
+  // Clone button to remove old listeners
+  const oldBtn = document.getElementById('confirm-ok');
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+  newBtn.onclick=()=>{ closeConfirm(); onConfirm(); };
   el.style.display='flex';
 }
 function closeConfirm(){document.getElementById('confirm-modal').style.display='none';}
@@ -2181,7 +2185,9 @@ async function createInserat(){
 
 // ── Delete inserat ──
 async function deleteInserat(id){
-  showConfirm('Inserat löschen?', async()=>{
+  const m = _marktData.find(m=>m.id===id);
+  const name = m ? escHtml(m.titel) : 'dieses Inserat';
+  showConfirm('Inserat löschen?', `Möchtest du "${name}" wirklich entfernen?`, async()=>{
     _marktData = _marktData.filter(m=>m.id!==id);
     await saveMarkt();
     renderMarkt();
