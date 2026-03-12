@@ -751,6 +751,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 const COLORS=['#3b6ef5','#16a34a','#e03535','#d97706','#7c3aed','#db2777','#0891b2','#ea580c','#4f46e5','#059669'];
 const SK={data:'spieleabend-v4',names:'sb_known_names',cur:'sb_cur_name'};
 let currentName='';
+let _marktData = [];
+let _marktChatId = null;
+let _marktImgs = [];
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
 
 // ── Helpers ──
@@ -1941,8 +1944,7 @@ if(saved)startApp(saved);
 // SPIELEMARKTPLATZ
 // ══════════════════════════════════════════════
 const SB_MARKT_TABLE = 'marktplatz';
-let _marktData = []; // [{id, titel, preis, desc, image, seller, ts, chat:[]}]
-let _marktChatId = null;
+
 
 // ── Storage: lese/schreibe marktplatz Zeile in Supabase ──
 async function loadMarkt(){
@@ -1968,7 +1970,6 @@ async function saveMarkt(){
 }
 
 // ── Image: convert to base64 ──
-let _marktImgs = []; // array of image URLs
 
 function addMarktImg(){
   const inp = document.getElementById('markt-img-url');
