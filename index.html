@@ -373,31 +373,16 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
   <div class="container">
     <!-- TERMINE TAB -->
     <div id="tab-termine" class="tab-content active">
-      <div class="form-card">
-        <div class="section-lbl">Neuen Termin erstellen</div>
-        <div class="form-grid">
-          <div class="form-field"><label>Titel</label><input class="input-field" id="new-title" placeholder="z.B. Spieleabend bei Max"></div>
-          <div class="form-field"><label>Datum &amp; Uhrzeit</label><input class="input-field" id="new-date" type="datetime-local"></div>
-          <div class="form-field"><label>Ort</label><input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …"></div>
-          <div class="form-field"><label>Ersteller</label><input class="input-field" id="new-creator" readonly></div>
+      <!-- Create button -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spieleabende</div>
+          <div style="font-size:.78rem;color:var(--text-3)">Alle geplanten Treffen auf einen Blick</div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
-          <div>
-            <div style="font-weight:600;font-size:.88rem;margin-bottom:2px">Spielvorschläge erlauben</div>
-            <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Alle Teilnehmer können Spiele hinzufügen</div>
-          </div>
-          <label class="toggle-wrap"><input type="checkbox" id="new-offen" checked><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:18px">
-          <div>
-            <div style="font-weight:600;font-size:.88rem;margin-bottom:2px">🔒 Privater Termin</div>
-            <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Nur eingeladene Personen sehen diesen Termin</div>
-          </div>
-          <label class="toggle-wrap"><input type="checkbox" id="new-privat"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-        </div>
-        <button class="btn btn-blue" onclick="createTermin()">+ Termin erstellen</button>
+        <button onclick="openNewTerminModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(59,110,245,.4)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(59,110,245,.35)'">
+          <span style="font-size:1.1rem">＋</span> Neuer Termin
+        </button>
       </div>
-      <div class="section-lbl">Alle Termine</div>
       <div id="termine-list"></div>
     </div>
 
@@ -459,6 +444,45 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
       </div>
       <div class="section-lbl" style="margin-top:8px">Angebote</div>
       <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NEUER TERMIN MODAL -->
+<div id="new-termin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeNewTerminModal()">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;animation:up .2s ease;overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:1.1rem;font-weight:800;color:#fff">📅 Neuen Termin erstellen</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.75);margin-top:2px">Plane deinen nächsten Spieleabend</div>
+      </div>
+      <button onclick="closeNewTerminModal()" style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="padding:24px">
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="form-field"><label>Titel</label><input class="input-field" id="new-title" placeholder="z.B. Spieleabend bei Max"></div>
+        <div class="form-field"><label>Datum &amp; Uhrzeit</label><input class="input-field" id="new-date" type="datetime-local"></div>
+        <div class="form-field"><label>Ort</label><input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …"></div>
+        <div class="form-field"><label>Ersteller</label><input class="input-field" id="new-creator" readonly></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
+        <div>
+          <div style="font-weight:600;font-size:.88rem;margin-bottom:2px">Spielvorschläge erlauben</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Alle Teilnehmer können Spiele hinzufügen</div>
+        </div>
+        <label class="toggle-wrap"><input type="checkbox" id="new-offen" checked><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:22px">
+        <div>
+          <div style="font-weight:600;font-size:.88rem;margin-bottom:2px">🔒 Privater Termin</div>
+          <div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Nur eingeladene Personen sehen diesen Termin</div>
+        </div>
+        <label class="toggle-wrap"><input type="checkbox" id="new-privat"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeNewTerminModal()" style="flex:1">Abbrechen</button>
+        <button class="btn btn-blue" onclick="createTermin()" style="flex:2">📅 Termin erstellen</button>
+      </div>
     </div>
   </div>
 </div>
@@ -869,15 +893,16 @@ async function getAndUpdateLastLogin(){
 
 async function showWhatsnew(){
   const last = await getAndUpdateLastLogin();
-  if(!last) return; // first login ever – no popup
+  // If first login for this user: show everything as new (use epoch as fallback)
+  const since = last || new Date(0);
 
   const newTermine = state.termine.filter(t => {
     if(!t.ts) return false;
-    return new Date(t.ts) > last && t.creator !== currentName;
+    return new Date(t.ts) > since && t.creator !== currentName;
   });
   const newMarkt = _marktData.filter(m => {
     if(!m.ts) return false;
-    return new Date(m.ts) > last && m.seller !== currentName;
+    return new Date(m.ts) > since && m.seller !== currentName;
   });
 
   if(!newTermine.length && !newMarkt.length) return; // nothing new
@@ -1426,6 +1451,19 @@ function rerenderCard(tid){
 // ── Termine CRUD ──
 function getT(id){return state.termine.find(t=>t.id===id)}
 
+function openNewTerminModal(){
+  document.getElementById('new-termin-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('new-title').focus(),50);
+}
+
+function closeNewTerminModal(){
+  document.getElementById('new-termin-modal').style.display='none';
+  ['new-title','new-ort'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const d=document.getElementById('new-date');if(d)d.value='';
+  const o=document.getElementById('new-offen');if(o)o.checked=true;
+  const p=document.getElementById('new-privat');if(p)p.checked=false;
+}
+
 async function createTermin(){
   const title=document.getElementById('new-title').value.trim();
   if(!title){document.getElementById('new-title').style.borderColor='var(--red)';return}
@@ -1438,8 +1476,7 @@ async function createTermin(){
   const t={id:state.nextId++,title,date,ort,creator,offen,privat,personen:creator?[creator]:[],spiele:[],chat:[],ts:new Date().toISOString()};
   state.termine.unshift(t);
   await saveState();
-  ['new-title','new-ort'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
-  const d=document.getElementById('new-date');if(d)d.value='';
+  closeNewTerminModal();
   renderTermine();
   notify('Termin erstellt! 🎉');
 }
