@@ -410,40 +410,94 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 
     <!-- MARKTPLATZ TAB -->
     <div id="tab-markt" class="tab-content">
-      <div class="form-card">
-        <div class="section-lbl">Spiel inserieren</div>
-        <div class="form-grid">
-          <div class="form-field">
-            <label>Spielname</label>
-            <input class="input-field" id="markt-titel" placeholder="z.B. Catan">
-          </div>
-          <div class="form-field">
-            <label>Preis (€)</label>
-            <input class="input-field" id="markt-preis" type="number" min="0" step="0.50" placeholder="z.B. 15">
-          </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spielemarktplatz</div>
+          <div style="font-size:.78rem;color:var(--text-3)">Kaufe und verkaufe Spiele innerhalb der Gruppe</div>
         </div>
-        <div class="form-field" style="margin-bottom:12px">
-          <label>Zustand &amp; Beschreibung</label>
-          <textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten, alle Karten vollständig …" style="resize:vertical;font-family:inherit"></textarea>
-        </div>
-        <div class="form-field" style="margin-bottom:12px">
-          <label>BGG-Link (optional)</label>
-          <input class="input-field" id="markt-bgg" placeholder="https://boardgamegeek.com/boardgame/13/catan">
-        </div>
-        <div style="margin-bottom:16px">
-          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Bilder (optional) – URL eingeben</div>
-          <div id="markt-imgs-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
-          <div style="display:flex;gap:6px">
-            <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addMarktImg()}">
-            <button class="btn btn-outline btn-sm" onclick="addMarktImg()">+ Hinzufügen</button>
-          </div>
-          <div id="markt-img-preview-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
-        </div>
-        <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
-        <button class="btn btn-blue" onclick="createInserat()">📢 Inserat erstellen</button>
+        <button onclick="openInseratModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 18px rgba(59,110,245,.4)'" onmouseleave="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(59,110,245,.35)'">
+          <span style="font-size:1.1rem">＋</span> Spiel inserieren
+        </button>
       </div>
-      <div class="section-lbl" style="margin-top:8px">Angebote</div>
       <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INSERAT MODAL -->
+<div id="inserat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeInseratModal()">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:up .2s ease">
+    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1">
+      <div>
+        <div style="font-size:1.1rem;font-weight:800;color:#fff">🛒 Spiel inserieren</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.75);margin-top:2px">Biete dein Spiel der Gruppe an</div>
+      </div>
+      <button onclick="closeInseratModal()" style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="padding:24px">
+      <div class="form-grid" style="margin-bottom:16px">
+        <div class="form-field">
+          <label>Spielname</label>
+          <input class="input-field" id="markt-titel" placeholder="z.B. Catan">
+        </div>
+        <div class="form-field">
+          <label>Preis (€)</label>
+          <input class="input-field" id="markt-preis" type="number" min="0" step="0.50" placeholder="z.B. 15">
+        </div>
+      </div>
+      <div class="form-field" style="margin-bottom:12px">
+        <label>Zustand &amp; Beschreibung</label>
+        <textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten, alle Karten vollständig …" style="resize:vertical;font-family:inherit"></textarea>
+      </div>
+      <div class="form-field" style="margin-bottom:12px">
+        <label>BGG-Link (optional)</label>
+        <input class="input-field" id="markt-bgg" placeholder="https://boardgamegeek.com/boardgame/13/catan">
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Bilder (optional) – URL eingeben</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addMarktImg()}">
+          <button class="btn btn-outline btn-sm" onclick="addMarktImg()">+ Hinzufügen</button>
+        </div>
+        <div id="markt-img-preview-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      </div>
+      <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeInseratModal()" style="flex:1">Abbrechen</button>
+        <button class="btn btn-blue" onclick="createInserat()" style="flex:2">📢 Inserat erstellen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR CODE MODAL -->
+<div id="qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:810;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeQrModal()">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:440px;animation:up .2s ease;overflow:hidden">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:1rem;font-weight:800">📊 BG Stats QR Code</div>
+        <div style="font-size:.75rem;color:var(--text-3);margin-top:2px">Link einfügen – QR Code wird automatisch generiert</div>
+      </div>
+      <button onclick="closeQrModal()" style="width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:.8rem">✕</button>
+    </div>
+    <div style="padding:22px 24px">
+      <div class="form-field" style="margin-bottom:14px">
+        <label>Bezeichnung (optional)</label>
+        <input class="input-field" id="qr-label" placeholder="z.B. Spieleabend Mai 2025">
+      </div>
+      <div class="form-field" style="margin-bottom:16px">
+        <label>BG Stats Link</label>
+        <input class="input-field" id="qr-url" placeholder="https://app.bgstatsapp.com/…" oninput="updateQrPreview()">
+      </div>
+      <div id="qr-preview-wrap" style="display:none;text-align:center;margin-bottom:18px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <img id="qr-preview-img" style="width:120px;height:120px;border-radius:8px;background:#fff;border:1px solid var(--border)" alt="QR Vorschau">
+        <div style="font-size:.72rem;color:var(--text-3);margin-top:8px">QR Code Vorschau</div>
+      </div>
+      <div id="qr-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeQrModal()" style="flex:1">Abbrechen</button>
+        <button class="btn btn-blue" onclick="saveQr()" style="flex:2">📊 Hinzufügen</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1900,8 +1954,29 @@ function buildTerminItem(t, open){
         <input class="chat-input" id="ci-${t.id}" placeholder="Nachricht schreiben …" onkeydown="onChatKey(event,${t.id})" autocomplete="off">
         <button class="chat-send" onclick="sendChat(${t.id})">➤</button>
       </div>
+
+      <div class="divider"></div>
+
+      <!-- BG Stats QR Codes -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div class="lbl" style="margin-bottom:0">📊 BG Stats</div>
+        <button class="btn btn-outline btn-sm" onclick="openQrModal(${t.id})">＋ QR Code hinzufügen</button>
+      </div>
+      <div id="qr-list-${t.id}">
+        ${(t.qrcodes||[]).length ? (t.qrcodes||[]).map((q,i)=>`
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(q.url)}" style="width:80px;height:80px;border-radius:6px;border:1px solid var(--border);flex-shrink:0;background:#fff" alt="QR">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:.85rem;margin-bottom:3px">${escHtml(q.label||'BG Stats Link')}</div>
+              <a href="${escHtml(q.url)}" target="_blank" style="font-size:.72rem;color:var(--blue);word-break:break-all;text-decoration:none">${escHtml(q.url)}</a>
+              <div style="font-size:.68rem;color:var(--text-3);margin-top:3px">hinzugefügt von ${escHtml(q.author)}</div>
+            </div>
+            ${(_isAdmin||q.author===currentName)?`<button onclick="removeQr(${t.id},${i})" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.8rem;padding:2px 4px" title="Entfernen">✕</button>`:''}
+          </div>`).join('')
+        : `<div style="font-size:.8rem;color:var(--text-3);padding:8px 0">Noch kein BG Stats Link hinzugefügt.</div>`}
+      </div>
     </div>
-  </div>`;
+  </div>\`;}
 }
 
 function buildSpielCard(t,s){
@@ -2142,6 +2217,23 @@ function renderMarktImgPreviews(){
     </div>`).join('');
 }
 
+function openInseratModal(){
+  _marktImgs = [];
+  document.getElementById('markt-titel').value='';
+  document.getElementById('markt-preis').value='';
+  document.getElementById('markt-desc').value='';
+  document.getElementById('markt-bgg').value='';
+  document.getElementById('markt-img-url').value='';
+  document.getElementById('markt-img-preview-wrap').innerHTML='';
+  document.getElementById('markt-error').style.display='none';
+  document.getElementById('inserat-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('markt-titel').focus(),50);
+}
+
+function closeInseratModal(){
+  document.getElementById('inserat-modal').style.display='none';
+}
+
 async function createInserat(){
   const titel = document.getElementById('markt-titel').value.trim();
   const preis = document.getElementById('markt-preis').value.trim();
@@ -2172,6 +2264,7 @@ async function createInserat(){
     document.getElementById('markt-img-url').value='';
     _marktImgs=[];
     renderMarktImgPreviews();
+    closeInseratModal();
     await renderMarkt();
     notify('Inserat erstellt ✓');
   } catch(e){
@@ -2338,6 +2431,62 @@ async function sendMarktChat(){
   if(btn) btn.textContent=`💬 Chat (${m.chat.length})`;
 }
 // ── End Marktplatz ──
+
+// ══════════════════════════════════════════════
+// BG STATS QR CODES
+// ══════════════════════════════════════════════
+let _qrTid = null;
+
+function openQrModal(tid){
+  _qrTid = tid;
+  document.getElementById('qr-label').value = '';
+  document.getElementById('qr-url').value = '';
+  document.getElementById('qr-preview-wrap').style.display = 'none';
+  document.getElementById('qr-error').style.display = 'none';
+  document.getElementById('qr-modal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('qr-url').focus(), 50);
+}
+
+function closeQrModal(){
+  document.getElementById('qr-modal').style.display = 'none';
+  _qrTid = null;
+}
+
+function updateQrPreview(){
+  const url = document.getElementById('qr-url').value.trim();
+  const wrap = document.getElementById('qr-preview-wrap');
+  const img  = document.getElementById('qr-preview-img');
+  if(!url || !url.startsWith('http')){ wrap.style.display='none'; return; }
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(url);
+  wrap.style.display = 'block';
+}
+
+async function saveQr(){
+  const url   = document.getElementById('qr-url').value.trim();
+  const label = document.getElementById('qr-label').value.trim();
+  const errEl = document.getElementById('qr-error');
+  errEl.style.display = 'none';
+  if(!url){ errEl.textContent='Bitte einen Link eingeben.'; errEl.style.display='block'; return; }
+  if(!url.startsWith('http')){ errEl.textContent='Bitte eine gültige URL eingeben.'; errEl.style.display='block'; return; }
+  const t = getT(_qrTid);
+  if(!t) return;
+  if(!t.qrcodes) t.qrcodes = [];
+  t.qrcodes.push({ url, label: label||'BG Stats Link', author: currentName, ts: new Date().toISOString() });
+  await saveState();
+  closeQrModal();
+  rerenderCard(_qrTid);
+  notify('QR Code hinzugefügt ✓');
+}
+
+async function removeQr(tid, idx){
+  const t = getT(tid);
+  if(!t || !t.qrcodes) return;
+  t.qrcodes.splice(idx, 1);
+  await saveState();
+  rerenderCard(tid);
+  notify('QR Code entfernt.');
+}
+// ── End BG Stats ──
 
 </script>
 </body>
