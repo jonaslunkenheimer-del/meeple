@@ -1007,7 +1007,7 @@ const SB_ANON  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const SB_TABLE = 'spieleabend';
 const SB_MARKT_TABLE = 'marktplatz';
 const SB_ROW   = 1; // single-row store
-const SB_SERVICE_KEY_BUILT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzb214and5enpnd3h0anh2cnRzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzEzNDEyMCwiZXhwIjoyMDg4NzEwMTIwfQ.gXa4VrRPJc_qygeC9ii9QIL02JF8zqShdDeznY4JZjk';
+const SB_SERVICE_KEY_BUILT = typeof '__SB_SERVICE_KEY__' !== 'undefined' ? '__SB_SERVICE_KEY__' : '';
 function getServiceKey(){ return SB_SERVICE_KEY_BUILT&&!SB_SERVICE_KEY_BUILT.startsWith('%%')?SB_SERVICE_KEY_BUILT:''; }
 
 let _allUsers = []; // cache: [{id, email, display_name}]
