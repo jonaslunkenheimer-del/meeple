@@ -130,13 +130,33 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 /* KALENDER */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .cal-month{font-size:1rem;font-weight:700}
-.cal-nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-dow{text-align:center;font-size:.65rem;font-family:'DM Mono',monospace;color:var(--text-3);font-weight:600;padding:4px 0}
-.cal-day{min-height:52px;border-radius:8px;padding:4px;background:var(--surface2);border:1px solid var(--border);font-size:.75rem;font-weight:600}
+.cal-nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-dow{text-align:center;font-size:.65rem;font-family:'DM Mono',monospace;color:var(--text-3);font-weight:600;padding:5px 0}
+.cal-day{min-height:56px;border-radius:8px;padding:5px 4px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;transition:border-color .15s,background .15s}
+.cal-day:active{background:#e0e7ff}
 .cal-day.today{border-color:var(--blue);background:#eef2fe}
-.cal-day.other-month{opacity:.4}
-.cal-event{background:var(--blue);color:#fff;border-radius:4px;padding:1px 4px;font-size:.62rem;margin-top:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-day.today .cal-day-num{color:var(--blue)}
+.cal-day.selected{border-color:#7c3aed;background:#f5f3ff}
+.cal-day.other-month{opacity:.35}
+.cal-day-num{font-size:.72rem;font-weight:700;text-align:center;margin-bottom:3px}
+.cal-dot-row{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+.cal-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.cal-event{background:var(--blue);color:#fff;border-radius:4px;padding:1px 5px;font-size:.6rem;margin-top:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-top:12px;display:none}
+.cal-detail.active{display:block}
+.cal-detail-title{font-size:.78rem;font-weight:700;color:var(--text-2);margin-bottom:10px}
+.cal-detail-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;cursor:pointer;border:1px solid var(--border)}
+.cal-detail-item:hover{border-color:var(--blue)}
+.cal-detail-time{font-size:.75rem;font-weight:700;color:var(--blue);min-width:38px;margin-top:1px;font-family:'DM Mono',monospace}
+.cal-detail-info{flex:1;min-width:0}
+.cal-detail-name{font-size:.88rem;font-weight:700;margin-bottom:2px}
+.cal-detail-sub{font-size:.72rem;color:var(--text-3)}
+@media(min-width:600px){
+  .cal-day{min-height:72px}
+  .cal-dot{display:none}
+  .cal-event{display:block}
+}
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:10px 20px;border-radius:20px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -236,6 +256,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <div class="cal-dow">Mo</div><div class="cal-dow">Di</div><div class="cal-dow">Mi</div>
           <div class="cal-dow">Do</div><div class="cal-dow">Fr</div><div class="cal-dow">Sa</div><div class="cal-dow">So</div>
         </div>
+        <div class="cal-detail" id="cal-detail"></div>      </div>
       </div>
       <div id="cal-undated-wrap"></div>
     </div>
@@ -1520,32 +1541,72 @@ function exportIcal(tid){
 }
 
 // ── Kalender ──
+var calSelectedDay=null;
+
+function showCalDetail(d, dayTermine){
+  calSelectedDay=d;
+  var panel=document.getElementById("cal-detail"); if(!panel) return;
+  // Highlight selected
+  document.querySelectorAll(".cal-day").forEach(function(el){
+    el.classList.toggle("selected", el.dataset.day===String(d));
+  });
+  if(!dayTermine.length){ panel.className="cal-detail"; return; }
+  var dayLabel=new Date(calYear,calMonth,d).toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"});
+  panel.innerHTML="<div class='cal-detail-title'>&#128197; "+dayLabel+"</div>"
+    +dayTermine.map(function(t){
+      var dt=new Date(t.date);
+      var hr=String(dt.getHours()).padStart(2,"0");
+      var mn=String(dt.getMinutes()).padStart(2,"0");
+      return "<div class='cal-detail-item' onclick='jumpToTermin("+t.id+")'>"
+        +"<div class='cal-detail-time'>"+hr+":"+mn+"</div>"
+        +"<div class='cal-detail-info'>"
+        +"<div class='cal-detail-name'>"+h(t.title)+"</div>"
+        +(t.ort?"<div class='cal-detail-sub'>&#128205; "+h(t.ort)+"</div>":"")
+        +"<div class='cal-detail-sub'>&#128101; "+t.personen.length+" dabei"+(t.spiele&&t.spiele.length?" &middot; &#127918; "+t.spiele.length+" Spiele":"")+"</div>"
+        +"</div></div>";
+    }).join("");
+  panel.className="cal-detail active";
+}
+
 function renderKalender(){
   var lbl=document.getElementById("cal-month-lbl"); var grid=document.getElementById("cal-grid");
   if(!lbl||!grid) return;
   lbl.textContent=new Date(calYear,calMonth).toLocaleDateString("de-DE",{month:"long",year:"numeric"});
   grid.querySelectorAll(".cal-day").forEach(function(c){ c.remove(); });
+  var panel=document.getElementById("cal-detail"); if(panel) panel.className="cal-detail";
+  calSelectedDay=null;
   var today=new Date();
   var dow=new Date(calYear,calMonth,1).getDay(); dow=dow===0?6:dow-1;
   var dim=new Date(calYear,calMonth+1,0).getDate();
   for(var i=0;i<dow;i++){ var c=document.createElement("div"); c.className="cal-day other-month"; grid.appendChild(c); }
   for(var d=1;d<=dim;d++){
     var c=document.createElement("div");
-    c.className="cal-day"+(today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d?" today":"");
-    c.innerHTML="<div style='font-size:.7rem;font-weight:700'>"+d+"</div>";
-    var dayT=state.termine.filter(function(t){
+    var isToday=today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
+    c.className="cal-day"+(isToday?" today":"");
+    c.dataset.day=String(d);
+    c.innerHTML="<div class='cal-day-num'>"+d+"</div>";
+    var dayTermine=state.termine.filter(function(t){
       if(t.privat&&!isAdmin&&!t.personen.includes(currentName)) return false;
       if(!t.date) return false;
       var td=new Date(t.date);
       return td.getFullYear()===calYear&&td.getMonth()===calMonth&&td.getDate()===d;
     });
-    dayT.forEach(function(t){
-      var ev=document.createElement("div"); ev.className="cal-event";
-      var hr=new Date(t.date).getHours(), min=String(new Date(t.date).getMinutes()).padStart(2,"0");
-      ev.textContent=hr+":"+min+" "+t.title;
-      ev.onclick=function(e){ e.stopPropagation(); jumpToTermin(t.id); };
-      c.appendChild(ev);
-    });
+    // Desktop: full event labels; Mobile: dots
+    if(dayTermine.length){
+      var dotRow=document.createElement("div"); dotRow.className="cal-dot-row";
+      dayTermine.forEach(function(){ var dot=document.createElement("div"); dot.className="cal-dot"; dotRow.appendChild(dot); });
+      c.appendChild(dotRow);
+      dayTermine.forEach(function(t){
+        var ev=document.createElement("div"); ev.className="cal-event";
+        var hr=new Date(t.date).getHours(), min=String(new Date(t.date).getMinutes()).padStart(2,"0");
+        ev.textContent=hr+":"+min+" "+t.title;
+        ev.onclick=function(e){ e.stopPropagation(); jumpToTermin(t.id); };
+        c.appendChild(ev);
+      });
+    }
+    (function(day, termine){
+      c.onclick=function(){ showCalDetail(day, termine); };
+    })(d, dayTermine);
     grid.appendChild(c);
   }
 }
