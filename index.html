@@ -365,9 +365,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div id="bgg-link-status" style="font-size:.78rem;color:var(--text-3)"></div>
       </div>
       <div id="add-panel-manual" style="display:none">
-        <div class="form-grid"><div class="form-field"><label>Spielname *</label><input class="input-field" id="man-name" placeholder="z.B. Catan"></div><div class="form-field"><label>Jahr</label><input class="input-field" id="man-year" type="number" placeholder="2024"></div></div>
-        <div class="form-grid"><div class="form-field"><label>Spieler</label><input class="input-field" id="man-players" placeholder="2-5"></div><div class="form-field"><label>Spielzeit</label><input class="input-field" id="man-time" placeholder="60 Min"></div></div>
-        <div class="form-field" style="margin-bottom:12px"><label>Bild-URL</label><input class="input-field" id="man-img" placeholder="https://…"></div>
+        <div class="form-grid"><div class="form-field"><label>Spielname *</label><input class="input-field" id="man-name" placeholder="z.B. Catan"></div><div class="form-field"><label>Spieler</label><input class="input-field" id="man-players" placeholder="2-5"></div></div>
+        <div class="form-grid"><div class="form-field"><label>Komplexität</label><input class="input-field" id="man-complexity" type="number" min="1" max="5" step="0.1" placeholder="1-5"></div><div class="form-field"><label>Bild-URL</label><input class="input-field" id="man-img" placeholder="https://…"></div></div>
         <div class="form-field" style="margin-bottom:16px"><label>BGG-Link</label><input class="input-field" id="man-bgg" placeholder="https://boardgamegeek.com/…"></div>
       </div>
       <div id="spiel-preview" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;display:flex;gap:12px;align-items:center">
@@ -427,7 +426,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div class="form-field"><label>Titel</label><input class="input-field" id="new-title" placeholder="z.B. Spieleabend bei Max"></div>
         <div class="form-field"><label>Datum & Uhrzeit</label><input class="input-field" id="new-date" type="datetime-local"></div>
         <div class="form-field"><label>Ort</label><input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …"></div>
-        <div class="form-field"><label>Ersteller</label><input class="input-field" id="new-creator" readonly></div>
+        <input type="hidden" id="new-creator">
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">Spielvorschläge erlauben</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Alle Teilnehmer können Spiele hinzufügen</div></div>
@@ -883,8 +882,19 @@ function rerenderCard(tid){
   var el=document.getElementById("termin-"+tid); if(!el) return;
   var wasOpen=el.classList.contains("open");
   var t=getT(tid); if(!t) return;
-  el.outerHTML=buildTerminCard(t,wasOpen);
+  // Build new card and extract inner parts to avoid full replacement
+  var tmp=document.createElement("div");
+  tmp.innerHTML=buildTerminCard(t,wasOpen);
+  var newEl=tmp.firstElementChild;
+  // Copy inner HTML but keep element identity
+  el.innerHTML=newEl.innerHTML;
+  el.className=newEl.className;
   if(wasOpen) loadMemberPicker(tid);
+  // Scroll chat to bottom if open
+  if(wasOpen){
+    var cb=document.getElementById("cb-"+tid);
+    if(cb) cb.scrollTop=cb.scrollHeight;
+  }
 }
 function renderTermine(){
   var list=document.getElementById("termine-list"); if(!list) return;
@@ -897,7 +907,35 @@ function renderTermine(){
     list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Termine.</p></div>";
     return;
   }
-  list.innerHTML=vis.map(function(t){ return buildTerminCard(t,false); }).join("");
+  // Smart update: only add new cards, update existing ones in-place
+  var existingIds=[];
+  list.querySelectorAll(".termin-item").forEach(function(el){
+    var id=parseInt(el.id.replace("termin-",""));
+    existingIds.push(id);
+  });
+  var visIds=vis.map(function(t){ return t.id; });
+  // Remove cards no longer visible
+  existingIds.forEach(function(id){
+    if(visIds.indexOf(id)===-1){
+      var el=document.getElementById("termin-"+id);
+      if(el) el.remove();
+    }
+  });
+  // Add or update each card
+  vis.forEach(function(t, idx){
+    var existing=document.getElementById("termin-"+t.id);
+    if(!existing){
+      // Insert at correct position
+      var newEl=document.createElement("div");
+      newEl.innerHTML=buildTerminCard(t,false);
+      var card=newEl.firstElementChild;
+      var ref=list.querySelectorAll(".termin-item")[idx];
+      if(ref) list.insertBefore(card,ref);
+      else list.appendChild(card);
+    }
+    // Don't update existing open cards (user is interacting)
+    // They get updated via rerenderCard when actions happen
+  });
 }
 function jumpToTermin(tid){
   showTab("termine",document.getElementById("tab-btn-termine"));
@@ -934,9 +972,10 @@ function buildTerminCard(t, open){
     ? "<div class='spiele-grid'>"+sortedS.map(function(s){ return buildSpielCard(t,s); }).join("")+"</div>"
     : "<div class='empty' style='padding:20px'><div class='empty-icon' style='font-size:1.5rem'>&#127918;</div><p>Noch keine Spiele.</p></div>";
 
-  // Add-Spiel section
+  // Add-Spiel section — only if user is a participant (or admin)
+  var userCanAdd=isAdmin||t.personen.includes(currentName);
   var addSection="";
-  if(t.offen!==false||t.creator===currentName){
+  if(userCanAdd&&(t.offen!==false||t.creator===currentName)){
     var vsSelect="";
     if(isAdmin&&t.personen.length){
       var opts=t.personen.map(function(p){ return "<option value='"+h(p)+"'"+(p===currentName?" selected":"")+" >"+h(p)+"</option>"; }).join("");
@@ -947,6 +986,8 @@ function buildTerminCard(t, open){
     }
     addSection=vsSelect+"<div style='display:flex;gap:8px;margin-bottom:"+(t.spiele.length?"18px":"0")+"'>"
       +"<button class='btn btn-blue btn-sm' onclick='openAddModal("+t.id+")'>+ Spiel hinzuf\u00fcgen</button></div>";
+  } else if(!userCanAdd) {
+    addSection="<p style='font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:var(--radius-sm)'>&#10004; Erst zusagen um Spiele vorzuschlagen!</p>";
   } else {
     addSection="<p style='font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm)'>&#128204; <strong>"+h(t.creator)+"</strong> hat das Spiel festgelegt.</p>";
   }
@@ -1238,7 +1279,7 @@ async function confirmAddSpiel(){
   if(activeTab==="manual"){
     var name=document.getElementById("man-name").value.trim();
     if(!name){ errEl.textContent="Spielname erforderlich."; errEl.style.display="block"; return; }
-    spiel={id:"m"+Date.now(),name:name,year:document.getElementById("man-year").value,players:document.getElementById("man-players").value,playtime:document.getElementById("man-time").value,image:document.getElementById("man-img").value,bggUrl:document.getElementById("man-bgg").value,votes:{}};
+    spiel={id:"m"+Date.now(),name:name,players:document.getElementById("man-players").value,complexity:document.getElementById("man-complexity").value,image:document.getElementById("man-img").value,bggUrl:document.getElementById("man-bgg").value,votes:{}};
   } else {
     if(!window._pendingSpiel){ errEl.textContent="Bitte zuerst ein Spiel ausw\u00e4hlen."; errEl.style.display="block"; return; }
     spiel=Object.assign({id:"b"+Date.now(),votes:{}},window._pendingSpiel);
@@ -1347,8 +1388,8 @@ function renderZusagen(){
 }
 
 // ── Marktplatz ──
-async function renderMarkt(){
-  await loadMarktData();
+async function renderMarkt(reload){
+  if(reload!==false) await loadMarktData();
   var list=document.getElementById("markt-list"); if(!list) return;
   if(!mData.length){
     list.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>&#128722;</div><p>Noch keine Angebote.</p></div>"; return;
@@ -1417,7 +1458,7 @@ async function createInserat(){
   if(isNaN(preis)||preis<0){ errEl.textContent="G\u00fcltigen Preis eingeben."; errEl.style.display="block"; return; }
   var id=Date.now();
   mData.unshift({id:id,titel:titel,preis:preis,desc:document.getElementById("markt-desc").value.trim(),images:mImgs.slice(),bgg:document.getElementById("markt-bgg").value.trim()||null,seller:currentName,ts:new Date().toISOString(),chat:[],interesse:[],sold:false});
-  try{ await saveMarkt(); closeInseratModal(); await renderMarkt(); toast("Inserat erstellt \u2713"); }
+  try{ await saveMarkt(); closeInseratModal(); await renderMarkt(false); toast("Inserat erstellt \u2713"); }
   catch(e){ errEl.textContent="Fehler: "+(e.message||e); errEl.style.display="block"; }
 }
 async function toggleInteresse(id){
@@ -1425,18 +1466,18 @@ async function toggleInteresse(id){
   if(!m.interesse) m.interesse=[];
   if(m.interesse.includes(currentName)) m.interesse=m.interesse.filter(function(n){ return n!==currentName; });
   else m.interesse.push(currentName);
-  await saveMarkt(); renderMarkt();
+  await saveMarkt(); renderMarkt(false);
 }
 async function markSold(id){
   var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
-  m.sold=true; await saveMarkt(); renderMarkt(); toast("Als verkauft markiert \u2713");
+  m.sold=true; await saveMarkt(); renderMarkt(false); toast("Als verkauft markiert \u2713");
 }
 async function deleteInserat(id){
   var m=mData.find(function(x){ return x.id===id; });
   var name=m?m.titel:"dieses Inserat";
   showConfirm("Inserat l\u00f6schen?","\""+name+"\" wirklich entfernen?",async function(){
     mData=mData.filter(function(x){ return x.id!==id; });
-    await saveMarkt(); renderMarkt(); toast("Gel\u00f6scht.");
+    await saveMarkt(); renderMarkt(false); toast("Gel\u00f6scht.");
   });
 }
 function openLightbox(src){ document.getElementById("lb-img").src=src; document.getElementById("lightbox").style.display="flex"; }
