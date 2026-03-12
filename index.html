@@ -1629,6 +1629,7 @@ function buildTerminItem(t, open){
         <div class="termin-title-row">
           <span class="termin-title">${escHtml(t.title)}</span>
         </div>
+        <div style="font-size:.72rem;color:var(--text-3);margin-bottom:3px">erstellt von <strong style="color:var(--text-2)">${escHtml(t.creator||'?')}</strong></div>
         <div class="chips-row">${dateChip}${ortChip}${personChip}${spieleChip}${chatChip}${modeChip}${privatChip}</div>
       </div>
       <span class="termin-chevron">▼</span>
@@ -1806,25 +1807,37 @@ function renderZusagen(){
 
   function buildCard(t){
     const isPast = t.date && new Date(t.date) < now;
-    const dateStr = t.date ? formatDate(t.date) : 'Kein Datum';
+    const dateObj = t.date ? new Date(t.date) : null;
+    const dayName = dateObj ? dateObj.toLocaleDateString('de-DE',{weekday:'long'}) : '';
+    const dayNum  = dateObj ? dateObj.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'}) : 'Kein Datum';
+    const timeStr = dateObj ? dateObj.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr' : '';
+    const daysLeft = dateObj && !isPast ? Math.ceil((dateObj - now) / 86400000) : null;
+    const countdownStr = daysLeft === 0 ? '🔥 Heute!' : daysLeft === 1 ? '⏰ Morgen!' : daysLeft !== null ? `in ${daysLeft} Tagen` : '';
     const ortStr  = t.ort  ? `<span style="font-size:.75rem;color:var(--text-3)">📍 ${escHtml(t.ort)}</span>` : '';
     const personen = t.personen.map(p=>`<div class="av av-sm" style="background:${nameColor(p)}" title="${escHtml(p)}">${nameInit(p)}</div>`).join('');
     const spieleStr = t.spiele.length ? t.spiele.map(s=>`<span style="font-size:.75rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 8px">${escHtml(s.name)}</span>`).join('') : '<span style="font-size:.75rem;color:var(--text-3)">Noch keine Spiele</span>';
-    return `<div onclick="jumpToTermin(${t.id})" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;box-shadow:var(--shadow-sm);cursor:pointer;transition:border-color .15s;opacity:${isPast?'.6':'1'}" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
+    return `<div onclick="jumpToTermin(${t.id})" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow-sm);cursor:pointer;transition:border-color .15s;opacity:${isPast?'.6':'1'}" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
+      <!-- Date banner -->
+      <div style="background:${isPast?'var(--surface2)':'var(--blue)'};padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px">
         <div>
-          <div style="font-weight:700;font-size:.95rem;margin-bottom:3px">${escHtml(t.title)}</div>
-          <div style="font-size:.78rem;color:var(--text-2)">📅 ${dateStr}</div>
-          ${ortStr}
+          <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;opacity:.75;color:${isPast?'var(--text-3)':'rgba(255,255,255,.8)'}">${dayName}</div>
+          <div style="font-size:1rem;font-weight:800;color:${isPast?'var(--text-2)':'#fff'}">${dayNum}</div>
+          ${timeStr?`<div style="font-size:.78rem;font-weight:600;color:${isPast?'var(--text-3)':'rgba(255,255,255,.85)'}">🕐 ${timeStr}</div>`:''}
         </div>
-        <span style="font-size:.7rem;padding:3px 10px;border-radius:20px;white-space:nowrap;font-weight:600;${isPast?'background:#f3f4f6;color:var(--text-3)':'background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd)'}">${isPast?'Vergangen':'Bevorstehend'}</span>
+        ${countdownStr?`<div style="background:rgba(255,255,255,.2);color:#fff;font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap">${countdownStr}</div>`:''}
+        ${isPast?`<span style="font-size:.7rem;padding:3px 10px;border-radius:20px;background:#f3f4f6;color:var(--text-3);font-weight:600;white-space:nowrap">Vergangen</span>`:''}
       </div>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-        <span style="font-size:.72rem;color:var(--text-3);margin-right:2px">👥</span>
-        <div style="display:flex;gap:3px">${personen}</div>
-        <span style="font-size:.72rem;color:var(--text-3)">${t.personen.length} Personen</span>
+      <!-- Content -->
+      <div style="padding:14px 18px">
+        <div style="font-weight:700;font-size:.95rem;margin-bottom:4px">${escHtml(t.title)}</div>
+        ${ortStr?`<div style="margin-bottom:8px">${ortStr}</div>`:''}
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+          <span style="font-size:.72rem;color:var(--text-3)">👥</span>
+          <div style="display:flex;gap:3px">${personen}</div>
+          <span style="font-size:.72rem;color:var(--text-3)">${t.personen.length} Personen</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">${spieleStr}</div>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">${spieleStr}</div>
     </div>`;
   }
 
