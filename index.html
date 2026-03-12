@@ -1039,34 +1039,20 @@ function renderTermine(){
     list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Termine.</p></div>";
     return;
   }
-  // Smart update: only add new cards, update existing ones in-place
-  var existingIds=[];
-  list.querySelectorAll(".termin-item").forEach(function(el){
-    var id=parseInt(el.id.replace("termin-",""));
-    existingIds.push(id);
+  // Remember which cards are currently open before rebuilding
+  var openIds={};
+  list.querySelectorAll(".termin-item.open").forEach(function(el){
+    openIds[el.id]=true;
   });
-  var visIds=vis.map(function(t){ return t.id; });
-  // Remove cards no longer visible
-  existingIds.forEach(function(id){
-    if(visIds.indexOf(id)===-1){
-      var el=document.getElementById("termin-"+id);
-      if(el) el.remove();
-    }
-  });
-  // Add or update each card
-  vis.forEach(function(t, idx){
-    var existing=document.getElementById("termin-"+t.id);
-    if(!existing){
-      // Insert at correct position
-      var newEl=document.createElement("div");
-      newEl.innerHTML=buildTerminCard(t,false);
-      var card=newEl.firstElementChild;
-      var ref=list.querySelectorAll(".termin-item")[idx];
-      if(ref) list.insertBefore(card,ref);
-      else list.appendChild(card);
-    }
-    // Don't update existing open cards (user is interacting)
-    // They get updated via rerenderCard when actions happen
+  // Full rebuild so canManage/isAdmin/joinBtn always reflect current state
+  list.innerHTML=vis.map(function(t){
+    var wasOpen=!!openIds["termin-"+t.id];
+    return buildTerminCard(t, wasOpen);
+  }).join("");
+  // Re-load member pickers for open cards
+  Object.keys(openIds).forEach(function(elId){
+    var tid=parseInt(elId.replace("termin-",""));
+    if(!isNaN(tid)) loadMemberPicker(tid);
   });
 }
 function jumpToTermin(tid){
