@@ -441,14 +441,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
           <label>Zustand &amp; Beschreibung</label>
           <textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten, alle Karten vollständig …" style="resize:vertical;font-family:inherit"></textarea>
         </div>
-        <div class="form-field" style="margin-bottom:16px">
-          <label>Foto hochladen</label>
-          <label for="markt-file" id="markt-drop" style="border:2px dashed var(--border);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;background:var(--bg);transition:border-color .15s;display:block" onmouseenter="this.style.borderColor='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)'">
-            <div id="markt-drop-icon" style="font-size:2rem;margin-bottom:6px">📷</div>
-            <div id="markt-drop-text" style="font-size:.82rem;color:var(--text-3)">Klicken zum Auswählen</div>
-            <img id="markt-preview" style="display:none;max-height:160px;max-width:100%;border-radius:8px;margin-top:12px;object-fit:contain">
-          </label>
-          <input type="file" id="markt-file" accept="image/*" style="display:none" onchange="previewMarktImg(this)">
+        <div style="margin-bottom:16px">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Foto hochladen</div>
+          <div id="markt-drop" style="border:2px dashed var(--border);border-radius:var(--radius);padding:20px;text-align:center;background:var(--bg)">
+            <img id="markt-preview" style="display:none;max-height:180px;max-width:100%;border-radius:8px;margin-bottom:12px;object-fit:contain">
+            <div id="markt-drop-icon" style="font-size:2rem;margin-bottom:8px">📷</div>
+            <div id="markt-drop-text" style="font-size:.82rem;color:var(--text-3);margin-bottom:14px">Bild auswählen</div>
+            <input type="file" id="markt-file" accept="image/*" style="display:block;width:100%;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:.85rem;cursor:pointer;color:var(--text)" onchange="previewMarktImg(this)">
+          </div>
         </div>
         <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
         <button class="btn btn-blue" onclick="createInserat()">📢 Inserat erstellen</button>
@@ -1981,6 +1981,7 @@ function previewMarktImg(input){
     prev.style.display = 'block';
     document.getElementById('markt-drop-icon').style.display = 'none';
     document.getElementById('markt-drop-text').style.display = 'none';
+    document.getElementById('markt-drop').style.borderColor = 'var(--green)';
   };
   reader.readAsDataURL(file);
 }
@@ -2006,6 +2007,7 @@ async function createInserat(){
   prev.src=''; prev.style.display='none';
   document.getElementById('markt-drop-icon').style.display='';
   document.getElementById('markt-drop-text').style.display='';
+  document.getElementById('markt-drop').style.borderColor='';
   document.getElementById('markt-file').value='';
   _marktImgData = '';
   renderMarkt();
