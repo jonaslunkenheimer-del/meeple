@@ -914,6 +914,7 @@ async function deleteTermin(tid){
 }
 function openEditModal(tid){
   var t=getT(tid); if(!t) return;
+  if(!isAdmin&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
   editTid=tid;
   document.getElementById("edit-title").value=t.title||"";
   document.getElementById("edit-date").value=t.date||"";
@@ -925,6 +926,7 @@ function openEditModal(tid){
 function closeEditModal(){ document.getElementById("edit-modal").style.display="none"; editTid=null; }
 async function saveEdit(){
   var t=getT(editTid); if(!t) return;
+  if(!isAdmin&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
   t.title=document.getElementById("edit-title").value.trim()||t.title;
   t.date=document.getElementById("edit-date").value;
   t.ort=document.getElementById("edit-ort").value.trim();
