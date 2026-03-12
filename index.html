@@ -238,12 +238,89 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;padding:11px 16px;border-radius:var(--radius-sm);font-size:.83rem;font-weight:500;box-shadow:var(--shadow-lg);transform:translateY(60px);opacity:0;transition:all .26s cubic-bezier(.34,1.56,.64,1);z-index:9999;display:flex;align-items:center;gap:8px}
 .toast-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0}
 .toast.show{transform:translateY(0);opacity:1}
+/* ══════════════════════════
+   MOBILE OPTIMIERUNG
+══════════════════════════ */
 @media(max-width:700px){
-  header{padding:0 16px}
-  .container{padding:20px 14px}
-  .tab-bar .tab{padding:6px 10px;font-size:.7rem}
+
+  /* Header */
+  header{padding:0 12px;height:54px}
+  .brand-sub{display:none}
+  .user-pill{padding:4px 10px 4px 4px}
+  .user-pill-name{font-size:.78rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Tabs – scrollbar horizontal */
+  .tab-bar{gap:1px;padding:2px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tab-bar::-webkit-scrollbar{display:none}
+  .tab{padding:6px 11px;font-size:.68rem;white-space:nowrap}
+
+  /* Layout */
+  .container{padding:14px 10px}
+
+  /* Login */
+  .name-box{padding:28px 20px;border-radius:18px}
+  .name-title{font-size:1.4rem}
+
+  /* Termin cards */
+  .termin-header{padding:14px 14px;gap:10px}
+  .termin-title{font-size:.92rem}
+  .termin-body{padding:0 14px 16px}
+  .chips-row .chip{font-size:.6rem;padding:2px 7px}
+
+  /* Spiele grid – 1 Spalte */
+  .spiele-grid{grid-template-columns:1fr}
+
+  /* Spiel card kompakter */
+  .spiel-img,.spiel-img-ph{height:110px}
+  .spiel-body{padding:8px 10px 10px}
+  .spiel-name{font-size:.82rem}
+
+  /* Form */
+  .form-card{padding:16px 14px;border-radius:12px}
+  .form-grid{grid-template-columns:1fr}
+  .input-row{flex-direction:column;gap:6px}
+  .input-row .btn{width:100%;justify-content:center}
+
+  /* Buttons in termin header actions */
+  .termin-body > div:first-child{flex-wrap:wrap}
+  .termin-body > div:first-child .btn{font-size:.74rem;padding:6px 10px}
+
+  /* Chat */
+  .chat-box{max-height:200px}
+  .bubble{max-width:85%}
+
+  /* Kalender */
   .cal-grid{gap:1px}
-  .cal-day{min-height:56px;padding:4px}
+  .cal-day{min-height:50px;padding:3px 3px}
+  .cal-day-num{font-size:.7rem;width:20px;height:20px}
+  .cal-event{font-size:.58rem;padding:1px 4px}
+  .cal-month{font-size:1rem}
+
+  /* Marktplatz Galerie – 1 Spalte */
+  #markt-list{grid-template-columns:1fr}
+
+  /* Modals volle Breite – sheet von unten */
+  #add-spiel-modal,#edit-modal,#profile-modal,#markt-chat-modal{align-items:flex-end!important;padding:0!important}
+  #add-spiel-inner,#edit-modal>div,#profile-modal>div,#markt-chat-modal>div{max-width:100%!important;border-radius:20px 20px 0 0!important;max-height:92vh;overflow-y:auto}
+
+  /* Toast unten mittig */
+  .toast{right:50%;transform:translateX(50%) translateY(60px);bottom:14px;font-size:.78rem}
+  .toast.show{transform:translateX(50%) translateY(0)}
+
+  /* Sterne größer zum Antippen */
+  .star{font-size:1.6rem}
+
+  /* Member picker chips größere Tippfläche */
+  #member-list-wrap button{padding:7px 14px 7px 8px;font-size:.82rem}
+
+  /* Zusagen Karten */
+  .zusagen-date-banner{padding:10px 14px}
+}
+
+@media(max-width:400px){
+  .brand-name{font-size:.88rem}
+  .tab{padding:5px 8px;font-size:.63rem}
+  .termin-title{font-size:.85rem}
 }
 </style>
 </head>
@@ -402,7 +479,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 
 <!-- SPIEL HINZUFÜGEN MODAL (3 Tabs: Suche / Link / Manuell) -->
 <div id="add-spiel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeAddModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:500px;position:relative;animation:up .2s ease;overflow:hidden">
+  <div id="add-spiel-inner" style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:500px;position:relative;animation:up .2s ease;overflow:hidden">
 
     <!-- Header -->
     <div style="padding:22px 24px 0">
