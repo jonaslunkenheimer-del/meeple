@@ -740,6 +740,7 @@ async function doLogin(){
 
 async function startApp(name){
   currentName = name;
+  loadMyAddedSpiele();
   document.getElementById("name-screen").style.display="none";
   document.getElementById("app-screen").style.display="block";
   document.getElementById("new-creator").value=name;
@@ -747,6 +748,15 @@ async function startApp(name){
   document.getElementById("hdr-name").textContent=name;
   document.getElementById("tab-btn-markt").style.display="";
   try{ await loadState(); }catch(e){}
+  // Pre-populate myAddedSpiele from DB data for this user
+  if(state&&state.termine){
+    state.termine.forEach(function(t){
+      (t.spiele||[]).forEach(function(s){
+        if(s.vorschlaeger===currentName||t.creator===currentName) myAddedSpiele[s.id]=true;
+      });
+    });
+    saveMyAddedSpiele();
+  }
   renderTermine();
   startPolling();
   await renderMarkt();
@@ -756,7 +766,8 @@ async function startApp(name){
 async function switchUser(){
   if(session){ try{ await fetch(SB_URL+"/auth/v1/logout",{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+(session.access_token||"")}}); }catch(e){} }
   clearSession();
-  session=null; isAdmin=false; currentName=""; state={termine:[],nextId:1}; mData=[]; myAddedSpiele={};
+  session=null; isAdmin=false; currentName=""; state={termine:[],nextId:1}; mData=[];
+  myAddedSpiele={}; try{ sessionStorage.removeItem("meeples_myspiele"); }catch(e){}
   document.getElementById("app-screen").style.display="none";
   document.getElementById("name-screen").style.display="flex";
   document.getElementById("login-email").value="";
@@ -828,6 +839,13 @@ async function loadState(){
 }
 var saveLock=false;
 var myAddedSpiele={}; // session-local backup: spiel IDs added by current user
+function loadMyAddedSpiele(){
+  try{ var r=sessionStorage.getItem("meeples_myspiele"); if(r) myAddedSpiele=JSON.parse(r)||{}; }catch(e){}
+}
+function saveMyAddedSpiele(){
+  try{ sessionStorage.setItem("meeples_myspiele",JSON.stringify(myAddedSpiele)); }catch(e){}
+}
+function addMySpiel(id){ myAddedSpiele[id]=true; saveMyAddedSpiele(); }
 async function saveState(){
   saveLock=true;
   try{
@@ -1641,7 +1659,7 @@ async function confirmAddSpiel(){
     errEl.textContent="Spiel bereits vorhanden."; errEl.style.display="block"; return;
   }
   t.spiele.push(spiel);
-  myAddedSpiele[spiel.id]=true;
+  addMySpiel(spiel.id);
   var savedTid=addTid;
   closeAddModal();
   updateSpielSection(savedTid);
