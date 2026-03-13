@@ -1776,8 +1776,8 @@ async function toggleInteresse(id){
   renderMarkt(false); await saveMarkt();
 }
 async function markSold(id){
-  var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
-  m.sold=true; renderMarkt(false); toast("Als verkauft markiert \u2713"); await saveMarkt();
+  mData=mData.filter(function(x){ return x.id!==id; });
+  renderMarkt(false); toast("Inserat als verkauft entfernt \u2713"); await saveMarkt();
 }
 async function deleteInserat(id){
   var m=mData.find(function(x){ return x.id===id; });
