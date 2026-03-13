@@ -1497,25 +1497,17 @@ async function loadMemberPicker(tid){
   var listEl=document.getElementById("member-list-"+tid); if(!listEl) return;
   var t=getT(tid); if(!t) return;
   listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Lade\u2026</span>";
-  var sk=getSK();
-  if(!sk){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>&#128274; Nicht verf\u00fcgbar.</span>"; return; }
   if(!userCache){
     try{
-      var all=[];
-      var page=1;
-      while(true){
-        var r=await fetch(SB_URL+"/auth/v1/admin/users?per_page=1000&page="+page,{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
-        var d=await r.json();
-        var batch=d.users||[];
-        batch.forEach(function(u){
-          var name=(u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de","");
-          if(name&&name.length>0&&all.indexOf(name)===-1) all.push(name);
-        });
-        if(batch.length<1000) break;
-        page++;
-      }
-      userCache=all;
-    }catch(e){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>"; return; }
+      // Query user_meta table - accessible with normal auth token, no service key needed
+      var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      var rows=await r.json();
+      userCache=rows.map(function(row){ return row.user_name; }).filter(function(n){ return n&&n.length>0; });
+    }catch(e){
+      listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>";
+      return;
+    }
   }
   var available=userCache.filter(function(u){ return t.personen.indexOf(u)===-1; });
   if(!available.length){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Alle Mitglieder sind bereits dabei.</span>"; return; }
