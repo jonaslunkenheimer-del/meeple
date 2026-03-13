@@ -807,6 +807,11 @@ function startPolling(){
           if(!t.privat) return true; if(isAdmin) return true;
           return t.personen&&t.personen.includes(currentName);
         });
+        vis.sort(function(a,b){
+          var da=a.date?new Date(a.date):new Date(8640000000000000);
+          var db=b.date?new Date(b.date):new Date(8640000000000000);
+          return da-db;
+        });
         var visIds=vis.map(function(t){ return t.id; });
         // Remove deleted
         list.querySelectorAll(".termin-item").forEach(function(el){
@@ -1038,7 +1043,7 @@ async function createTermin(){
     ts:new Date().toISOString()
   };
   state.termine.unshift(t);
-  closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89"); saveState();
+  closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89"); await saveState();
 }
 async function deleteTermin(tid){
   var t=getT(tid); if(!t) return;
@@ -1078,7 +1083,7 @@ async function saveEdit(){
   t.limitVal=parseInt(document.getElementById("edit-limit-val").value)||0;
   t.voteOn=document.getElementById("edit-vote-on").checked;
   t.diceOn=document.getElementById("edit-dice-on").checked;
-  closeEditModal(); rerenderCard(editTid); toast("Gespeichert \u2713"); saveState();
+  closeEditModal(); rerenderCard(editTid); toast("Gespeichert \u2713"); await saveState();
 }
 
 // ── Termine: Render ──
@@ -1127,6 +1132,11 @@ function renderTermine(){
     if(!t.privat) return true;
     if(isAdmin) return true;
     return t.personen&&t.personen.includes(currentName);
+  });
+  vis.sort(function(a,b){
+    var da=a.date?new Date(a.date):new Date(8640000000000000);
+    var db=b.date?new Date(b.date):new Date(8640000000000000);
+    return da-db;
   });
   if(!vis.length){
     list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Termine.</p></div>";
