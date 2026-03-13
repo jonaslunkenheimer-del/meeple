@@ -1527,7 +1527,18 @@ async function loadMemberPicker(tid){
       var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
       if(!r.ok) throw new Error("HTTP "+r.status);
       var rows=await r.json();
-      userCache=rows.map(function(row){ return row.user_name; }).filter(function(n){ return n&&n.length>0; });
+      userCache=[];
+      var seen={};
+      rows.forEach(function(row){
+        var name=row.user_name;
+        if(!name||!name.length) return;
+        // Normalize for dedup: lowercase, trim, collapse spaces/hyphens/dots
+        var key=name.toLowerCase().trim().replace(/[\s\-_.]+/g,"");
+        if(!seen[key]){
+          seen[key]=true;
+          userCache.push(name);
+        }
+      });
     }catch(e){
       listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>";
       return;
