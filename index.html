@@ -100,11 +100,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .spiel-info{padding:10px 12px}
 .spiel-name{font-weight:700;font-size:.9rem;margin-bottom:3px}
 .spiel-sub{font-size:.7rem;color:var(--text-3);margin-bottom:8px}
-.stars{display:flex;gap:3px;margin-bottom:6px}
-.star{font-size:1.2rem;cursor:pointer;transition:transform .1s}.star:hover{transform:scale(1.2)}
-.vote-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:6px;overflow:hidden}
-.vote-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .3s}
-.vote-info{font-size:.7rem;color:var(--text-3)}
+.vote-btns{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.vote-btn{border:1.5px solid var(--border);background:var(--surface2);border-radius:8px;padding:4px 10px;font-size:.82rem;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;font-weight:600}
+.vote-btn:hover{transform:scale(1.06)}
+.vote-btn.up.active{background:#dcfce7;border-color:#16a34a;color:#16a34a}
+.vote-btn.down.active{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.vote-btn.abstain.active{background:#f3f4f6;border-color:#6b7280;color:#6b7280}
+.vote-count{font-size:.7rem;color:var(--text-3);margin-left:2px}
+.vote-info{font-size:.7rem;color:var(--text-3);margin-bottom:4px}
 /* CHAT */
 .chat-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;max-height:240px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:8px}
 .chat-empty{font-size:.8rem;color:var(--text-3);text-align:center;padding:16px 0}
@@ -623,6 +626,7 @@ function fmtTime(t){ return new Date(t).toLocaleTimeString("de-DE",{hour:"2-digi
 function toast(msg){ var el=document.getElementById("toast"); el.querySelector("span").textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("show"); },2400); }
 function getT(id){ return state.termine.find(function(t){ return t.id===id; }); }
 function avg(s){ if(!s.votes||!Object.keys(s.votes).length) return 0; var v=Object.values(s.votes); return v.reduce(function(a,b){ return a+b; },0)/v.length; }
+function score(s){ if(!s.votes) return 0; return Object.values(s.votes).filter(function(v){ return v===1; }).length; }
 function getBggTok(){ return localStorage.getItem(BGG_KEY)||""; }
 function getSK(){ return (SB_SK && SB_SK.indexOf("__")!==0) ? SB_SK : ""; }
 function authHdrs(x){ var tok=(session&&session.access_token)||SB_ANON; return Object.assign({"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+tok},x||{}); }
@@ -774,20 +778,39 @@ function startPolling(){
       if(fresh!==lastHash){
     lastHash=fresh;
     if(rows[0].data&&rows[0].data.termine){
-      var oldTermine=state.termine;
       state=rows[0].data;
       if(!state.userColors) state.userColors={};
-      renderTermine();
-      // Only update joinBtn/limit status on cards where personen changed
-      state.termine.forEach(function(t){
-        var el=document.getElementById("termin-"+t.id);
-        if(!el) return;
-        updateJoinBtn(t.id);
-        // Update personen count chip
-        el.querySelectorAll(".chip").forEach(function(c){
-          if(c.innerHTML.indexOf("&#128101;")!==-1){
-            c.innerHTML="&#128101; "+t.personen.length+(t.limitOn&&t.limitVal?" / "+t.limitVal:"")+" dabei";
+      // Smart diff: only add new cards or remove deleted ones; never rebuild existing
+      var list=document.getElementById("termine-list");
+      if(list){
+        var vis=state.termine.filter(function(t){
+          if(!t.privat) return true; if(isAdmin) return true;
+          return t.personen&&t.personen.includes(currentName);
+        });
+        var visIds=vis.map(function(t){ return t.id; });
+        // Remove deleted
+        list.querySelectorAll(".termin-item").forEach(function(el){
+          var id=parseInt(el.id.replace("termin-",""));
+          if(visIds.indexOf(id)===-1) el.remove();
+        });
+        // Add new cards
+        vis.forEach(function(t,idx){
+          if(!document.getElementById("termin-"+t.id)){
+            var newEl=document.createElement("div");
+            newEl.innerHTML=buildTerminCard(t,false);
+            var card=newEl.firstElementChild;
+            var ref=list.querySelectorAll(".termin-item")[idx];
+            if(ref) list.insertBefore(card,ref); else list.appendChild(card);
           }
+        });
+      }
+      // Update joinBtn + chips on existing cards without full rebuild
+      state.termine.forEach(function(t){
+        var el=document.getElementById("termin-"+t.id); if(!el) return;
+        updateJoinBtn(t.id);
+        el.querySelectorAll(".chip").forEach(function(c){
+          if(c.innerHTML.indexOf("&#128101;")!==-1)
+            c.innerHTML="&#128101; "+t.personen.length+(t.limitOn&&t.limitVal?" / "+t.limitVal:"")+" dabei";
         });
       });
     }
@@ -1039,7 +1062,7 @@ function toggleTermin(tid){
 }
 function updateSpielSection(tid){
   var t=getT(tid); if(!t) return;
-  var sortedS=[].concat(t.spiele).sort(function(a,b){ return avg(b)-avg(a); });
+  var sortedS=[].concat(t.spiele).sort(function(a,b){ return score(b)-score(a); });
   var spieleHtml=t.spiele.length
     ? "<div class='spiele-grid'>"+sortedS.map(function(s){ return buildSpielCard(t,s); }).join("")+"</div>"
     : "<div class='empty' style='padding:20px'><div class='empty-icon' style='font-size:1.5rem'>&#127918;</div><p>Noch keine Spiele.</p></div>";
@@ -1162,7 +1185,7 @@ function buildTerminCard(t, open){
   }).join("");
 
   // Spiele
-  var sortedS=[].concat(t.spiele).sort(function(a,b){ return avg(b)-avg(a); });
+  var sortedS=[].concat(t.spiele).sort(function(a,b){ return score(b)-score(a); });
   var spieleHtml=t.spiele.length
     ? "<div class='spiele-grid'>"+sortedS.map(function(s){ return buildSpielCard(t,s); }).join("")+"</div>"
     : "<div class='empty' style='padding:20px'><div class='empty-icon' style='font-size:1.5rem'>&#127918;</div><p>Noch keine Spiele.</p></div>";
@@ -1295,40 +1318,42 @@ function rollDice(tid){
 }
 
 function buildSpielCard(t,s){
-  var av=avg(s), vc=s.votes?Object.keys(s.votes).length:0, bw=av>0?(av/5*100).toFixed(0):0;
+  var sc=score(s);
+  var ups=s.votes?Object.values(s.votes).filter(function(v){ return v===1; }).length:0;
+  var downs=s.votes?Object.values(s.votes).filter(function(v){ return v===-1; }).length:0;
+  var maxSc=Math.max.apply(null,t.spiele.map(function(x){ return score(x); }));
+  var isTop=ups>0&&sc===maxSc&&sc>0;
   var pr=s.image?proxyImg(s.image):null;
-  var maxA=Math.max.apply(null,t.spiele.map(function(x){ return avg(x); }));
-  var isTop=vc>0&&av===maxA&&av>0;
-  // Stars: hidden on private termins; interactive only for participants
-  var showStars = !t.privat;
-  var voter=showStars&&currentName&&t.personen.includes(currentName)?currentName:"";
-  var myVote=voter&&s.votes?s.votes[voter]||0:0;
-  var stars="";
-  if(showStars){
-    stars="<div class='stars'>";
-    for(var i=1;i<=5;i++){
-      if(voter){
-        stars+="<span class='star' onclick='voteSpiel("+t.id+",\""+s.id+"\","+i+")' title='"+i+" Stern"+(i>1?"e":"")+"'>"+(i<=myVote?"&#9733;":"&#9734;")+"</span>";
-      } else {
-        stars+="<span class='star' style='cursor:default'>"+(i<=Math.round(av)?"&#9733;":"&#9734;")+"</span>";
-      }
-    }
-    stars+="</div>";
-  }
   var canDel=isAdmin||s.vorschlaeger===currentName||t.creator===currentName;
-  var delBtn=canDel?"<button class='btn btn-sm' style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;margin-top:6px' onclick='deleteSpiel("+t.id+",\""+s.id+"\")'>&#128465; Entfernen</button>":"";
+  var delBtn=canDel?"<button class='btn btn-sm' style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;margin-top:6px' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='deleteSpiel(this.dataset.tid,this.dataset.sid)'>&#128465; Entfernen</button>":"";
   var imgHtml=pr
-    ? "<img class='spiel-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.removeProperty(\"display\")'>"
+    ? "<img class='spiel-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'>"
     +"<div class='spiel-img-ph' style='display:none'>&#127922;</div>"
     : "<div class='spiel-img-ph'>&#127922;</div>";
   var isDicePick=rolledSpiel[t.id]&&rolledSpiel[t.id]===s.id;
+  var showVote=!t.privat;
+  var voter=showVote&&currentName&&t.personen.includes(currentName)?currentName:"";
+  var myVote=voter&&s.votes&&s.votes[voter]!==undefined?s.votes[voter]:null;
+  var voteHtml="";
+  if(showVote){
+    if(voter){
+      var upA=myVote===1?" up active":"";
+      var downA=myVote===-1?" down active":"";
+      var absA=myVote===0?" abstain active":"";
+      voteHtml="<div class='vote-btns'>"
+        +"<button class='vote-btn up"+upA+"' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='voteSpiel(this.dataset.tid,this.dataset.sid,1)'>&#128077; <span>"+ups+"</span></button>"
+        +"<button class='vote-btn down"+downA+"' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='voteSpiel(this.dataset.tid,this.dataset.sid,-1)'>&#128078; <span>"+downs+"</span></button>"
+        +"<button class='vote-btn abstain"+absA+"' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='voteSpiel(this.dataset.tid,this.dataset.sid,0)' title='Enthalten'>&#129335;</button>"
+        +"</div>";
+    } else {
+      voteHtml="<div class='vote-info'>&#128077; "+ups+" &nbsp;&#128078; "+downs+"</div>";
+    }
+  }
   return "<div class='spiel-card"+(isTop?" top-pick":"")+(isDicePick?" dice-pick":"")+"'>"+imgHtml
     +"<div class='spiel-info'>"
-    +"<div class='spiel-name'>"+(isTop?"&#127942; ":"")+(isDicePick?"&#127922; ":"")+h(s.name)+"</div>"
-    +"<div class='spiel-sub'>"+(s.year?s.year+" &middot; ":"")+(s.players?s.players+" Spieler &middot; ":"")+(s.playtime?s.playtime+" Min":"")+"</div>"
-    +stars
-    +(showStars?"<div class='vote-bar'><div class='vote-fill' style='width:"+bw+"%'></div></div>":"")
-    +(showStars?"<div class='vote-info'>&#8960; "+(av>0?av.toFixed(1):"--")+" &middot; "+vc+" Stimme"+(vc!==1?"n":"")+"</div>":"")
+    +"<div class='spiel-name'>"+(isTop?"&#11088; ":"")+(isDicePick?"&#127922; ":"")+h(s.name)+"</div>"
+    +"<div class='spiel-sub'>"+(s.year?s.year+" &middot; ":"")+(s.players?s.players+" Spieler &middot; ":"")+(s.playtime?s.playtime+" Min &middot; ":"")+(s.complexity?"Kompl. "+s.complexity:"")+"</div>"
+    +voteHtml
     +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; "+h(s.vorschlaeger)+"</div>":"")
     +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='font-size:.72rem;color:var(--blue);text-decoration:none'>BGG &rarr;</a>":"")
     +delBtn+"</div></div>";
@@ -1516,6 +1541,7 @@ async function confirmAddSpiel(){
   toast("Spiel hinzugef\u00fcgt \u2713");
 }
 async function deleteSpiel(tid,sid){
+  tid=parseInt(tid);
   var t=getT(tid); if(!t) return;
   var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
   if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
@@ -1525,11 +1551,14 @@ async function deleteSpiel(tid,sid){
   toast("Spiel entfernt.");
 }
 async function voteSpiel(tid,sid,val){
+  tid=parseInt(tid);
   var t=getT(tid); if(!t||!currentName) return;
   if(!t.personen.includes(currentName)){ toast("Du musst dabei sein um abzustimmen!"); return; }
   var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
   if(!s.votes) s.votes={};
-  s.votes[currentName]=val;
+  // Toggle: clicking same vote again removes it
+  if(s.votes[currentName]===val){ delete s.votes[currentName]; }
+  else { s.votes[currentName]=val; }
   updateSpielSection(tid);
   saveState();
 }
