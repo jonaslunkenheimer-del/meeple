@@ -602,7 +602,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column;animation:up .2s ease">
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
       <div style="font-weight:700" id="markt-chat-title">Chat</div>
-      <button onclick="closeMarktChat()" style="background:none;border:none;cursor:pointer;color:var(--text-3)">✕</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="refreshMarktChat()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:1rem" title="Chat aktualisieren">&#8635;</button>
+        <button onclick="closeMarktChat()" style="background:none;border:none;cursor:pointer;color:var(--text-3)">✕</button>
+      </div>
     </div>
     <div id="markt-chat-box" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:200px"></div>
     <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
@@ -1310,14 +1313,13 @@ function buildTerminCard(t, open){
   var picker="";
   if(t.privat&&(isAdmin||t.creator===currentName)){
     picker="<div id='member-picker-"+t.id+"' style='background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px'>"
-      +"<div style='font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-weight:600'>&#128100; Mitglied ausw\u00e4hlen</div>"
-      +"<div id='member-list-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:6px;max-height:140px;overflow-y:auto'></div></div>"
-      +"<div id='manual-picker-"+t.id+"' style='display:none'>"
-      +"<div class='input-row' style='margin-bottom:0;gap:6px'>"
-      +"<input class='input-field' id='pi-"+t.id+"' placeholder='Name manuell eingeben ...' onkeydown='if(event.keyCode===13)addPerson("+t.id+")' style='flex:1'>"
+      +"<div style='font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-weight:600'>&#128100; Mitglied hinzuf\u00fcgen</div>"
+      +"<div id='member-list-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;max-height:140px;overflow-y:auto'></div>"
+      +"<div style='display:flex;gap:6px;margin-top:4px'>"
+      +"<input class='input-field' id='pi-"+t.id+"' placeholder='Gast ohne Account ...' onkeydown='if(event.keyCode===13)addPerson("+t.id+")' style='flex:1;font-size:.82rem'>"
       +"<button class='btn btn-outline btn-sm' onclick='addPerson("+t.id+")'>+ Hinzuf\u00fcgen</button>"
-      +"</div></div>"
-      +"<button class='btn btn-ghost btn-sm' onclick='toggleManualInput("+t.id+")' style='font-size:.72rem;margin-top:6px;color:var(--text-3)'>&#9999;&#65039; Manuell eingeben</button>";
+      +"</div>"
+      +"</div>";
   }
 
   // Chat
@@ -1356,7 +1358,10 @@ function buildTerminCard(t, open){
     +"<div class='lbl' style='margin-bottom:0'>Spiele</div></div>"
     +addSection+"<div id='spiele-wrap-"+t.id+"'>"+spieleHtml+"</div>"
     +"<hr class='divider'>"
-    +"<div class='lbl'>&#128172; Chat</div>"
+    +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:8px'>"
+    +"<div class='lbl' style='margin-bottom:0'>&#128172; Chat</div>"
+    +"<button class='btn btn-ghost btn-sm' onclick='refreshChat("+t.id+")' title='Chat aktualisieren' style='color:var(--text-3);font-size:.85rem'>&#8635;</button>"
+    +"</div>"
     +"<div class='chat-box' id='cb-"+t.id+"'>"+chatHtml+"</div>"
     +"<div class='chat-input-row'>"
     +"<input class='chat-input' id='ci-"+t.id+"' placeholder='Nachricht schreiben ...' onkeydown='if(event.keyCode===13)sendChat("+t.id+")' autocomplete='off'>"
@@ -1488,25 +1493,21 @@ async function loadMemberPicker(tid){
   var listEl=document.getElementById("member-list-"+tid); if(!listEl) return;
   var t=getT(tid); if(!t) return;
   listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Lade\u2026</span>";
-  var users=[];
   var sk=getSK();
-  if(sk&&!userCache){
+  if(!sk){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>&#128274; Nicht verf\u00fcgbar.</span>"; return; }
+  if(!userCache){
     try{
       var r=await fetch(SB_URL+"/auth/v1/admin/users?per_page=200",{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
       var d=await r.json();
-      userCache=(d.users||[]).map(function(u){ return (u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de",""); });
-    }catch(e){}
+      userCache=(d.users||[]).map(function(u){
+        return (u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de","");
+      }).filter(function(n){ return n&&n.length>0; });
+    }catch(e){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>"; return; }
   }
-  users=userCache||[];
-  if(!users.length){
-    var all=[];
-    state.termine.forEach(function(t2){ t2.personen.forEach(function(p){ if(all.indexOf(p)===-1) all.push(p); }); });
-    users=all;
-  }
-  users=users.filter(function(u){ return t.personen.indexOf(u)===-1; });
-  if(!users.length){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Alle bereits dabei.</span>"; return; }
-  listEl.innerHTML=users.map(function(u){
-    return "<span onclick='addPersonDirect("+tid+",\""+u.replace(/"/g,"&quot;")+"\")' style='display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer'>"
+  var available=userCache.filter(function(u){ return t.personen.indexOf(u)===-1; });
+  if(!available.length){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Alle Mitglieder sind bereits dabei.</span>"; return; }
+  listEl.innerHTML=available.map(function(u){
+    return "<span onclick='addPersonDirect("+tid+",\""+u.replace(/"/g,"&quot;")+"\"\')' style='display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 5px;cursor:pointer;font-size:.8rem;transition:background .15s' onmouseover='this.style.background=\"var(--border)\"' onmouseout='this.style.background=\"var(--surface2)\"'>"
       +"<div class='av av-sm' style='background:"+nameColor(u)+"'>"+nameInit(u)+"</div>"+h(u)+"</span>";
   }).join("");
 }
@@ -1660,6 +1661,23 @@ async function voteSpiel(tid,sid,val){
 }
 
 // ── Chat Termin ──
+async function refreshChat(tid){
+  var btn=document.querySelector("[onclick='refreshChat("+tid+")']");
+  if(btn){ btn.style.opacity=".4"; btn.style.pointerEvents="none"; }
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_TABLE+"?id=eq.1&select=data",{headers:authHdrs()});
+    if(r.ok){
+      var rows=await r.json();
+      if(rows.length&&rows[0].data&&rows[0].data.termine){
+        state=rows[0].data;
+        var t=getT(tid); if(!t) return;
+        var cb=document.getElementById("cb-"+tid);
+        if(cb){ cb.innerHTML=buildChatMsgs(t); cb.scrollTop=cb.scrollHeight; }
+      }
+    }
+  }catch(e){}
+  if(btn){ btn.style.opacity=""; btn.style.pointerEvents=""; }
+}
 async function sendChat(tid){
   var t=getT(tid); if(!t||!currentName) return;
   var inp=document.getElementById("ci-"+tid); var text=inp.value.trim(); if(!text) return;
@@ -1923,6 +1941,19 @@ function openMarktChat(id){
   document.getElementById("markt-chat-modal").style.display="flex";
 }
 function closeMarktChat(){ document.getElementById("markt-chat-modal").style.display="none"; mChatId=null; }
+async function refreshMarktChat(){
+  var btn=document.querySelector("[onclick='refreshMarktChat()']");
+  if(btn){ btn.style.opacity=".4"; btn.style.pointerEvents="none"; }
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_MARKT+"?id=eq.1&select=data",{headers:authHdrs()});
+    if(r.ok){
+      var rows=await r.json();
+      if(rows.length&&rows[0].data) mData=rows[0].data;
+    }
+  }catch(e){}
+  renderMarktChatBox();
+  if(btn){ btn.style.opacity=""; btn.style.pointerEvents=""; }
+}
 function renderMarktChatBox(){
   var m=mData.find(function(x){ return x.id===mChatId; }); if(!m) return;
   var box=document.getElementById("markt-chat-box");
