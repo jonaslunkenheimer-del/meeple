@@ -829,8 +829,12 @@ async function loadState(){
 var saveLock=false;
 async function saveState(){
   saveLock=true;
-  try{ await fetch(SB_URL+"/rest/v1/"+SB_TABLE,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({id:1,data:state})}); }
-  catch(e){}
+  try{
+    var body=JSON.stringify({id:1,data:state});
+    await fetch(SB_URL+"/rest/v1/"+SB_TABLE,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:body});
+    // Pre-seed the hash so polling won't treat our just-saved state as "new"
+    pollingLastHash=JSON.stringify(state);
+  }catch(e){}
   saveLock=false;
 }
 async function loadMarktData(){
@@ -847,8 +851,8 @@ async function saveMarkt(){
     if(!r.ok){ var err=await r.text(); console.error("saveMarkt failed:",r.status,err); toast("Fehler beim Speichern: "+r.status); }
   }catch(e){ console.error("saveMarkt error:",e); toast("Netzwerkfehler beim Speichern"); }
 }
+var pollingLastHash="";
 function startPolling(){
-  var lastHash="";
   setInterval(async function(){
     try{
       var r=await fetch(SB_URL+"/rest/v1/"+SB_TABLE+"?id=eq.1&select=data",{headers:authHdrs()});
@@ -856,8 +860,8 @@ function startPolling(){
       var rows=await r.json();
       if(!rows.length) return;
       var fresh=JSON.stringify(rows[0].data);
-      if(fresh!==lastHash && !saveLock){
-    lastHash=fresh;
+      if(fresh!==pollingLastHash && !saveLock){
+    pollingLastHash=fresh;
     if(rows[0].data&&rows[0].data.termine){
       state=rows[0].data;
       if(!state.userColors) state.userColors={};
@@ -1497,17 +1501,26 @@ async function loadMemberPicker(tid){
   if(!sk){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>&#128274; Nicht verf\u00fcgbar.</span>"; return; }
   if(!userCache){
     try{
-      var r=await fetch(SB_URL+"/auth/v1/admin/users?per_page=200",{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
-      var d=await r.json();
-      userCache=(d.users||[]).map(function(u){
-        return (u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de","");
-      }).filter(function(n){ return n&&n.length>0; });
+      var all=[];
+      var page=1;
+      while(true){
+        var r=await fetch(SB_URL+"/auth/v1/admin/users?per_page=1000&page="+page,{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
+        var d=await r.json();
+        var batch=d.users||[];
+        batch.forEach(function(u){
+          var name=(u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de","");
+          if(name&&name.length>0&&all.indexOf(name)===-1) all.push(name);
+        });
+        if(batch.length<1000) break;
+        page++;
+      }
+      userCache=all;
     }catch(e){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>"; return; }
   }
   var available=userCache.filter(function(u){ return t.personen.indexOf(u)===-1; });
   if(!available.length){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Alle Mitglieder sind bereits dabei.</span>"; return; }
   listEl.innerHTML=available.map(function(u){
-    return "<span onclick='addPersonDirect("+tid+",\""+u.replace(/"/g,"&quot;")+"\"\')' style='display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 5px;cursor:pointer;font-size:.8rem;transition:background .15s' onmouseover='this.style.background=\"var(--border)\"' onmouseout='this.style.background=\"var(--surface2)\"'>"
+    return "<span onclick='addPersonDirect("+tid+",\""+u.replace(/\"/g,"&quot;")+"\"\')' style='display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 5px;cursor:pointer;font-size:.8rem;transition:background .15s' onmouseover='this.style.background=\"var(--border)\"' onmouseout='this.style.background=\"var(--surface2)\"'>"
       +"<div class='av av-sm' style='background:"+nameColor(u)+"'>"+nameInit(u)+"</div>"+h(u)+"</span>";
   }).join("");
 }
