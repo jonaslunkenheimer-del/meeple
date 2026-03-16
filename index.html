@@ -1523,7 +1523,6 @@ async function loadMemberPicker(tid){
   listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Lade\u2026</span>";
   if(!userCache){
     try{
-      // Query user_meta table - accessible with normal auth token, no service key needed
       var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
       if(!r.ok) throw new Error("HTTP "+r.status);
       var rows=await r.json();
@@ -1532,12 +1531,8 @@ async function loadMemberPicker(tid){
       rows.forEach(function(row){
         var name=row.user_name;
         if(!name||!name.length) return;
-        // Normalize for dedup: lowercase, trim, collapse spaces/hyphens/dots
         var key=name.toLowerCase().trim().replace(/[\s\-_.]+/g,"");
-        if(!seen[key]){
-          seen[key]=true;
-          userCache.push(name);
-        }
+        if(!seen[key]){ seen[key]=true; userCache.push(name); }
       });
     }catch(e){
       listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>";
@@ -1547,8 +1542,10 @@ async function loadMemberPicker(tid){
   var available=userCache.filter(function(u){ return t.personen.indexOf(u)===-1; });
   if(!available.length){ listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Alle Mitglieder sind bereits dabei.</span>"; return; }
   listEl.innerHTML=available.map(function(u){
-    return "<span onclick='addPersonDirect("+tid+",\""+u.replace(/\"/g,"&quot;")+"\"\')' style='display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 5px;cursor:pointer;font-size:.8rem;transition:background .15s' onmouseover='this.style.background=\"var(--border)\"' onmouseout='this.style.background=\"var(--surface2)\"'>"
-      +"<div class='av av-sm' style='background:"+nameColor(u)+"'>"+nameInit(u)+"</div>"+h(u)+"</span>";
+    var safeName=u.replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;");
+    return "<span onclick=\"addPersonDirect("+tid+",\'"+safeName+"\')\""
+      +" style='display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 5px;cursor:pointer;font-size:.8rem;transition:background .15s'"
+      +" onmouseover=\"this.style.background='var(--border)'\" onmouseout=\"this.style.background='var(--surface2)'\"><div class='av av-sm' style='background:"+nameColor(u)+"'>"+nameInit(u)+"</div>"+h(u)+"</span>";
   }).join("");
 }
 async function addPersonDirect(tid,name){
