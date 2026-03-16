@@ -1169,7 +1169,8 @@ async function saveEdit(){
   t.limitVal=parseInt(document.getElementById("edit-limit-val").value)||0;
   t.voteOn=document.getElementById("edit-vote-on").checked;
   t.diceOn=document.getElementById("edit-dice-on").checked;
-  closeEditModal(); rerenderCard(editTid); toast("Gespeichert \u2713"); await saveState();
+  var savedEditTid=editTid;
+  closeEditModal(); rerenderCard(savedEditTid); toast("Gespeichert \u2713"); await saveState();
 }
 
 // ── Termine: Render ──
@@ -1187,11 +1188,28 @@ function updateSpielSection(tid){
     : "<div class='empty' style='padding:20px'><div class='empty-icon' style='font-size:1.5rem'>&#127918;</div><p>Noch keine Spiele.</p></div>";
   var wrap=document.getElementById("spiele-wrap-"+tid);
   if(wrap){ wrap.innerHTML=spieleHtml; }
-  // Update chips count
   var card=document.getElementById("termin-"+tid); if(!card) return;
+  // Update spiele chip
   card.querySelectorAll(".chip").forEach(function(c){
     if(c.innerHTML.indexOf("&#127918;")!==-1) c.innerHTML="&#127918; "+t.spiele.length+" Spiele";
   });
+  // Update dice button live
+  var diceBtn=card.querySelector(".dice-toggle-btn");
+  var showDice=t.diceOn&&t.spiele.length>1;
+  if(diceBtn){
+    diceBtn.style.display=showDice?"":"none";
+  } else if(showDice){
+    var addBtn=card.querySelector(".btn-blue");
+    if(addBtn&&addBtn.parentElement){
+      var btn=document.createElement("button");
+      btn.className="btn btn-sm dice-toggle-btn";
+      btn.style.cssText="background:#7c3aed;color:#fff;border-color:#7c3aed;font-size:1rem;padding:0 12px";
+      btn.title="Zuf\u00e4lliges Spiel ausw\u00e4hlen";
+      btn.innerHTML="&#127922;";
+      btn.setAttribute("onclick","rollDice("+tid+")");
+      addBtn.parentElement.appendChild(btn);
+    }
+  }
 }
 
 function rerenderCard(tid){
@@ -1320,7 +1338,7 @@ function buildTerminCard(t, open){
   if(userCanAdd&&(t.offen!==false||t.creator===currentName)){
     addSection="<div style='display:flex;gap:8px;margin-bottom:"+(t.spiele.length?"18px":"0")+"'>"
       +"<button class='btn btn-blue btn-sm' onclick='openAddModal("+t.id+")'>+ Spiel hinzuf\u00fcgen</button>"
-      +(t.diceOn&&t.spiele.length>1?"<button class='btn btn-sm' onclick='rollDice("+t.id+")' title='Zuf\u00e4lliges Spiel ausw\u00e4hlen' style='background:#7c3aed;color:#fff;border-color:#7c3aed;font-size:1rem;padding:0 12px'>&#127922;</button>":"")
+      +(t.diceOn&&t.spiele.length>1?"<button class='btn btn-sm dice-toggle-btn' onclick='rollDice("+t.id+")' title='Zuf\u00e4lliges Spiel ausw\u00e4hlen' style='background:#7c3aed;color:#fff;border-color:#7c3aed;font-size:1rem;padding:0 12px'>&#127922;</button>":"")
       +"</div>";
   } else if(!userCanAdd) {
     addSection="<p style='font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:var(--radius-sm)'>&#10004; Erst zusagen um Spiele vorzuschlagen!</p>";
