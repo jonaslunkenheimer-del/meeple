@@ -72,6 +72,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .toggle-wrap input:checked+.toggle-track .toggle-thumb{transform:translateX(20px)}
 /* TERMIN */
 .termin-item{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+/* MITSPIELER GESUCHT */
+@keyframes suche-pulse{0%,100%{box-shadow:0 0 0 0 rgba(234,88,12,.25),var(--shadow-lg)}60%{box-shadow:0 0 0 6px rgba(234,88,12,.0),var(--shadow-lg)}}
+.termin-item.mitspieler-suche{border:2px solid #f97316;box-shadow:0 4px 20px rgba(249,115,22,.2);animation:suche-pulse 2.4s ease-in-out infinite}
+.suche-banner{background:linear-gradient(90deg,#fff7ed,#ffedd5);border-bottom:1px solid #fed7aa;padding:8px 20px;display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:#c2410c}
+.chip-suche{color:#c2410c;background:#fff7ed;border-color:#fed7aa}
 .termin-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;transition:background .15s}
 .termin-header:hover{background:var(--surface2)}
 .termin-summary{flex:1;min-width:0}
@@ -474,6 +479,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <input class="input-field" id="edit-limit-val" type="number" min="1" max="100" placeholder="z.B. 8">
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
+        <div><div style="font-weight:600;font-size:.88rem">🔍 Mitspieler gesucht</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Hebt den Termin hervor – erfordert Teilnehmerlimit</div></div>
+        <label class="toggle-wrap"><input type="checkbox" id="edit-suche-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">👍 Spieleabstimmung</div></div>
         <label class="toggle-wrap"><input type="checkbox" id="edit-vote-on" onchange="if(this.checked){var d=document.getElementById('edit-dice-on');if(d)d.checked=false;}"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
@@ -521,6 +530,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div id="new-limit-wrap" style="display:none;padding:12px 15px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--radius-sm);margin-bottom:10px">
         <label style="font-size:.78rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Maximale Teilnehmerzahl</label>
         <input class="input-field" id="new-limit-val" type="number" min="1" max="100" placeholder="z.B. 8">
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
+        <div><div style="font-weight:600;font-size:.88rem">🔍 Mitspieler gesucht</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Hebt den Termin hervor – erfordert Teilnehmerlimit</div></div>
+        <label class="toggle-wrap"><input type="checkbox" id="new-suche-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">👍 Spieleabstimmung</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Teilnehmer können für Spiele abstimmen</div></div>
@@ -1203,6 +1216,7 @@ function closeNewTerminModal(){
   var lv=document.getElementById("new-limit-val"); if(lv) lv.value="";
   var vo=document.getElementById("new-vote-on"); if(vo) vo.checked=false;
   var dco=document.getElementById("new-dice-on"); if(dco) dco.checked=false;
+  var so=document.getElementById("new-suche-on"); if(so) so.checked=false;
 }
 async function createTermin(){
   var title=document.getElementById("new-title").value.trim();
@@ -1211,6 +1225,19 @@ async function createTermin(){
   var dateVal=document.getElementById("new-date").value;
   if(dateVal&&new Date(dateVal)<new Date()){ document.getElementById("new-date").style.borderColor="var(--red)"; alert("Datum liegt in der Vergangenheit."); return; }
   document.getElementById("new-date").style.borderColor="";
+  var sucheOn=document.getElementById("new-suche-on").checked===true;
+  var limitOn=document.getElementById("new-limit-on").checked===true;
+  var limitVal=parseInt(document.getElementById("new-limit-val").value)||0;
+  if(sucheOn&&(!limitOn||limitVal<1)){
+    document.getElementById("new-limit-on").closest("div.toggle-wrap")||document.getElementById("new-limit-on");
+    document.getElementById("new-limit-on").checked=true;
+    document.getElementById("new-limit-wrap").style.display="block";
+    document.getElementById("new-limit-val").style.borderColor="var(--red)";
+    document.getElementById("new-limit-val").focus();
+    toast("⚠️ Bitte zuerst ein Teilnehmerlimit festlegen.");
+    return;
+  }
+  document.getElementById("new-limit-val").style.borderColor="";
   var t={
     id:state.nextId++, title:title,
     date:document.getElementById("new-date").value,
@@ -1218,10 +1245,11 @@ async function createTermin(){
     creator:currentName,
     offen:document.getElementById("new-offen").checked!==false,
     privat:document.getElementById("new-privat").checked===true,
-    limitOn:document.getElementById("new-limit-on").checked===true,
-    limitVal:parseInt(document.getElementById("new-limit-val").value)||0,
+    limitOn:limitOn,
+    limitVal:limitVal,
     voteOn:document.getElementById("new-vote-on").checked===true,
     diceOn:document.getElementById("new-dice-on").checked===true,
+    mitspielerGesucht:sucheOn,
     personen:[currentName], spiele:[], chat:[], qrcodes:[],
     ts:new Date().toISOString()
   };
@@ -1251,6 +1279,7 @@ function openEditModal(tid){
   document.getElementById("edit-limit-val").value=t.limitVal||"";
   document.getElementById("edit-vote-on").checked=!!t.voteOn;
   document.getElementById("edit-dice-on").checked=!!t.diceOn;
+  document.getElementById("edit-suche-on").checked=!!t.mitspielerGesucht;
   document.getElementById("edit-modal").style.display="flex";
 }
 function closeEditModal(){ document.getElementById("edit-modal").style.display="none"; editTid=null; }
@@ -1266,6 +1295,17 @@ async function saveEdit(){
   t.limitVal=parseInt(document.getElementById("edit-limit-val").value)||0;
   t.voteOn=document.getElementById("edit-vote-on").checked;
   t.diceOn=document.getElementById("edit-dice-on").checked;
+  var sucheOnEdit=document.getElementById("edit-suche-on").checked;
+  if(sucheOnEdit&&(!t.limitOn||t.limitVal<1)){
+    document.getElementById("edit-limit-on").checked=true;
+    document.getElementById("edit-limit-wrap").style.display="block";
+    document.getElementById("edit-limit-val").style.borderColor="var(--red)";
+    document.getElementById("edit-limit-val").focus();
+    toast("⚠️ Bitte zuerst ein Teilnehmerlimit festlegen.");
+    return;
+  }
+  document.getElementById("edit-limit-val").style.borderColor="";
+  t.mitspielerGesucht=sucheOnEdit;
   var savedEditTid=editTid;
   closeEditModal(); rerenderCard(savedEditTid); toast("Gespeichert \u2713"); await saveState();
 }
@@ -1383,6 +1423,23 @@ function updateJoinBtn(tid){
   var el=document.getElementById("termin-"+tid); if(!el) return;
   var alreadyIn=currentName&&t.personen.includes(currentName);
   var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
+  var suchActive=t.mitspielerGesucht&&!isFull;
+  // Update suche highlight class
+  el.classList.toggle("mitspieler-suche",!!suchActive);
+  // Update banner
+  var banner=el.querySelector(".suche-banner");
+  var freePlätze=suchActive&&t.limitVal>0?(t.limitVal-t.personen.length):0;
+  if(suchActive){
+    if(!banner){
+      var b=document.createElement("div"); b.className="suche-banner";
+      b.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" Platz"+(freePlätze!==1?"ätze":"")+" frei!";
+      el.insertBefore(b,el.firstChild);
+    } else {
+      banner.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" Platz"+(freePlätze!==1?"ätze":"")+" frei!";
+    }
+  } else {
+    if(banner) banner.remove();
+  }
   var joinHtml="";
   if(currentName&&!alreadyIn){
     if(isFull){
@@ -1405,6 +1462,9 @@ function updateJoinBtn(tid){
 function buildTerminCard(t, open){
   var canManage=isAdmin||t.creator===currentName;
   var alreadyIn=currentName&&t.personen.includes(currentName);
+  var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
+  var suchActive=t.mitspielerGesucht&&!isFull;
+  var freePlätze=suchActive&&t.limitVal>0?(t.limitVal-t.personen.length):0;
 
   // Chips
   var chips="";
@@ -1416,6 +1476,7 @@ function buildTerminCard(t, open){
   if(t.offen!==false) chips+="<span class='chip' style='color:var(--green);background:var(--green-lt);border-color:var(--green-bd)'>&#129001; Spielvorschl\u00e4ge</span>";
   else chips+="<span class='chip' style='color:var(--gold);background:#fffbeb;border-color:#fde68a'>&#128204; Festgelegt</span>";
   if(t.privat) chips+="<span class='chip' style='color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe'>&#128274; Privat</span>";
+  if(suchActive) chips+="<span class='chip chip-suche'>&#128269; "+freePlätze+" Platz"+(freePlätze!==1?"&#xE4;tze":"")+" frei</span>";
 
   // Personen
   var persHtml=t.personen.map(function(p){
@@ -1470,7 +1531,6 @@ function buildTerminCard(t, open){
   // QR codes
   var qrHtml=buildQrList(t);
 
-  var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
   var joinBtn="";
   if(currentName&&!alreadyIn){
     if(isFull){
@@ -1480,7 +1540,8 @@ function buildTerminCard(t, open){
     }
   }
 
-  return "<div class='termin-item"+(open?" open":"")+"' id='termin-"+t.id+"'>"
+  return "<div class='termin-item"+(open?" open":"")+(suchActive?" mitspieler-suche":"")+"' id='termin-"+t.id+"'>"
+    +(suchActive?"<div class='suche-banner'>&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" Platz"+(freePlätze!==1?"ätze":"")+" frei!</div>":"")
     +"<div class='termin-header' onclick='toggleTermin("+t.id+")'>"
     +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
     +"<div class='termin-summary'>"
