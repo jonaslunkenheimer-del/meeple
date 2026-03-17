@@ -125,7 +125,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .chat-send:hover{filter:brightness(1.1);transform:scale(1.07)}
 /* AUTOCOMPLETE */
 .as-wrap{position:relative}
-.as-drop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:200;max-height:320px;overflow-y:auto;display:none;overflow-x:hidden}
+.as-drop{position:fixed;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9999;max-height:260px;overflow-y:auto;display:none;overflow-x:hidden}
 .as-item{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;font-size:.85rem;border-bottom:1px solid var(--border);transition:background .1s}
 .as-item:last-child{border-bottom:none}
 .as-item:hover,.as-item.hi{background:var(--surface2)}
@@ -387,7 +387,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <!-- ADD SPIEL MODAL -->
 <div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeAddModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:92vh;overflow-y:auto;animation:up .2s ease">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:80vh;overflow-y:auto;animation:up .2s ease">
     <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
       <div style="font-size:1rem;font-weight:800">🎲 Spiel hinzufügen</div>
       <button onclick="closeAddModal()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-3)">✕</button>
@@ -523,7 +523,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <!-- INSERAT MODAL -->
 <div id="inserat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeInseratModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:92vh;overflow-y:auto;animation:up .2s ease">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:80vh;overflow-y:auto;animation:up .2s ease">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1">
       <div>
         <div id="inserat-modal-title" style="font-size:1.1rem;font-weight:800;color:#fff">🛒 Spiel inserieren</div>
@@ -1595,15 +1595,22 @@ function openAddModal(tid){
   addTid=tid;
   setAddTab("search");
   document.getElementById("bgg-search-input").value="";
-  document.getElementById("as-drop").style.display="none";
   document.getElementById("bgg-search-status").textContent="";
-  document.getElementById("add-error").style.display="none";
-  document.getElementById("spiel-preview").style.display="none";
-  window._pendingSpiel=null;
-  asResults=[]; asHi=-1;
+  document.getElementById("as-drop").style.display="none";
   document.getElementById("add-modal").style.display="flex";
+  // Reposition dropdown on scroll/resize
+  var modal=document.getElementById("add-modal");
+  modal._reposition=function(){ positionDrop(); };
+  window.addEventListener("resize",modal._reposition);
+  modal.addEventListener("scroll",modal._reposition);
 }
-function closeAddModal(){ document.getElementById("add-modal").style.display="none"; addTid=null; }
+function closeAddModal(){
+  document.getElementById("add-modal").style.display="none";
+  document.getElementById("as-drop").style.display="none";
+  var modal=document.getElementById("add-modal");
+  if(modal._reposition){ window.removeEventListener("resize",modal._reposition); }
+  addTid=null;
+}
 function setAddTab(tab){
   ["search","link","manual"].forEach(function(t){
     document.getElementById("add-panel-"+t).style.display=t===tab?"block":"none";
@@ -1649,6 +1656,15 @@ async function bggSearch(q){
     renderAsDrop();
   }catch(e){ status.textContent="Fehler: "+e.message; }
 }
+function positionDrop(){
+  var inp=document.getElementById("bgg-search-input");
+  var drop=document.getElementById("as-drop");
+  if(!inp||!drop) return;
+  var r=inp.getBoundingClientRect();
+  drop.style.top=(r.bottom+4)+"px";
+  drop.style.left=r.left+"px";
+  drop.style.width=r.width+"px";
+}
 function renderAsDrop(){
   var drop=document.getElementById("as-drop");
   if(!asResults.length){ drop.style.display="none"; return; }
@@ -1664,6 +1680,7 @@ function renderAsDrop(){
       +(sub?"<div class='as-item-sub'>"+sub+"</div>":"")
       +"</div></div>";
   }).join("");
+  positionDrop();
   drop.style.display="block";
 }
 function loadBggGameDetails(id){
