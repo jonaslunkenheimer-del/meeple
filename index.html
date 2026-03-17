@@ -236,6 +236,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div class="av av-md" id="hdr-av"></div>
         <span style="font-size:.88rem;font-weight:600" id="hdr-name"></span>
       </div>
+      <button id="hdr-admin-btn" onclick="openAdminModal()" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-2)">👑 Admin</button>
     </div>
   </header>
 
@@ -760,6 +761,8 @@ async function startApp(name){
   setAv(document.getElementById("hdr-av"),name);
   document.getElementById("hdr-name").textContent=name;
   document.getElementById("tab-btn-markt").style.display="";
+  var adminBtn=document.getElementById("hdr-admin-btn");
+  if(adminBtn) adminBtn.style.display=isAdmin?"":"none";
   try{ await loadState(); }catch(e){}
   await loadBggToken();
   // Pre-populate myAddedSpiele from DB data for this user
