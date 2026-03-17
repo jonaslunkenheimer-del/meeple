@@ -173,6 +173,19 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .notif-btn{position:relative;width:38px;height:38px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:background .15s;flex-shrink:0}
 .notif-btn:hover{background:var(--border)}
 .notif-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;background:var(--red);color:#fff;border-radius:8px;font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);pointer-events:none;display:none}
+/* DATE POLL */
+.dpoll-wrap{background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:var(--radius-sm);padding:14px;margin-bottom:14px}
+.dpoll-slot{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:border-color .15s}
+.dpoll-slot.dp-yes{border-color:#16a34a;background:#f0fdf4}
+.dpoll-slot.dp-maybe{border-color:#d97706;background:#fffbeb}
+.dpoll-vote-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.dpoll-vbtn{border:1.5px solid var(--border);background:var(--surface2);border-radius:8px;padding:4px 10px;font-size:.78rem;cursor:pointer;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
+.dpoll-vbtn:hover{transform:scale(1.05)}
+.dpoll-vbtn.v-ja.active{background:#dcfce7;border-color:#16a34a;color:#15803d}
+.dpoll-vbtn.v-vll.active{background:#fef3c7;border-color:#d97706;color:#b45309}
+.dpoll-vbtn.v-nein.active{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.dpoll-bar{height:6px;border-radius:3px;background:var(--border);margin-top:6px;overflow:hidden}
+.dpoll-bar-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s}
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:10px 20px;border-radius:20px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -511,7 +524,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div style="padding:24px">
       <div class="form-grid" style="margin-bottom:16px">
         <div class="form-field"><label>Titel</label><input class="input-field" id="new-title" placeholder="z.B. Spieleabend bei Max"></div>
-        <div class="form-field"><label>Datum & Uhrzeit</label><input class="input-field" id="new-date" type="datetime-local"></div>
+        <div class="form-field">
+          <label>Datum & Uhrzeit</label>
+          <input class="input-field" id="new-date" type="datetime-local">
+          <label style="display:flex;align-items:center;gap:6px;margin-top:5px;cursor:pointer;font-size:.78rem;color:var(--text-2);font-weight:500;user-select:none">
+            <input type="checkbox" id="new-no-date" style="width:14px;height:14px;accent-color:var(--blue);cursor:pointer" onchange="var d=document.getElementById('new-date');d.disabled=this.checked;d.style.opacity=this.checked?'.4':'1';d.value=this.checked?'':d.value;">
+            Datum noch nicht festgelegt
+          </label>
+        </div>
         <div class="form-field"><label>Ort</label><input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …"></div>
         <input type="hidden" id="new-creator">
       </div>
@@ -1208,7 +1228,8 @@ function openNewTerminModal(){
 }
 function closeNewTerminModal(){
   document.getElementById("new-termin-modal").style.display="none";
-  ["new-title","new-ort","new-date"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  ["new-title","new-ort","new-date"].forEach(function(id){ var el=document.getElementById(id); if(el){ el.value=""; el.disabled=false; el.style.opacity="1"; } });
+  var nd=document.getElementById("new-no-date"); if(nd) nd.checked=false;
   var o=document.getElementById("new-offen"); if(o) o.checked=true;
   var p=document.getElementById("new-privat"); if(p) p.checked=false;
   var lo=document.getElementById("new-limit-on"); if(lo) lo.checked=false;
@@ -1222,8 +1243,9 @@ async function createTermin(){
   var title=document.getElementById("new-title").value.trim();
   if(!title){ document.getElementById("new-title").style.borderColor="var(--red)"; return; }
   document.getElementById("new-title").style.borderColor="";
-  var dateVal=document.getElementById("new-date").value;
-  if(dateVal&&new Date(dateVal)<new Date()){ document.getElementById("new-date").style.borderColor="var(--red)"; alert("Datum liegt in der Vergangenheit."); return; }
+  var noDate=document.getElementById("new-no-date").checked===true;
+  var dateVal=noDate?"":document.getElementById("new-date").value;
+  if(!noDate&&dateVal&&new Date(dateVal)<new Date()){ document.getElementById("new-date").style.borderColor="var(--red)"; alert("Datum liegt in der Vergangenheit."); return; }
   document.getElementById("new-date").style.borderColor="";
   var sucheOn=document.getElementById("new-suche-on").checked===true;
   var limitOn=document.getElementById("new-limit-on").checked===true;
@@ -1240,7 +1262,7 @@ async function createTermin(){
   document.getElementById("new-limit-val").style.borderColor="";
   var t={
     id:state.nextId++, title:title,
-    date:document.getElementById("new-date").value,
+    date:dateVal,
     ort:document.getElementById("new-ort").value.trim(),
     creator:currentName,
     offen:document.getElementById("new-offen").checked!==false,
@@ -1469,6 +1491,7 @@ function buildTerminCard(t, open){
   // Chips
   var chips="";
   if(t.date) chips+="<span class='chip'>&#128197; "+fmtDate(t.date)+"</span>";
+  else chips+="<span class='chip' style='color:#0369a1;background:#f0f9ff;border-color:#bae6fd'>&#128197; Datum noch offen</span>";
   if(t.ort)  chips+="<span class='chip'>&#128205; "+h(t.ort)+"</span>";
   chips+="<span class='chip chip-green'>&#128101; "+t.personen.length+(t.limitOn&&t.limitVal?" / "+t.limitVal:"")+" dabei</span>";
   chips+="<span class='chip'>&#127918; "+t.spiele.length+" Spiele</span>";
@@ -1525,8 +1548,66 @@ function buildTerminCard(t, open){
       +"</div>";
   }
 
-  // Chat
-  var chatHtml=buildChatMsgs(t);
+  // Date Poll section (only when no date set)
+  var datePollHtml="";
+  if(!t.date){
+    var dp=t.datePoll||{active:false,slots:[]};
+    var isCreator=canManage;
+    var isParticipant=t.personen.includes(currentName)||isAdmin;
+    if(dp.active&&dp.slots&&dp.slots.length){
+      var slotsHtml=dp.slots.map(function(slot){
+        var myVote=slot.votes&&slot.votes[currentName];
+        var jaCount=Object.values(slot.votes||{}).filter(function(v){ return v==="ja"; }).length;
+        var vllCount=Object.values(slot.votes||{}).filter(function(v){ return v==="vll"; }).length;
+        var total=t.personen.length||1;
+        var pct=Math.round((jaCount/total)*100);
+        var cls=myVote==="ja"?" dp-yes":myVote==="vll"?" dp-maybe":"";
+        var dtFmt=new Date(slot.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
+        var voterNames=Object.entries(slot.votes||{}).map(function(e){
+          var icon=e[1]==="ja"?"✅":e[1]==="vll"?"🤔":"❌";
+          return icon+" "+h(e[0]);
+        }).join("  ");
+        var confirmBtn=isCreator?"<button class='btn btn-sm' style='background:var(--green-lt);color:var(--green);border-color:var(--green-bd);margin-top:6px' onclick='confirmDateSlot("+t.id+",\""+slot.id+"\")'>✓ Dieses Datum bestätigen</button>":"";
+        var delBtn=isCreator?"<button onclick='removeDateSlot("+t.id+",\""+slot.id+"\")' style='background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.8rem;padding:2px 4px;margin-left:4px'>✕</button>":"";
+        var voteRow=isParticipant?"<div class='dpoll-vote-row'>"
+          +"<button class='dpoll-vbtn v-ja"+(myVote==="ja"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"ja\")'>✅ Ja <span style='opacity:.6'>("+jaCount+")</span></button>"
+          +"<button class='dpoll-vbtn v-vll"+(myVote==="vll"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"vll\")'>🤔 Vielleicht <span style='opacity:.6'>("+vllCount+")</span></button>"
+          +"<button class='dpoll-vbtn v-nein"+(myVote==="nein"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"nein\")'>❌ Nein</button>"
+          +"</div>":"";
+        return "<div class='dpoll-slot"+cls+"'>"
+          +"<div style='display:flex;align-items:flex-start;justify-content:space-between'>"
+          +"<div style='font-weight:700;font-size:.88rem'>📅 "+dtFmt+"</div>"+delBtn+"</div>"
+          +"<div class='dpoll-bar'><div class='dpoll-bar-fill' style='width:"+pct+"%'></div></div>"
+          +(voterNames?"<div style='font-size:.68rem;color:var(--text-3);margin-top:4px'>"+voterNames+"</div>":"")
+          +voteRow+confirmBtn
+          +"</div>";
+      }).join("");
+      var addSlotForm=isCreator
+        ? "<div style='display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center'>"
+          +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem'>"
+          +"<button class='btn btn-outline btn-sm' onclick='addDateSlot("+t.id+")'>+ Vorschlag hinzufügen</button>"
+          +"<button class='btn btn-ghost btn-sm' style='color:var(--red)' onclick='closeDatePoll("+t.id+")'>Abstimmung schließen</button>"
+          +"</div>" : "";
+      datePollHtml="<div class='lbl' style='margin-top:18px'>📅 Terminabstimmung</div>"
+        +"<div class='dpoll-wrap'>"+slotsHtml+addSlotForm+"</div>";
+    } else if(!dp.active&&isCreator){
+      datePollHtml="<div style='margin:14px 0 6px'>"
+        +"<button class='btn btn-outline btn-sm' onclick='startDatePoll("+t.id+")'>📅 Terminabstimmung starten</button>"
+        +"</div>";
+    } else if(dp.active&&isCreator){
+      // active but no slots yet
+      datePollHtml="<div class='lbl' style='margin-top:18px'>📅 Terminabstimmung</div>"
+        +"<div class='dpoll-wrap'><div style='font-size:.82rem;color:var(--text-3);margin-bottom:8px'>Noch keine Vorschläge. Füge Termine hinzu:</div>"
+        +"<div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center'>"
+        +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem'>"
+        +"<button class='btn btn-outline btn-sm' onclick='addDateSlot("+t.id+")'>+ Vorschlag hinzufügen</button>"
+        +"</div></div>";
+    } else if(isParticipant&&dp.active){
+      datePollHtml="<div style='margin:10px 0;font-size:.82rem;color:var(--text-3);background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 12px'>📅 Der Ersteller plant gerade die Terminabstimmung.</div>";
+    } else if(!isCreator){
+      datePollHtml="<div style='margin:10px 0;font-size:.82rem;color:var(--text-3);background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 12px'>📅 Datum noch nicht festgelegt.</div>";
+    }
+  }
 
   // QR codes
   var qrHtml=buildQrList(t);
@@ -1556,6 +1637,7 @@ function buildTerminCard(t, open){
     +"<div class='lbl'>Teilnehmer</div>"+joinBtn
     +"<div class='persons-wrap'>"+(persHtml||"<span style='font-size:.8rem;color:var(--text-3)'>Noch niemand.</span>")+"</div>"
     +picker
+    +datePollHtml
     +"<hr class='divider'>"
     +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:12px'>"
     +"<div class='lbl' style='margin-bottom:0'>Spiele</div></div>"
@@ -1954,6 +2036,55 @@ async function sendChat(tid){
   var cb=document.getElementById("cb-"+tid);
   if(cb){ cb.innerHTML=buildChatMsgs(t); cb.scrollTop=cb.scrollHeight; }
   saveState();
+}
+
+// ── Date Poll ──
+function startDatePoll(tid){
+  var t=getT(tid); if(!t) return;
+  if(!t.datePoll) t.datePoll={active:false,slots:[]};
+  t.datePoll.active=true;
+  if(!t.datePoll.slots) t.datePoll.slots=[];
+  rerenderCard(tid); saveState(); toast("Terminabstimmung gestartet 📅");
+}
+function closeDatePoll(tid){
+  var t=getT(tid); if(!t||!t.datePoll) return;
+  t.datePoll.active=false;
+  rerenderCard(tid); saveState(); toast("Abstimmung geschlossen.");
+}
+function addDateSlot(tid){
+  var t=getT(tid); if(!t) return;
+  var inp=document.getElementById("dpoll-new-"+tid); if(!inp||!inp.value){ toast("Bitte ein Datum auswählen."); return; }
+  var d=new Date(inp.value);
+  if(d<new Date()){ toast("Datum liegt in der Vergangenheit."); return; }
+  if(!t.datePoll) t.datePoll={active:true,slots:[]};
+  // Prevent duplicates
+  if(t.datePoll.slots.some(function(s){ return s.date===inp.value; })){ toast("Dieser Vorschlag existiert bereits."); return; }
+  t.datePoll.slots.push({id:"ds"+Date.now(),date:inp.value,votes:{}});
+  inp.value="";
+  rerenderCard(tid); saveState(); toast("Vorschlag hinzugefügt ✓");
+}
+function removeDateSlot(tid,sid){
+  var t=getT(tid); if(!t||!t.datePoll) return;
+  t.datePoll.slots=t.datePoll.slots.filter(function(s){ return s.id!==sid; });
+  rerenderCard(tid); saveState();
+}
+function voteDateSlot(tid,sid,val){
+  var t=getT(tid); if(!t||!t.datePoll||!currentName) return;
+  if(!t.personen.includes(currentName)){ toast("Du musst dabei sein um abzustimmen!"); return; }
+  var slot=t.datePoll.slots.find(function(s){ return s.id===sid; }); if(!slot) return;
+  if(!slot.votes) slot.votes={};
+  // Toggle: same vote again removes it
+  if(slot.votes[currentName]===val) delete slot.votes[currentName];
+  else slot.votes[currentName]=val;
+  rerenderCard(tid); saveState();
+}
+async function confirmDateSlot(tid,sid){
+  var t=getT(tid); if(!t||!t.datePoll) return;
+  var slot=t.datePoll.slots.find(function(s){ return s.id===sid; }); if(!slot) return;
+  t.date=slot.date;
+  t.datePoll.active=false;
+  t.datePoll.slots=[];
+  rerenderCard(tid); toast("Datum festgelegt! 🎉"); await saveState();
 }
 
 // ── ICS ──
