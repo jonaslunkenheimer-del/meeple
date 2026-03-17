@@ -594,8 +594,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button class="nachr-close-mobile" onclick="closeNachrModal()" title="Schließen">✕</button>
         </div>
       </div>
-      <!-- Filter tabs -->
-      <div style="display:flex;gap:3px;padding:8px 12px 0">
+      <!-- Filter tabs hidden: all conversations shown together -->
+      <div style="display:none">
         <button id="ns-tab-inbox" class="nachr-ftab active" onclick="setNachrTab('inbox')">📥 Eingang</button>
         <button id="ns-tab-sent" class="nachr-ftab" onclick="setNachrTab('sent')">📤 Gesendet</button>
       </div>
@@ -2851,13 +2851,12 @@ function setNachrTab(tab){
 }
 
 function getThreads(){
-  var msgs=nachrTab==="inbox"
-    ? nachrData.filter(function(m){ return m.to===currentName; })
-    : nachrData.filter(function(m){ return m.from===currentName; });
+  // Show ALL conversations the current user is part of (sent or received)
+  var msgs=nachrData.filter(function(m){ return m.from===currentName||m.to===currentName; });
   var threads={};
   msgs.forEach(function(m){
-    var partner=nachrTab==="inbox"?m.from:m.to;
     var key=m.thread_id||m.id;
+    var partner=m.from===currentName?m.to:m.from;
     if(!threads[key]){
       threads[key]={partner:partner,subject:m.subject,latest:m,unread:0,count:0,key:key};
     } else if(new Date(m.ts)>new Date(threads[key].latest.ts)){
@@ -2873,7 +2872,7 @@ function renderConvList(){
   var list=document.getElementById("nachr-conv-list"); if(!list) return;
   var threads=getThreads();
   if(!threads.length){
-    list.innerHTML="<div style='padding:20px 14px;font-size:.82rem;color:var(--text-3);text-align:center'>"+(nachrTab==="inbox"?"📭 Keine Nachrichten":"📤 Noch nichts gesendet")+"</div>";
+    list.innerHTML="<div style='padding:20px 14px;font-size:.82rem;color:var(--text-3);text-align:center'>📭 Noch keine Nachrichten</div>";
     return;
   }
   var now=new Date();
@@ -3033,7 +3032,7 @@ async function sendNachricht(){
   document.getElementById("konv-partner").textContent=konvPartner;
   document.getElementById("konv-subject").textContent=konvSubject;
   renderKonvChat(konvPartner,konvSubject);
-  setNachrTab("sent");
+  renderConvList();
   await saveNachrichten();
 }
 
