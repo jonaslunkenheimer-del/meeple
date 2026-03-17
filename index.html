@@ -1454,10 +1454,10 @@ function updateJoinBtn(tid){
   if(suchActive){
     if(!banner){
       var b=document.createElement("div"); b.className="suche-banner";
-      b.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" Platz"+(freePlätze!==1?"ätze":"")+" frei!";
+      b.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei!";
       el.insertBefore(b,el.firstChild);
     } else {
-      banner.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" Platz"+(freePlätze!==1?"ätze":"")+" frei!";
+      banner.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei!";
     }
   } else {
     if(banner) banner.remove();
@@ -1499,7 +1499,7 @@ function buildTerminCard(t, open){
   if(t.offen!==false) chips+="<span class='chip' style='color:var(--green);background:var(--green-lt);border-color:var(--green-bd)'>&#129001; Spielvorschl\u00e4ge</span>";
   else chips+="<span class='chip' style='color:var(--gold);background:#fffbeb;border-color:#fde68a'>&#128204; Festgelegt</span>";
   if(t.privat) chips+="<span class='chip' style='color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe'>&#128274; Privat</span>";
-  if(suchActive) chips+="<span class='chip chip-suche'>&#128269; "+freePlätze+" Platz"+(freePlätze!==1?"&#xE4;tze":"")+" frei</span>";
+  if(suchActive) chips+="<span class='chip chip-suche'>&#128269; "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei</span>";
 
   // Personen
   var persHtml=t.personen.map(function(p){
@@ -1622,7 +1622,7 @@ function buildTerminCard(t, open){
   }
 
   return "<div class='termin-item"+(open?" open":"")+(suchActive?" mitspieler-suche":"")+"' id='termin-"+t.id+"'>"
-    +(suchActive?"<div class='suche-banner'>&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" Platz"+(freePlätze!==1?"ätze":"")+" frei!</div>":"")
+    +(suchActive?"<div class='suche-banner'>&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei!</div>":"")
     +"<div class='termin-header' onclick='toggleTermin("+t.id+")'>"
     +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
     +"<div class='termin-summary'>"
