@@ -351,13 +351,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 </div>
 
 <!-- PROFIL MODAL -->
-<div id="profil-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:400px;animation:up .2s ease;overflow:hidden">
+<div id="profil-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;animation:up .2s ease;overflow:hidden">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:24px;text-align:center">
       <div class="av av-lg" id="profil-av" style="margin:0 auto 10px"></div>
       <div style="font-size:1.1rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
     </div>
-    <div style="padding:20px">
+    <div style="padding:24px">
       <div class="form-field" style="margin-bottom:12px"><label>Anzeigename ändern</label><input class="input-field" id="profil-displayname" placeholder="Dein Name"></div>
       <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:16px" onclick="saveDisplayName()">✓ Name speichern</button>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
@@ -381,8 +381,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
         <button class="btn btn-outline btn-sm" style="width:100%" onclick="saveBggProfile()">🎲 BGG Profil speichern</button>
       </div>
-      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px"><input class="input-field" id="profil-pw" type="password" placeholder="Neues Passwort" autocomplete="new-password"></div>
-        <button class="btn btn-outline btn-sm" style="width:100%;" onclick="savePassword()">🔑 Passwort ändern</button>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
       <div id="profil-msg" style="display:none;font-size:.82rem;margin-bottom:12px"></div>
       <div style="display:flex;gap:8px">
