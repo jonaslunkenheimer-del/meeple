@@ -264,6 +264,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   display:none;background:none;border:none;font-size:1.4rem;cursor:pointer;
   color:var(--text-3);padding:0 4px;line-height:1;flex-shrink:0
 }
+.nachr-close-mobile{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:.85rem;color:var(--text-3);align-items:center;justify-content:center}
+@media(max-width:600px){
+  .nachr-close-desktop{display:none !important}
+  .nachr-close-mobile{display:flex !important}
+}
 /* Mobile */
 @media(max-width:600px){
   .nachr-modal-inner{
@@ -584,7 +589,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div class="nachr-sidebar" id="nachr-sidebar">
       <div class="nachr-sidebar-header">
         <div style="font-size:.95rem;font-weight:800">✉️ Nachrichten</div>
-        <button class="nachr-compose-btn" onclick="showComposePanel()" title="Neue Nachricht">＋</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="nachr-compose-btn" onclick="showComposePanel()" title="Neue Nachricht">＋</button>
+          <button class="nachr-close-mobile" onclick="closeNachrModal()" title="Schließen">✕</button>
+        </div>
       </div>
       <!-- Filter tabs -->
       <div style="display:flex;gap:3px;padding:8px 12px 0">
@@ -650,7 +658,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       </div>
     </div>
     <!-- Close btn (top right) -->
-    <button onclick="closeNachrModal()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
+    <button onclick="closeNachrModal()" class="nachr-close-desktop" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
   </div>
 </div>
 
