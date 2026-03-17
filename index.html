@@ -527,10 +527,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div class="form-field">
           <label>Datum & Uhrzeit</label>
           <input class="input-field" id="new-date" type="datetime-local">
-          <label style="display:flex;align-items:center;gap:6px;margin-top:5px;cursor:pointer;font-size:.78rem;color:var(--text-2);font-weight:500;user-select:none">
-            <input type="checkbox" id="new-no-date" style="width:14px;height:14px;accent-color:var(--blue);cursor:pointer" onchange="var d=document.getElementById('new-date');d.disabled=this.checked;d.style.opacity=this.checked?'.4':'1';d.value=this.checked?'':d.value;">
-            Datum noch nicht festgelegt
-          </label>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:6px">
+            <span style="font-size:.8rem;font-weight:600;color:var(--text-2)">Datum noch offen</span>
+            <label class="toggle-wrap"><input type="checkbox" id="new-no-date" onchange="var d=document.getElementById('new-date');d.disabled=this.checked;d.style.opacity=this.checked?'.35':'1';if(this.checked)d.value='';"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          </div>
         </div>
         <div class="form-field"><label>Ort</label><input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …"></div>
         <input type="hidden" id="new-creator">
@@ -1608,6 +1608,9 @@ function buildTerminCard(t, open){
       datePollHtml="<div style='margin:10px 0;font-size:.82rem;color:var(--text-3);background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 12px'>📅 Datum noch nicht festgelegt.</div>";
     }
   }
+
+  // Chat
+  var chatHtml=buildChatMsgs(t);
 
   // QR codes
   var qrHtml=buildQrList(t);
