@@ -30,8 +30,9 @@ jobs:
           include_files: index.html
 
       - name: Install Supabase CLI
-        run: |
-          npm install -g supabase
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
       - name: Deploy BGG Proxy Edge Function
         env:
