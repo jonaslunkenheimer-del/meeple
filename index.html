@@ -254,7 +254,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .suche-banner{padding:7px 14px;font-size:.74rem}
 
   /* ── FAB: Neuer Termin ── */
-  #fab-new-termin{
+  #fab-new-termin.fab-active{
     display:flex !important;
     position:fixed;bottom:20px;right:16px;
     width:52px;height:52px;border-radius:50%;
@@ -956,7 +956,7 @@ async function startApp(name){
     saveMyAddedSpiele();
   }
   renderTermine();
-  var fab=document.getElementById("fab-new-termin"); if(fab) fab.style.display="flex";
+  var fab=document.getElementById("fab-new-termin"); if(fab) fab.classList.add("fab-active");
   startPolling();
   await renderMarkt();
   showWhatsnew();
@@ -1180,7 +1180,7 @@ function showTab(name,btn){
   if(name==="markt") renderMarkt();
   // FAB nur im Termine-Tab sichtbar
   var fab=document.getElementById("fab-new-termin");
-  if(fab) fab.style.display=name==="termine"?"flex":"none";
+  if(fab) fab.classList.toggle("fab-active", name==="termine");
 }
 
 // ── Profile ──
