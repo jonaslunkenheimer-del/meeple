@@ -28,3 +28,16 @@ jobs:
           publish_dir: ./
           publish_branch: gh-pages
           include_files: index.html
+
+      - name: Install Supabase CLI
+        run: |
+          curl -sSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.deb -o supabase.deb
+          sudo dpkg -i supabase.deb
+
+      - name: Deploy BGG Proxy Edge Function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy bgg-proxy \
+            --project-ref hsomxjwyzzgwxtjxvrts \
+            --no-verify-jwt
