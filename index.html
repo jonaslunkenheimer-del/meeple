@@ -956,6 +956,7 @@ async function startApp(name){
     saveMyAddedSpiele();
   }
   renderTermine();
+  var fab=document.getElementById("fab-new-termin"); if(fab) fab.style.display="flex";
   startPolling();
   await renderMarkt();
   showWhatsnew();
@@ -1177,6 +1178,9 @@ function showTab(name,btn){
   if(name==="kalender") renderKalender();
   if(name==="zusagen") renderZusagen();
   if(name==="markt") renderMarkt();
+  // FAB nur im Termine-Tab sichtbar
+  var fab=document.getElementById("fab-new-termin");
+  if(fab) fab.style.display=name==="termine"?"flex":"none";
 }
 
 // ── Profile ──
