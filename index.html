@@ -219,6 +219,63 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 @media(max-width:600px){
   .tab-inner{padding:0 14px}
 }
+/* NACHRICHTEN MODAL */
+.nachr-modal-inner{
+  position:relative;display:flex;width:100%;max-width:860px;height:80vh;
+  background:var(--surface);border-radius:var(--radius);
+  box-shadow:var(--shadow-lg);overflow:hidden;animation:up .2s ease
+}
+.nachr-sidebar{
+  width:260px;flex-shrink:0;display:flex;flex-direction:column;
+  border-right:1px solid var(--border);background:var(--surface2)
+}
+.nachr-sidebar-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 14px 8px;border-bottom:1px solid var(--border)
+}
+.nachr-compose-btn{
+  width:30px;height:30px;border-radius:8px;background:var(--blue);
+  color:#fff;border:none;cursor:pointer;font-size:1.2rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;transition:filter .15s;flex-shrink:0
+}
+.nachr-compose-btn:hover{filter:brightness(1.1)}
+.nachr-ftab{
+  flex:1;padding:5px 8px;border:none;background:none;border-radius:6px;
+  font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;
+  color:var(--text-3);cursor:pointer;transition:all .15s
+}
+.nachr-ftab.active{background:var(--surface);color:var(--blue);box-shadow:var(--shadow)}
+.nachr-conv-item{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;
+  transition:background .1s;border-bottom:1px solid var(--border)
+}
+.nachr-conv-item:hover{background:var(--border)}
+.nachr-conv-item.active{background:#eef2fe}
+.nachr-conv-item.unread .nachr-conv-name{color:var(--blue);font-weight:800}
+.nachr-conv-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nachr-conv-preview{font-size:.72rem;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nachr-conv-time{font-size:.65rem;color:var(--text-3);flex-shrink:0}
+.nachr-panel{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
+.nachr-panel-header{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0
+}
+.nachr-back-btn{
+  display:none;background:none;border:none;font-size:1.4rem;cursor:pointer;
+  color:var(--text-3);padding:0 4px;line-height:1;flex-shrink:0
+}
+/* Mobile */
+@media(max-width:600px){
+  .nachr-modal-inner{
+    flex-direction:column;height:92vh;border-radius:20px 20px 0 0;
+    max-width:100%;margin:0
+  }
+  #nachr-modal{padding:0 !important;align-items:flex-end !important}
+  .nachr-sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border)}
+  .nachr-sidebar.mobile-hidden{display:none}
+  .nachr-panel.mobile-hidden{display:none}
+  .nachr-back-btn{display:block !important}
+}
 /* NACHRICHTEN */
 .nachr-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--surface);border-radius:var(--radius-sm);border:1.5px solid var(--border);margin-bottom:8px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
 .nachr-item:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(59,110,245,.1)}
@@ -330,8 +387,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   #qr-modal,
   #confirm-modal,
   #markt-chat-modal,
-  #compose-modal,
-  #konv-modal,
   #whatsnew-modal{
     padding:0 !important;
     align-items:flex-end !important
@@ -345,8 +400,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   #qr-modal > div,
   #confirm-modal > div,
   #markt-chat-modal > div,
-  #compose-modal > div,
-  #konv-modal > div,
   #whatsnew-modal > div{
     max-width:100% !important;
     width:100% !important;
@@ -437,9 +490,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button class="tab active" id="tab-btn-termine" onclick="showTab('termine',this)">Termine</button>
         <button class="tab" id="tab-btn-kalender" onclick="showTab('kalender',this)">Kalender</button>
         <button class="tab" id="tab-btn-zusagen" onclick="showTab('zusagen',this)">Meine Zusagen</button>
-        <button class="tab" id="tab-btn-nachrichten" onclick="showTab('nachrichten',this)" style="position:relative">
-          ✉️ Nachrichten<span id="nachr-badge-tab" style="display:none;position:absolute;top:2px;right:2px;min-width:14px;height:14px;padding:0 3px;background:var(--red);color:#fff;border-radius:7px;font-size:.55rem;font-weight:800;line-height:14px;text-align:center"></span>
-        </button>
         <button class="tab" id="tab-btn-markt" onclick="showTab('markt',this)" style="display:none">Marktplatz</button>
       </div>
       <!-- Mobile Dropdown -->
@@ -452,10 +502,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="showTabMobile('termine')">Termine</button>
           <button onclick="showTabMobile('kalender')">Kalender</button>
           <button onclick="showTabMobile('zusagen')">Meine Zusagen</button>
-          <button id="tab-dd-nachrichten" onclick="showTabMobile('nachrichten')">✉️ Nachrichten <span id="nachr-badge-dd" style="display:none;background:var(--red);color:#fff;border-radius:8px;padding:1px 5px;font-size:.65rem;font-weight:800;margin-left:4px"></span></button>
           <button id="tab-dd-markt" onclick="showTabMobile('markt')" style="display:none">Marktplatz</button>
         </div>
       </div>
+      <button class="notif-btn" id="nachr-btn" onclick="openNachrModal()" title="Nachrichten" style="font-size:1rem">
+        ✉️<div class="notif-badge" id="nachr-badge-btn"></div>
+      </button>
       <button class="notif-btn" id="notif-btn" onclick="reopenWhatsnew()" title="Neuigkeiten anzeigen">
         🔔<div class="notif-badge" id="notif-badge"></div>
       </button>
@@ -507,26 +559,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       </div>
     </div>
 
-    <!-- NACHRICHTEN TAB -->
-    <div id="tab-nachrichten" class="tab-content">
-      <div class="tab-inner">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">✉️ Nachrichten</div>
-            <div style="font-size:.78rem;color:var(--text-3)">Private Nachrichten mit deinen Mitspielern</div>
-          </div>
-          <button onclick="openComposeModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35)">
-            <span style="font-size:1.1rem">＋</span> Neue Nachricht
-          </button>
-        </div>
-        <div id="nachr-tabs" style="display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;margin-bottom:16px;width:fit-content">
-          <button id="nachr-tab-inbox" class="btn btn-sm" onclick="setNachrTab('inbox')" style="background:var(--surface);color:var(--blue);box-shadow:var(--shadow)">📥 Posteingang</button>
-          <button id="nachr-tab-sent" class="btn btn-sm btn-ghost" onclick="setNachrTab('sent')">📤 Gesendet</button>
-        </div>
-        <div id="nachr-list"></div>
-      </div>
-    </div>
-
     <!-- MARKTPLATZ TAB -->
     <div id="tab-markt" class="tab-content">
       <div class="tab-inner">
@@ -545,58 +577,80 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   </div>
 </div>
 
-<!-- COMPOSE MODAL -->
-<div id="compose-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeComposeModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:500px;animation:up .2s ease;overflow:hidden">
-    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:18px 24px;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:1rem;font-weight:800;color:#fff">✉️ Neue Nachricht</div>
-      <button onclick="closeComposeModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
+<!-- NACHRICHTEN MODAL (Discord-style) -->
+<div id="nachr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeNachrModal()">
+  <div class="nachr-modal-inner">
+    <!-- LEFT SIDEBAR -->
+    <div class="nachr-sidebar" id="nachr-sidebar">
+      <div class="nachr-sidebar-header">
+        <div style="font-size:.95rem;font-weight:800">✉️ Nachrichten</div>
+        <button class="nachr-compose-btn" onclick="showComposePanel()" title="Neue Nachricht">＋</button>
+      </div>
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:3px;padding:8px 12px 0">
+        <button id="ns-tab-inbox" class="nachr-ftab active" onclick="setNachrTab('inbox')">📥 Eingang</button>
+        <button id="ns-tab-sent" class="nachr-ftab" onclick="setNachrTab('sent')">📤 Gesendet</button>
+      </div>
+      <div id="nachr-conv-list" style="flex:1;overflow-y:auto;padding:8px 0"></div>
     </div>
-    <div style="padding:22px 24px">
-      <div class="form-field" style="margin-bottom:12px">
-        <label>Empfänger</label>
-        <div style="position:relative">
-          <div id="compose-to-display" style="min-height:40px;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:pointer" onclick="toggleUserPicker()">
-            <span id="compose-to-placeholder" style="font-size:.88rem;color:var(--text-3)">Empfänger auswählen …</span>
-          </div>
-          <div id="user-picker-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:var(--shadow-lg);z-index:9999;max-height:220px;overflow-y:auto">
-            <div style="padding:8px 12px;border-bottom:1px solid var(--border)">
-              <input class="input-field" id="user-picker-search" placeholder="Suchen …" oninput="filterUserPicker()" style="font-size:.82rem;padding:7px 10px">
+    <!-- RIGHT PANEL -->
+    <div class="nachr-panel" id="nachr-panel">
+      <!-- Compose view -->
+      <div id="nachr-compose-view" style="display:none;flex-direction:column;height:100%">
+        <div class="nachr-panel-header">
+          <button class="nachr-back-btn" onclick="showConvList()" title="Zurück">‹</button>
+          <div style="font-weight:700;font-size:.95rem">Neue Nachricht</div>
+          <div style="flex:1"></div>
+        </div>
+        <div style="padding:20px;flex:1;overflow-y:auto">
+          <div class="form-field" style="margin-bottom:12px">
+            <label>Empfänger</label>
+            <div style="position:relative">
+              <div id="compose-to-display" style="min-height:40px;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:pointer" onclick="toggleUserPicker()">
+                <span id="compose-to-placeholder" style="font-size:.88rem;color:var(--text-3)">Empfänger auswählen …</span>
+              </div>
+              <div id="user-picker-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:var(--shadow-lg);z-index:9999;max-height:200px;overflow-y:auto">
+                <div style="padding:8px 12px;border-bottom:1px solid var(--border)">
+                  <input class="input-field" id="user-picker-search" placeholder="Suchen …" oninput="filterUserPicker()" style="font-size:.82rem;padding:7px 10px">
+                </div>
+                <div id="user-picker-list"></div>
+              </div>
             </div>
-            <div id="user-picker-list"></div>
           </div>
+          <div class="form-field" style="margin-bottom:12px">
+            <label>Betreff</label>
+            <input class="input-field" id="compose-subject" placeholder="Worum geht's?">
+          </div>
+          <div class="form-field" style="margin-bottom:16px">
+            <label>Nachricht</label>
+            <textarea class="input-field" id="compose-body" rows="6" placeholder="Schreib deine Nachricht …" style="resize:vertical;font-family:inherit"></textarea>
+          </div>
+          <div id="compose-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
+          <button class="btn btn-blue" onclick="sendNachricht()" style="width:100%">📨 Senden</button>
         </div>
       </div>
-      <div class="form-field" style="margin-bottom:12px">
-        <label>Betreff</label>
-        <input class="input-field" id="compose-subject" placeholder="Worum geht's?">
-      </div>
-      <div class="form-field" style="margin-bottom:16px">
-        <label>Nachricht</label>
-        <textarea class="input-field" id="compose-body" rows="5" placeholder="Schreib deine Nachricht …" style="resize:vertical;font-family:inherit"></textarea>
-      </div>
-      <div id="compose-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" onclick="closeComposeModal()" style="flex:1">Abbrechen</button>
-        <button class="btn btn-blue" onclick="sendNachricht()" style="flex:2">📨 Senden</button>
+      <!-- Chat view -->
+      <div id="nachr-chat-view" style="display:flex;flex-direction:column;height:100%">
+        <div class="nachr-panel-header" id="nachr-chat-header">
+          <button class="nachr-back-btn" onclick="showConvList()" title="Zurück">‹</button>
+          <div class="av av-md" id="konv-av" style="flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:.92rem" id="konv-partner"></div>
+            <div style="font-size:.7rem;color:var(--text-3)" id="konv-subject"></div>
+          </div>
+          <button onclick="showComposePanel(konvPartner)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-2);white-space:nowrap">↩ Antworten</button>
+        </div>
+        <div id="konv-chat-box" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div class="chat-empty" style="margin:auto">Wähle eine Konversation aus.</div>
+        </div>
+        <div id="nachr-reply-bar" style="display:none;padding:12px 16px;border-top:1px solid var(--border);display:none;gap:8px;align-items:center">
+          <input class="chat-input" id="nachr-quick-reply" placeholder="Antwort schreiben …" onkeydown="if(event.keyCode===13)sendQuickReply()">
+          <button class="chat-send" onclick="sendQuickReply()">➤</button>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- KONVERSATION MODAL -->
-<div id="konv-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeKonvModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;animation:up .2s ease;overflow:hidden">
-    <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
-      <div class="av av-md" id="konv-av"></div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:.95rem" id="konv-partner"></div>
-        <div style="font-size:.72rem;color:var(--text-3)" id="konv-subject"></div>
-      </div>
-      <button onclick="openComposeModal(konvPartner)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-2)">↩ Antworten</button>
-      <button onclick="closeKonvModal()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:1.1rem">✕</button>
-    </div>
-    <div id="konv-chat-box" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>
+    <!-- Close btn (top right) -->
+    <button onclick="closeNachrModal()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
   </div>
 </div>
 
@@ -2708,11 +2762,11 @@ async function sendMarktChat(){
 
 // ── Nachrichten ──
 const SB_NACHR = "nachrichten";
-var nachrData = [];        // all messages
-var nachrTab = "inbox";    // "inbox" | "sent"
-var konvPartner = null;    // currently open conversation partner
+var nachrData = [];
+var nachrTab = "inbox";
+var konvPartner = null;
 var konvSubject = null;
-var composeToUser = null;  // pre-filled recipient
+var composeToUser = null;
 
 async function loadNachrichten(){
   try{
@@ -2728,88 +2782,137 @@ async function saveNachrichten(){
   }catch(e){}
 }
 
-function setNachrTab(tab){
-  nachrTab=tab;
-  document.getElementById("nachr-tab-inbox").style.cssText=tab==="inbox"?"background:var(--surface);color:var(--blue);box-shadow:var(--shadow)":"";
-  document.getElementById("nachr-tab-inbox").className="btn btn-sm"+(tab==="inbox"?"":" btn-ghost");
-  document.getElementById("nachr-tab-sent").style.cssText=tab==="sent"?"background:var(--surface);color:var(--blue);box-shadow:var(--shadow)":"";
-  document.getElementById("nachr-tab-sent").className="btn btn-sm"+(tab==="sent"?"":" btn-ghost");
-  renderNachrichten();
-}
-
 function nachrUnreadCount(){
   return nachrData.filter(function(m){ return m.to===currentName&&!m.read; }).length;
 }
-
 function updateNachrBadge(){
   var n=nachrUnreadCount();
-  ["nachr-badge-tab","nachr-badge-dd"].forEach(function(id){
-    var el=document.getElementById(id); if(!el) return;
-    el.style.display=n>0?"inline-block":"none";
-    el.textContent=n>9?"9+":String(n);
-  });
+  var btn=document.getElementById("nachr-badge-btn");
+  if(btn){ btn.style.display=n>0?"flex":"none"; btn.textContent=n>9?"9+":String(n); }
 }
 
-function renderNachrichten(){
-  var list=document.getElementById("nachr-list"); if(!list) return;
+// ── Open / Close main modal ──
+function openNachrModal(){
+  document.getElementById("nachr-modal").style.display="flex";
+  loadUserPickerList();
+  setNachrTab(nachrTab);
+  // On mobile: show sidebar first
+  var isMobile=window.innerWidth<=600;
+  if(isMobile){
+    document.getElementById("nachr-sidebar").classList.remove("mobile-hidden");
+    document.getElementById("nachr-panel").classList.add("mobile-hidden");
+  }
+  // Show placeholder chat view
+  showChatPlaceholder();
+}
+function closeNachrModal(){
+  document.getElementById("nachr-modal").style.display="none";
+  document.getElementById("user-picker-drop").style.display="none";
+}
+
+// ── Mobile panel switching ──
+function showConvList(){
+  var isMobile=window.innerWidth<=600;
+  if(!isMobile) return;
+  document.getElementById("nachr-sidebar").classList.remove("mobile-hidden");
+  document.getElementById("nachr-panel").classList.add("mobile-hidden");
+}
+function showChatPanel(){
+  var isMobile=window.innerWidth<=600;
+  if(!isMobile) return;
+  document.getElementById("nachr-sidebar").classList.add("mobile-hidden");
+  document.getElementById("nachr-panel").classList.remove("mobile-hidden");
+}
+function showChatPlaceholder(){
+  document.getElementById("nachr-compose-view").style.display="none";
+  document.getElementById("nachr-chat-view").style.display="flex";
+  document.getElementById("konv-partner").textContent="";
+  document.getElementById("konv-subject").textContent="";
+  document.getElementById("nachr-reply-bar").style.display="none";
+  document.getElementById("konv-chat-box").innerHTML="<div class='empty' style='margin:auto'><div class='empty-icon'>✉️</div><p>Wähle eine Konversation oder starte eine neue Nachricht.</p></div>";
+  // Clear active conv items
+  document.querySelectorAll(".nachr-conv-item.active").forEach(function(el){ el.classList.remove("active"); });
+}
+
+// ── Sidebar conversation list ──
+function setNachrTab(tab){
+  nachrTab=tab;
+  document.getElementById("ns-tab-inbox").classList.toggle("active",tab==="inbox");
+  document.getElementById("ns-tab-sent").classList.toggle("active",tab==="sent");
+  renderConvList();
+}
+
+function getThreads(){
   var msgs=nachrTab==="inbox"
     ? nachrData.filter(function(m){ return m.to===currentName; })
     : nachrData.filter(function(m){ return m.from===currentName; });
-  msgs.sort(function(a,b){ return new Date(b.ts)-new Date(a.ts); });
-  if(!msgs.length){
-    list.innerHTML="<div class='empty'><div class='empty-icon'>"+(nachrTab==="inbox"?"📭":"📤")+"</div><p>"+(nachrTab==="inbox"?"Keine Nachrichten.":"Noch nichts gesendet.")+"</p></div>";
-    return;
-  }
-  // Group by thread (same from/to pair + subject)
   var threads={};
   msgs.forEach(function(m){
     var partner=nachrTab==="inbox"?m.from:m.to;
     var key=m.thread_id||m.id;
-    if(!threads[key]||new Date(m.ts)>new Date(threads[key].latest.ts)){
-      threads[key]={partner:partner,subject:m.subject,latest:m,unread:0,count:0};
+    if(!threads[key]){
+      threads[key]={partner:partner,subject:m.subject,latest:m,unread:0,count:0,key:key};
+    } else if(new Date(m.ts)>new Date(threads[key].latest.ts)){
+      threads[key].latest=m;
     }
     threads[key].count++;
     if(!m.read&&m.to===currentName) threads[key].unread++;
   });
-  var keys=Object.keys(threads).sort(function(a,b){ return new Date(threads[b].latest.ts)-new Date(threads[a].latest.ts); });
-  list.innerHTML=keys.map(function(k){
-    var t=threads[k];
+  return Object.values(threads).sort(function(a,b){ return new Date(b.latest.ts)-new Date(a.latest.ts); });
+}
+
+function renderConvList(){
+  var list=document.getElementById("nachr-conv-list"); if(!list) return;
+  var threads=getThreads();
+  if(!threads.length){
+    list.innerHTML="<div style='padding:20px 14px;font-size:.82rem;color:var(--text-3);text-align:center'>"+(nachrTab==="inbox"?"📭 Keine Nachrichten":"📤 Noch nichts gesendet")+"</div>";
+    return;
+  }
+  var now=new Date();
+  list.innerHTML=threads.map(function(t){
     var dt=new Date(t.latest.ts);
-    var now=new Date();
     var timeStr=dt.toDateString()===now.toDateString()
       ? dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})
       : dt.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
-    var unread=t.unread>0;
-    return "<div class='nachr-item"+(unread?" unread":"")+"' onclick='openKonvModal(\""+h(t.partner)+"\",\""+h(t.subject)+"\")'>"
-      +"<div class='av av-md' style='background:"+nameColor(t.partner)+";flex-shrink:0'>"+nameInit(t.partner)+"</div>"
+    var isActive=konvPartner===t.partner&&konvSubject===t.subject;
+    return "<div class='nachr-conv-item"+(t.unread?" unread":"")+(isActive?" active":"")+"' onclick='openKonv(\""+h(t.partner)+"\",\""+h(t.subject)+"\")'>"
+      +"<div style='position:relative;flex-shrink:0'>"
+      +"<div class='av av-md' style='background:"+nameColor(t.partner)+"'>"+nameInit(t.partner)+"</div>"
+      +(t.unread?"<div style='position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--blue);border-radius:50%;border:2px solid var(--surface2)'></div>":"")
+      +"</div>"
       +"<div style='flex:1;min-width:0'>"
-      +"<div style='display:flex;align-items:center;justify-content:space-between'>"
-      +"<div class='nachr-name'>"+h(t.partner)+(t.count>1?" <span style='font-size:.68rem;color:var(--text-3);font-weight:500'>("+t.count+")</span>":"")+"</div>"
-      +"<div class='nachr-time'>"+timeStr+"</div>"
+      +"<div style='display:flex;justify-content:space-between;align-items:center;gap:4px'>"
+      +"<div class='nachr-conv-name'>"+h(t.partner)+"</div>"
+      +"<div class='nachr-conv-time'>"+timeStr+"</div>"
       +"</div>"
-      +"<div class='nachr-subject'>"+(unread?"<strong>":"")+(h(t.subject)||"(kein Betreff)")+(unread?"</strong>":"")+"</div>"
-      +"<div class='nachr-preview'>"+h(t.latest.body.slice(0,80))+"</div>"
+      +"<div class='nachr-conv-preview'>"+(t.unread?"<strong>":"")+h((t.subject||"")+(t.subject?" · ":"")+t.latest.body.slice(0,50))+(t.unread?"</strong>":"")+"</div>"
       +"</div>"
-      +(unread?"<div class='nachr-dot' title='Ungelesen'></div>":"")
       +"</div>";
   }).join("");
 }
 
-function openKonvModal(partner,subject){
+// ── Open a conversation ──
+function openKonv(partner,subject){
   konvPartner=partner; konvSubject=subject;
-  var av=document.getElementById("konv-av"); if(av){ setAv(av,partner); }
-  document.getElementById("konv-partner").textContent=partner;
-  document.getElementById("konv-subject").textContent=subject||"Konversation";
   // Mark as read
-  nachrData.forEach(function(m){
-    if(m.to===currentName&&m.from===partner&&m.subject===subject) m.read=true;
-  });
+  nachrData.forEach(function(m){ if(m.to===currentName&&m.from===partner&&m.subject===subject) m.read=true; });
   updateNachrBadge();
   saveNachrichten();
+  // Update header
+  var av=document.getElementById("konv-av"); if(av) setAv(av,partner);
+  document.getElementById("konv-partner").textContent=partner;
+  document.getElementById("konv-subject").textContent=subject||"Konversation";
+  // Show chat view
+  document.getElementById("nachr-compose-view").style.display="none";
+  document.getElementById("nachr-chat-view").style.display="flex";
+  document.getElementById("nachr-reply-bar").style.display="flex";
   renderKonvChat(partner,subject);
-  document.getElementById("konv-modal").style.display="flex";
+  // Highlight in list
+  document.querySelectorAll(".nachr-conv-item").forEach(function(el){ el.classList.remove("active"); });
+  renderConvList(); // re-render to update active state
+  // Mobile: switch to panel
+  showChatPanel();
 }
-function closeKonvModal(){ document.getElementById("konv-modal").style.display="none"; renderNachrichten(); }
 
 function renderKonvChat(partner,subject){
   var box=document.getElementById("konv-chat-box"); if(!box) return;
@@ -2819,44 +2922,49 @@ function renderKonvChat(partner,subject){
   if(!thread.length){ box.innerHTML="<div class='chat-empty'>Keine Nachrichten.</div>"; return; }
   box.innerHTML=thread.map(function(m){
     var mine=m.from===currentName;
-    var dt=new Date(m.ts).toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    var dt=new Date(m.ts);
+    var now=new Date();
+    var timeStr=dt.toDateString()===now.toDateString()
+      ? dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})
+      : dt.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
     return "<div class='msg-row"+(mine?" mine":"")+"'>"
       +"<div class='av av-sm' style='background:"+nameColor(m.from)+";display:"+(mine?"none":"flex")+";align-items:center;justify-content:center'>"+nameInit(m.from)+"</div>"
       +"<div class='bubble'>"
       +(!mine?"<div class='bubble-name'>"+h(m.from)+"</div>":"")
-      +"<div>"+h(m.body)+"</div>"
-      +"<div class='bubble-time'>"+dt+"</div>"
+      +"<div style='white-space:pre-wrap;word-break:break-word'>"+h(m.body)+"</div>"
+      +"<div class='bubble-time'>"+timeStr+"</div>"
       +"</div></div>";
   }).join("");
   box.scrollTop=box.scrollHeight;
 }
 
-function openComposeModal(preToUser){
+// ── Compose panel ──
+function showComposePanel(preToUser){
   composeToUser=preToUser||null;
-  document.getElementById("compose-subject").value=konvSubject&&preToUser?"Re: "+(konvSubject.startsWith("Re: ")?konvSubject:konvSubject):"";
+  document.getElementById("compose-subject").value=konvSubject&&preToUser?("Re: "+(konvSubject.replace(/^Re:\s*/i,"").trim())):"";
   document.getElementById("compose-body").value="";
   document.getElementById("compose-error").style.display="none";
   renderComposeToDisplay();
-  document.getElementById("compose-modal").style.display="flex";
+  document.getElementById("nachr-chat-view").style.display="none";
+  document.getElementById("nachr-compose-view").style.display="flex";
   loadUserPickerList();
+  showChatPanel();
   setTimeout(function(){ if(!composeToUser) document.getElementById("compose-subject").focus(); else document.getElementById("compose-body").focus(); },80);
-}
-function closeComposeModal(){
-  document.getElementById("compose-modal").style.display="none";
-  document.getElementById("user-picker-drop").style.display="none";
-  composeToUser=null;
 }
 
 function renderComposeToDisplay(){
   var wrap=document.getElementById("compose-to-display");
   var ph=document.getElementById("compose-to-placeholder");
-  if(!composeToUser){ wrap.innerHTML=""; wrap.appendChild(ph); ph.style.display=""; return; }
-  ph.style.display="none";
-  wrap.innerHTML="<span style='display:inline-flex;align-items:center;gap:5px;background:var(--blue);color:#fff;border-radius:20px;padding:3px 10px 3px 5px;font-size:.8rem;font-weight:600'>"
-    +"<div class='av av-sm' style='background:rgba(255,255,255,.25)'>"+nameInit(composeToUser)+"</div>"
-    +h(composeToUser)
-    +"<span onclick='clearComposeTo()' style='cursor:pointer;opacity:.8;margin-left:2px;font-size:.85rem'>✕</span>"
-    +"</span>";
+  if(!composeToUser){
+    wrap.innerHTML=""; wrap.appendChild(ph); ph.style.display="";
+  } else {
+    ph.style.display="none";
+    wrap.innerHTML="<span style='display:inline-flex;align-items:center;gap:5px;background:var(--blue);color:#fff;border-radius:20px;padding:3px 10px 3px 5px;font-size:.8rem;font-weight:600'>"
+      +"<div class='av av-sm' style='background:rgba(255,255,255,.25)'>"+nameInit(composeToUser)+"</div>"
+      +h(composeToUser)
+      +"<span onclick='clearComposeTo()' style='cursor:pointer;opacity:.8;margin-left:2px;font-size:.85rem'>✕</span>"
+      +"</span>";
+  }
 }
 function clearComposeTo(){ composeToUser=null; renderComposeToDisplay(); }
 
@@ -2887,8 +2995,7 @@ function filterUserPicker(){
   }).join("");
 }
 function selectComposeUser(u){
-  composeToUser=u;
-  renderComposeToDisplay();
+  composeToUser=u; renderComposeToDisplay();
   document.getElementById("user-picker-drop").style.display="none";
   document.getElementById("compose-subject").focus();
 }
@@ -2899,19 +3006,42 @@ async function sendNachricht(){
   var subj=document.getElementById("compose-subject").value.trim();
   var body=document.getElementById("compose-body").value.trim();
   if(!body){ errEl.textContent="Nachricht darf nicht leer sein."; errEl.style.display="block"; return; }
-  var msg={id:"n"+Date.now(),thread_id:"t"+composeToUser+"_"+currentName+"_"+(subj||""),from:currentName,to:composeToUser,subject:subj,body:body,ts:new Date().toISOString(),read:false};
-  // Normalize thread_id: same key for both directions
   var pair=[currentName,composeToUser].sort().join("_");
-  msg.thread_id="t_"+pair+"_"+(subj.replace(/^Re:\s*/i,"").trim().toLowerCase().replace(/\s+/g,"_")||"msg");
+  var msg={id:"n"+Date.now(),thread_id:"t_"+pair+"_"+(subj.replace(/^Re:\s*/i,"").trim().toLowerCase().replace(/\s+/g,"_")||"msg"),from:currentName,to:composeToUser,subject:subj,body:body,ts:new Date().toISOString(),read:false};
   nachrData.unshift(msg);
-  closeComposeModal();
-  if(document.getElementById("tab-nachrichten").classList.contains("active")) renderNachrichten();
   updateNachrBadge();
   toast("Nachricht gesendet ✓");
+  // Switch to the conversation we just sent
+  konvPartner=composeToUser; konvSubject=subj;
+  document.getElementById("compose-subject").value="";
+  document.getElementById("compose-body").value="";
+  composeToUser=null;
+  renderComposeToDisplay();
+  // Show chat view with new message
+  document.getElementById("nachr-compose-view").style.display="none";
+  document.getElementById("nachr-chat-view").style.display="flex";
+  document.getElementById("nachr-reply-bar").style.display="flex";
+  var av=document.getElementById("konv-av"); if(av) setAv(av,konvPartner);
+  document.getElementById("konv-partner").textContent=konvPartner;
+  document.getElementById("konv-subject").textContent=konvSubject;
+  renderKonvChat(konvPartner,konvSubject);
+  setNachrTab("sent");
   await saveNachrichten();
 }
 
-// Poll for new messages every 15s
+async function sendQuickReply(){
+  var inp=document.getElementById("nachr-quick-reply");
+  var body=inp.value.trim(); if(!body||!konvPartner) return;
+  inp.value="";
+  var pair=[currentName,konvPartner].sort().join("_");
+  var msg={id:"n"+Date.now(),thread_id:"t_"+pair+"_"+(konvSubject.replace(/^Re:\s*/i,"").trim().toLowerCase().replace(/\s+/g,"_")||"msg"),from:currentName,to:konvPartner,subject:konvSubject,body:body,ts:new Date().toISOString(),read:false};
+  nachrData.unshift(msg);
+  renderKonvChat(konvPartner,konvSubject);
+  renderConvList();
+  updateNachrBadge();
+  await saveNachrichten();
+}
+
 function startNachrPolling(){
   setInterval(async function(){
     try{
@@ -2924,9 +3054,10 @@ function startNachrPolling(){
       var newCount=nachrUnreadCount();
       updateNachrBadge();
       if(newCount>oldCount) toast("📬 Neue Nachricht!");
-      if(document.getElementById("tab-nachrichten").classList.contains("active")) renderNachrichten();
-      // Refresh open conversation
-      if(document.getElementById("konv-modal").style.display==="flex"&&konvPartner) renderKonvChat(konvPartner,konvSubject);
+      if(document.getElementById("nachr-modal").style.display==="flex"){
+        renderConvList();
+        if(konvPartner) renderKonvChat(konvPartner,konvSubject);
+      }
     }catch(e){}
   },15000);
 }
