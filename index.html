@@ -1627,7 +1627,7 @@ async function bggSearch(q){
   status.textContent="Suche\u2026";
   document.getElementById("as-drop").innerHTML=""; document.getElementById("as-drop").style.display="none";
   try{
-    var r=await fetch("https://corsproxy.io/?url="+encodeURIComponent("https://boardgamegeek.com/xmlapi2/search?type=boardgame&exact=0&query=")+encodeURIComponent(q));
+    var r=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent("https://boardgamegeek.com/xmlapi2/search?type=boardgame&exact=0&query="+q));
     if(!r.ok) throw new Error(r.status);
     var xml=await r.text();
     var parser=new DOMParser();
@@ -1660,7 +1660,7 @@ function renderAsDrop(){
   drop.style.display="block";
 }
 function loadBggGameDetails(id){
-  return fetch("https://corsproxy.io/?url="+encodeURIComponent("https://boardgamegeek.com/xmlapi2/thing?stats=1&id=")+encodeURIComponent(id)).then(function(r){
+  return fetch("https://api.allorigins.win/raw?url="+encodeURIComponent("https://boardgamegeek.com/xmlapi2/thing?stats=1&id="+id)).then(function(r){
     if(!r.ok) throw new Error(r.status);
     return r.text();
   }).then(function(xml){
