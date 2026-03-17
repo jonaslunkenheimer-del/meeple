@@ -29,12 +29,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .btn-name{width:100%;margin-top:16px;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:filter .15s}
 .btn-name:hover{filter:brightness(1.08)}
 /* HEADER */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
-.brand{display:flex;align-items:center;gap:10px}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap;position:sticky;top:0;z-index:100;min-width:0}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .brand-icon{font-size:1.5rem}
 .brand-name{font-size:1rem;font-weight:800}
 .brand-sub{font-size:.65rem;color:var(--text-3);font-family:'DM Mono',monospace}
-.tab-bar{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;overflow-x:auto;max-width:100%}
+.tab-bar{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;overflow-x:auto;min-width:0;flex-shrink:1}
 .tab{padding:7px 14px;border:none;background:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;color:var(--text-3);cursor:pointer;white-space:nowrap;transition:all .15s}
 .tab.active{background:var(--surface);color:var(--blue);box-shadow:var(--shadow)}
 /* MAIN */
@@ -489,7 +489,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="brand-icon">🎲</div>
       <div><div class="brand-name">Die Meeples</div><div class="brand-sub">Spieleabend Planer</div></div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0;flex-shrink:1">
       <!-- Desktop Tabs -->
       <div class="tab-bar" id="desktop-tab-bar">
         <button class="tab active" id="tab-btn-termine" onclick="showTab('termine',this)">Termine</button>
