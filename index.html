@@ -316,20 +316,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 </div>
 
 <!-- BGG TOKEN MODAL -->
-<div id="bgg-token-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:910;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:460px;animation:up .18s ease">
-    <div style="font-size:1.1rem;font-weight:700;margin-bottom:6px">🎲 BGG API Token</div>
-    <div style="font-size:.82rem;color:var(--text-2);margin-bottom:18px;line-height:1.6">BoardGameGeek erfordert einen Token für die API.<br>Beantrage ihn unter <a href="https://boardgamegeek.com/applications" target="_blank" style="color:var(--blue)">boardgamegeek.com/applications</a>.</div>
-    <label style="display:block;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px;font-weight:600">BGG Bearer Token</label>
-    <input class="input-field" id="bgg-token-input" type="password" placeholder="e3f8c3ff-..." style="margin-bottom:8px;font-family:'DM Mono',monospace" autocomplete="off">
-    <div id="bgg-token-error" style="display:none;color:var(--red);font-size:.8rem;margin-bottom:10px"></div>
-    <div id="bgg-token-saved" style="display:none;color:var(--green);font-size:.8rem;margin-bottom:10px">✓ Token gespeichert!</div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-ghost" onclick="closeBggTokenModal()">Schließen</button>
-      <button class="btn btn-blue" onclick="saveBggToken()">💾 Token speichern</button>
-    </div>
-  </div>
-</div>
 
 <!-- ADMIN MODAL -->
 <div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:920;align-items:center;justify-content:center;padding:20px">
@@ -340,6 +326,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
     <div id="service-key-box" style="display:none"><input id="service-key-input" type="hidden"><div id="service-key-status"></div></div>
     <div id="admin-user-list"></div>
+    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-weight:700;margin-bottom:10px">🎲 BGG API Token</div>
+      <div class="form-field" style="margin-bottom:8px">
+        <input class="input-field" id="admin-bgg-token" type="password" placeholder="e3f8c3ff-…" autocomplete="off" style="font-family:'DM Mono',monospace;font-size:.82rem">
+      </div>
+      <div id="admin-bgg-status" style="font-size:.78rem;margin-bottom:8px"></div>
+      <button class="btn btn-outline btn-sm" onclick="adminSaveBggToken()">💾 Token speichern</button>
+    </div>
     <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
       <div style="font-weight:700;margin-bottom:10px">Neuen User anlegen</div>
       <div class="form-grid">
@@ -622,7 +616,27 @@ const SB_ANON  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const SB_TABLE = "spieleabend";
 const SB_MARKT = "marktplatz";
 const ADMIN    = "jonas.lunkenheimer@gmail.com";
-const BGG_KEY  = "bgg_api_token";
+const SB_CONFIG = "app_config";
+var bggTok = "";
+function getBggTok(){ return bggTok; }
+async function loadBggToken(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_CONFIG+"?key=eq.bgg_token&select=value",{headers:authHdrs()});
+    if(r.ok){ var rows=await r.json(); if(rows.length) bggTok=rows[0].value||""; }
+  }catch(e){}
+}
+async function adminSaveBggToken(){
+  var inp=document.getElementById("admin-bgg-token");
+  var status=document.getElementById("admin-bgg-status");
+  var v=inp.value.trim(); if(!v){ status.style.color="var(--red)"; status.textContent="Bitte Token eingeben."; return; }
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_CONFIG,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({key:"bgg_token",value:v})});
+    if(!r.ok) throw new Error(r.status);
+    bggTok=v;
+    status.style.color="var(--green)"; status.textContent="✓ Token gespeichert!";
+    inp.value=""; setTimeout(function(){ status.textContent=""; },3000);
+  }catch(e){ status.style.color="var(--red)"; status.textContent="Fehler beim Speichern."; }
+}
 var SB_SK = "__SB_SERVICE_KEY__";
 
 // ── State ──
@@ -650,7 +664,6 @@ function toast(msg){ var el=document.getElementById("toast"); el.querySelector("
 function getT(id){ return state.termine.find(function(t){ return t.id===id; }); }
 function avg(s){ if(!s.votes||!Object.keys(s.votes).length) return 0; var v=Object.values(s.votes); return v.reduce(function(a,b){ return a+b; },0)/v.length; }
 function score(s){ if(!s.votes) return 0; return Object.values(s.votes).filter(function(v){ return v===1; }).length; }
-function getBggTok(){ return localStorage.getItem(BGG_KEY)||""; }
 function getSK(){ return (SB_SK && SB_SK.indexOf("__")!==0) ? SB_SK : ""; }
 function authHdrs(x){ var tok=(session&&session.access_token)||SB_ANON; return Object.assign({"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+tok},x||{}); }
 
@@ -748,6 +761,7 @@ async function startApp(name){
   document.getElementById("hdr-name").textContent=name;
   document.getElementById("tab-btn-markt").style.display="";
   try{ await loadState(); }catch(e){}
+  await loadBggToken();
   // Pre-populate myAddedSpiele from DB data for this user
   if(state&&state.termine){
     state.termine.forEach(function(t){
@@ -1030,7 +1044,14 @@ async function savePassword(){
 }
 
 // ── Admin ──
-function openAdminModal(){ document.getElementById("admin-modal").style.display="flex"; loadAdminUsers(); }
+function openAdminModal(){
+  document.getElementById("admin-modal").style.display="flex";
+  loadAdminUsers();
+  // Show current token status
+  var status=document.getElementById("admin-bgg-status");
+  if(status) status.textContent=bggTok?"✓ Token aktiv ("+bggTok.slice(0,8)+"…)":"Noch kein Token gespeichert.";
+  if(status) status.style.color=bggTok?"var(--green)":"var(--text-3)";
+}
 function closeAdminModal(){ document.getElementById("admin-modal").style.display="none"; }
 async function loadAdminUsers(){
   var list=document.getElementById("admin-user-list");
@@ -1064,16 +1085,7 @@ async function adminCreateUser(){
 }
 
 // ── BGG Token ──
-function openBggTokenModal(){ document.getElementById("bgg-token-modal").style.display="flex"; }
-function closeBggTokenModal(){ document.getElementById("bgg-token-modal").style.display="none"; }
-function saveBggToken(){
-  var v=document.getElementById("bgg-token-input").value.trim();
-  if(!v){ document.getElementById("bgg-token-error").textContent="Token eingeben."; document.getElementById("bgg-token-error").style.display="block"; return; }
-  localStorage.setItem(BGG_KEY,v);
-  document.getElementById("bgg-token-saved").style.display="block";
-  document.getElementById("bgg-token-error").style.display="none";
-  setTimeout(closeBggTokenModal,1000);
-}
+
 
 // ── Confirm ──
 function showConfirm(title,msg,onOk){
@@ -1614,7 +1626,7 @@ async function bggSearch(q){
   try{
     var headers={"Accept":"application/json"}; if(tok) headers["Authorization"]="Bearer "+tok;
     var r=await fetch("https://boardgamegeek.com/search/boardgame?q="+encodeURIComponent(q)+"&showcount=8",{headers:headers});
-    if(r.status===401){ status.textContent="Token fehlt."; openBggTokenModal(); return; }
+    if(r.status===401){ status.textContent="Token fehlt oder abgelaufen. Bitte Admin kontaktieren."; return; }
     if(!r.ok) throw new Error(r.status);
     var d=await r.json(); var items=(d.items||[]).slice(0,8);
     asResults=items; asHi=-1;
