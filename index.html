@@ -1623,17 +1623,26 @@ function onBggKey(e){
   else if(e.keyCode===27){ document.getElementById("as-drop").style.display="none"; }
 }
 async function bggSearch(q){
-  var tok=getBggTok(); var status=document.getElementById("bgg-search-status");
+  var status=document.getElementById("bgg-search-status");
   status.textContent="Suche\u2026";
   document.getElementById("as-drop").innerHTML=""; document.getElementById("as-drop").style.display="none";
   try{
-    var headers={"Accept":"application/json"}; if(tok) headers["Authorization"]="Bearer "+tok;
-    var r=await fetch("https://boardgamegeek.com/search/boardgame?q="+encodeURIComponent(q)+"&showcount=8",{headers:headers});
-    if(r.status===401){ status.textContent="Token fehlt oder abgelaufen. Bitte Admin kontaktieren."; return; }
+    var r=await fetch("https://boardgamegeek.com/xmlapi2/search?query="+encodeURIComponent(q)+"&type=boardgame&exact=0");
     if(!r.ok) throw new Error(r.status);
-    var d=await r.json(); var items=(d.items||[]).slice(0,8);
-    asResults=items; asHi=-1;
-    status.textContent=items.length?"":"Keine Ergebnisse.";
+    var xml=await r.text();
+    var parser=new DOMParser();
+    var doc=parser.parseFromString(xml,"text/xml");
+    var items=Array.from(doc.querySelectorAll("item")).slice(0,10);
+    asResults=items.map(function(el){
+      var id=el.getAttribute("id");
+      var nameEl=el.querySelector("name[type='primary']")||el.querySelector("name");
+      var name=nameEl?nameEl.getAttribute("value"):"Unbekannt";
+      var yearEl=el.querySelector("yearpublished");
+      var year=yearEl?parseInt(yearEl.getAttribute("value"))||null:null;
+      return {id:id,name:name,yearpublished:year,bggId:id,bggUrl:"https://boardgamegeek.com/boardgame/"+id,images:null};
+    });
+    asHi=-1;
+    status.textContent=asResults.length?"":"Keine Ergebnisse.";
     renderAsDrop();
   }catch(e){ status.textContent="Fehler: "+e.message; }
 }
@@ -1650,24 +1659,46 @@ function renderAsDrop(){
   }).join("");
   drop.style.display="block";
 }
+function loadBggGameDetails(id){
+  return fetch("https://boardgamegeek.com/xmlapi2/thing?id="+id+"&stats=1").then(function(r){
+    if(!r.ok) throw new Error(r.status);
+    return r.text();
+  }).then(function(xml){
+    var doc=new DOMParser().parseFromString(xml,"text/xml");
+    var item=doc.querySelector("item");
+    if(!item) throw new Error("Spiel nicht gefunden");
+    var nameEl=item.querySelector("name[type='primary']")||item.querySelector("name");
+    var name=nameEl?nameEl.getAttribute("value"):"Spiel #"+id;
+    var yearEl=item.querySelector("yearpublished"); var year=yearEl?yearEl.getAttribute("value"):null;
+    var minP=item.querySelector("minplayers"); var maxP=item.querySelector("maxplayers");
+    var players=(minP&&maxP)?minP.getAttribute("value")+"-"+maxP.getAttribute("value")+" Spieler":null;
+    var maxT=item.querySelector("maxplaytime"); var minT=item.querySelector("minplaytime");
+    var playtime=maxT?maxT.getAttribute("value")+" Min":minT?minT.getAttribute("value")+" Min":null;
+    var imgEl=item.querySelector("image"); var image=imgEl?imgEl.textContent.trim():null;
+    var cplxEl=item.querySelector("averageweight"); var complexity=null;
+    if(cplxEl){ var cv=parseFloat(cplxEl.getAttribute("value")||"0"); if(cv>0) complexity=cv.toFixed(2); }
+    return {name:name,year:year,players:players,playtime:playtime,image:image,complexity:complexity,bggId:id,bggUrl:"https://boardgamegeek.com/boardgame/"+id,votes:{}};
+  });
+}
 function selectAs(i){
-  var r=asResults[i]; if(!r) return;
-  document.getElementById("bgg-search-input").value=r.name;
+  var res=asResults[i]; if(!res) return;
+  document.getElementById("bgg-search-input").value=res.name;
   document.getElementById("as-drop").style.display="none";
-  showSpielPreview({name:r.name,year:r.yearpublished,players:(r.minplayers&&r.maxplayers)?r.minplayers+"-"+r.maxplayers+" Spieler":null,image:r.images&&(r.images.medium||r.images.thumb),bggId:r.id,bggUrl:"https://boardgamegeek.com/boardgame/"+r.id});
+  var status=document.getElementById("bgg-search-status");
+  status.textContent="Lade Details\u2026";
+  loadBggGameDetails(res.id).then(function(data){
+    showSpielPreview(data); status.textContent="";
+  }).catch(function(e){ status.textContent="Fehler: "+e.message; });
 }
 async function loadBggLink(){
   var url=document.getElementById("bgg-link-input").value.trim();
   var status=document.getElementById("bgg-link-status");
-  var m=url.match(/boardgame\/(\d+)/); if(!m){ status.textContent="Ung\u00fcltige BGG URL."; return; }
+  var m=url.match(/boardgame(?:geek\.com\/boardgame)?\/([0-9]+)/);
+  if(!m){ status.textContent="Ung\u00fcltige BGG URL."; return; }
   var id=m[1]; status.textContent="Lade\u2026";
   try{
-    var tok=getBggTok(); var headers={"Accept":"application/json"}; if(tok) headers["Authorization"]="Bearer "+tok;
-    var r=await fetch("https://boardgamegeek.com/boardgame/"+id,{headers:headers});
-    if(!r.ok) throw new Error(r.status);
-    var g=await r.json();
-    showSpielPreview({name:g.name||("Spiel #"+id),year:g.yearpublished,players:(g.minplayers&&g.maxplayers)?g.minplayers+"-"+g.maxplayers+" Spieler":null,image:g.images&&g.images.medium,bggId:id,bggUrl:url});
-    status.textContent="";
+    var data=await loadBggGameDetails(id);
+    showSpielPreview(data); status.textContent="";
   }catch(e){ status.textContent="Fehler: "+e.message; }
 }
 function showSpielPreview(data){
