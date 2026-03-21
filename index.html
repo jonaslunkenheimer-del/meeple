@@ -38,8 +38,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .tab{padding:7px 14px;border:none;background:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;color:var(--text-3);cursor:pointer;white-space:nowrap;transition:all .15s}
 .tab.active{background:var(--surface);color:var(--blue);box-shadow:var(--shadow)}
 /* MAIN */
-.main{padding:20px;max-width:860px;margin:0 auto}
-.tab-content{display:none}.tab-content.active{display:block}
+.main{max-width:860px;margin:0 auto}
+.tab-content{display:none}.tab-content.active{display:block;padding:20px}
+/* override: kalender and termine already have internal padding structure */
+#tab-termine,#tab-kalender{padding:20px}
 /* AVATAR */
 .av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
 .av-sm{width:26px;height:26px;font-size:.62rem}
@@ -343,6 +345,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
   /* ── Main ── */
   .main{padding:0 0 80px}
+  .tab-content.active{padding:0}
 
   /* ── Cards & sections ── */
   .termin-item{margin-bottom:10px}
@@ -354,7 +357,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .chips-row{gap:4px}
   .chip{font-size:.68rem;padding:2px 7px}
   .persons-wrap{gap:5px}
-  /* All tabs: identical padding */
+  /* All tabs: identical padding on mobile */
   #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt{padding:8px 14px 0}
 
   /* ── FAB: Neuer Termin ── */
