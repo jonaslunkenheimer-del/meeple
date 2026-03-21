@@ -2182,14 +2182,35 @@ async function loadMemberPicker(tid){
       var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
       if(!r.ok) throw new Error("HTTP "+r.status);
       var rows=await r.json();
-      userCache=[];
+      // Normalize key: strip ALL non-alphanumeric chars, lowercase
+      // When duplicate found, prefer the "nicer" name:
+      // a name with spaces/capitals (display name) beats a dash/dot-separated login name
       var seen={};
+      function normKey(n){ return n.toLowerCase().replace(/[^a-z0-9äöüß]/g,""); }
+      function isNicerName(a,b){
+        // prefer the one with spaces or uppercase (display name style)
+        var aHasSpace=a.indexOf(" ")>-1, bHasSpace=b.indexOf(" ")>-1;
+        var aHasDash=a.indexOf("-")>-1||a.indexOf("_")>-1||a.indexOf(".")>-1;
+        var bHasDash=b.indexOf("-")>-1||b.indexOf("_")>-1||b.indexOf(".")>-1;
+        if(aHasSpace&&!bHasSpace) return true;
+        if(bHasSpace&&!aHasSpace) return false;
+        if(!aHasDash&&bHasDash) return true;
+        // prefer the one with any uppercase
+        if(a!==a.toLowerCase()&&b===b.toLowerCase()) return true;
+        return false;
+      }
       rows.forEach(function(row){
         var name=row.user_name;
         if(!name||!name.length) return;
-        var key=name.toLowerCase().trim().replace(/[\s\-_.]+/g,"");
-        if(!seen[key]){ seen[key]=true; userCache.push(name); }
+        var key=normKey(name);
+        if(!key) return;
+        if(!seen[key]){
+          seen[key]=name;
+        } else if(isNicerName(name,seen[key])){
+          seen[key]=name; // replace with nicer version
+        }
       });
+      userCache=Object.values(seen).sort(function(a,b){ return a.localeCompare(b,"de"); });
     }catch(e){
       listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>";
       return;
@@ -3013,7 +3034,26 @@ async function loadUserPickerList(){
   if(userCache) return;
   try{
     var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
-    if(r.ok){ var rows=await r.json(); userCache=rows.map(function(x){ return x.user_name; }).filter(Boolean); }
+    if(!r.ok) return;
+    var rows=await r.json();
+    function normKey(n){ return n.toLowerCase().replace(/[^a-z0-9äöüß]/g,""); }
+    function isNicerName(a,b){
+      var aHasSpace=a.indexOf(" ")>-1, bHasSpace=b.indexOf(" ")>-1;
+      var aHasDash=a.indexOf("-")>-1||a.indexOf("_")>-1||a.indexOf(".")>-1;
+      var bHasDash=b.indexOf("-")>-1||b.indexOf("_")>-1||b.indexOf(".")>-1;
+      if(aHasSpace&&!bHasSpace) return true;
+      if(bHasSpace&&!aHasSpace) return false;
+      if(!aHasDash&&bHasDash) return true;
+      if(a!==a.toLowerCase()&&b===b.toLowerCase()) return true;
+      return false;
+    }
+    var seen={};
+    rows.forEach(function(row){
+      var name=row.user_name; if(!name) return;
+      var key=normKey(name); if(!key) return;
+      if(!seen[key]||isNicerName(name,seen[key])) seen[key]=name;
+    });
+    userCache=Object.values(seen).sort(function(a,b){ return a.localeCompare(b,"de"); });
   }catch(e){}
 }
 function filterUserPicker(){
@@ -3041,14 +3081,13 @@ async function sendNachricht(){
   if(!composeToUser){ errEl.textContent="Bitte einen Empfänger auswählen."; errEl.style.display="block"; return; }
   var body=document.getElementById("compose-body").value.trim();
   if(!body){ errEl.textContent="Nachricht darf nicht leer sein."; errEl.style.display="block"; return; }
-  // Auto subject: use existing thread subject or generate from partner names
   var pair=[currentName,composeToUser].sort().join("_");
   var threadId="t_"+pair;
-  var subj=document.getElementById("compose-subject").value.trim()||("Chat mit "+composeToUser);
+  var subj="Chat mit "+composeToUser;
   var msg={id:"n"+Date.now(),thread_id:threadId,from:currentName,to:composeToUser,subject:subj,body:body,ts:new Date().toISOString(),read:false};
+  nachrSaveLock=true; // lock BEFORE modifying so poll can't overwrite
   nachrData.unshift(msg);
-  updateNachrBadge();
-  toast("Nachricht gesendet ✓");
+  // Update UI immediately
   konvPartner=composeToUser; konvSubject=subj;
   document.getElementById("compose-subject").value="";
   document.getElementById("compose-body").value="";
@@ -3062,7 +3101,9 @@ async function sendNachricht(){
   document.getElementById("konv-subject").textContent="";
   renderKonvChat(konvPartner,konvSubject);
   renderConvList();
-  await saveNachrichten();
+  updateNachrBadge();
+  toast("Nachricht gesendet ✓");
+  await saveNachrichten(); // lock released after save
 }
 
 async function sendQuickReply(){
@@ -3071,6 +3112,7 @@ async function sendQuickReply(){
   inp.value="";
   var pair=[currentName,konvPartner].sort().join("_");
   var msg={id:"n"+Date.now(),thread_id:"t_"+pair,from:currentName,to:konvPartner,subject:konvSubject||("Chat mit "+konvPartner),body:body,ts:new Date().toISOString(),read:false};
+  nachrSaveLock=true;
   nachrData.unshift(msg);
   renderKonvChat(konvPartner,konvSubject);
   renderConvList();
