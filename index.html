@@ -590,6 +590,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="nachr-sidebar-header">
         <div style="font-size:.95rem;font-weight:800">✉️ Nachrichten</div>
         <div style="display:flex;gap:6px;align-items:center">
+          <button id="nachr-refresh-btn" onclick="manualNachrRefresh()" title="Aktualisieren" style="width:30px;height:30px;border-radius:8px;background:none;border:1px solid var(--border);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:all .15s">⟳</button>
           <button class="nachr-compose-btn" onclick="showComposePanel()" title="Neue Nachricht">＋</button>
           <button class="nachr-close-mobile" onclick="closeNachrModal()" title="Schließen">✕</button>
         </div>
@@ -3077,24 +3078,44 @@ async function sendQuickReply(){
   await saveNachrichten();
 }
 
+async function manualNachrRefresh(){
+  var btn=document.getElementById("nachr-refresh-btn");
+  if(btn){ btn.style.transform="rotate(360deg)"; btn.style.transition="transform .4s ease"; btn.style.color="var(--blue)"; }
+  await nachrPollOnce();
+  setTimeout(function(){ if(btn){ btn.style.transform=""; btn.style.transition=""; btn.style.color=""; } },500);
+}
+
+async function nachrPollOnce(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_NACHR+"?id=eq.1&select=data",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    var fresh=(rows.length&&rows[0].data)?rows[0].data:[];
+    if(nachrSaveLock) return;
+    var oldCount=nachrUnreadCount();
+    nachrData=fresh;
+    var newCount=nachrUnreadCount();
+    updateNachrBadge();
+    if(newCount>oldCount) toast("📬 Neue Nachricht!");
+    if(document.getElementById("nachr-modal").style.display==="flex"){
+      renderConvList();
+      if(konvPartner) renderKonvChat(konvPartner,konvSubject);
+    }
+  }catch(e){}
+}
+
 function startNachrPolling(){
+  // Fast polling (3s) when modal open, slow (15s) when closed
   setInterval(async function(){
-    try{
-      var r=await fetch(SB_URL+"/rest/v1/"+SB_NACHR+"?id=eq.1&select=data",{headers:authHdrs()});
-      if(!r.ok) return;
-      var rows=await r.json();
-      var fresh=(rows.length&&rows[0].data)?rows[0].data:[];
-      if(nachrSaveLock) return;
-      var oldCount=nachrUnreadCount();
-      nachrData=fresh;
-      var newCount=nachrUnreadCount();
-      updateNachrBadge();
-      if(newCount>oldCount) toast("📬 Neue Nachricht!");
-      if(document.getElementById("nachr-modal").style.display==="flex"){
-        renderConvList();
-        if(konvPartner) renderKonvChat(konvPartner,konvSubject);
-      }
-    }catch(e){}
+    var modalOpen=document.getElementById("nachr-modal").style.display==="flex";
+    if(modalOpen){
+      await nachrPollOnce();
+    }
+  },3000);
+  // Background polling every 15s regardless
+  setInterval(async function(){
+    var modalOpen=document.getElementById("nachr-modal").style.display==="flex";
+    if(!modalOpen) await nachrPollOnce();
   },15000);
 }
 
