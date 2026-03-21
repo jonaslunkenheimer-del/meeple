@@ -438,8 +438,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   /* ── Markt cards ── */
   #markt-list{grid-template-columns:1fr !important}
 
-  /* ── Termine header ── */
-  #tab-termine > div:first-child{flex-direction:column;align-items:stretch}
+  /* ── Termine / Zusagen / Markt header ── */
+  #tab-termine > div:first-child,
+  #tab-zusagen > div:first-child,
+  #tab-markt > div:first-child{flex-direction:column;align-items:stretch}
   #btn-new-termin-inline + *{margin-top:0}
 }
 
@@ -549,7 +551,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
     <!-- ZUSAGEN TAB -->
     <div id="tab-zusagen" class="tab-content">
-      <div class="section-lbl">Meine Zusagen</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meine Zusagen</div>
+          <div style="font-size:.78rem;color:var(--text-3)">Termine bei denen du dabei bist</div>
+        </div>
+      </div>
       <div id="zusagen-list"></div>
     </div>
 
