@@ -214,11 +214,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 #lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
 /* MODAL BASE */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;display:none;align-items:center;justify-content:center;padding:20px}
-/* TAB INNER CONTAINER */
-.tab-inner{max-width:860px;margin:0 auto}
-@media(max-width:600px){
-  .tab-inner{padding:0 14px}
-}
 /* NACHRICHTEN MODAL */
 .nachr-modal-inner{
   position:relative;display:flex;width:100%;max-width:860px;height:80vh;
@@ -359,12 +354,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .chips-row{gap:4px}
   .chip{font-size:.68rem;padding:2px 7px}
   .persons-wrap{gap:5px}
-  /* All tabs: same horizontal padding, no extra top spacing */
-  #tab-termine,#tab-kalender{padding:8px 14px 0}
-  .tab-inner{padding:8px 14px 0 !important;margin:0;overflow:hidden}
-  #tab-zusagen,#tab-markt{padding-top:0}
-  #tab-zusagen .section-lbl{margin-top:0}
-  .tab-inner > div:first-child{margin-top:0 !important}
+  /* All tabs: identical padding */
+  #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt{padding:8px 14px 0}
 
   /* ── FAB: Neuer Termin ── */
   #fab-new-termin.fab-active{
@@ -558,15 +549,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
     <!-- ZUSAGEN TAB -->
     <div id="tab-zusagen" class="tab-content">
-      <div class="tab-inner">
-        <div class="section-lbl">Meine Zusagen</div>
-        <div id="zusagen-list"></div>
-      </div>
+      <div class="section-lbl">Meine Zusagen</div>
+      <div id="zusagen-list"></div>
     </div>
 
     <!-- MARKTPLATZ TAB -->
     <div id="tab-markt" class="tab-content">
-      <div class="tab-inner">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
         <div>
           <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spielemarktplatz</div>
@@ -577,7 +565,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </button>
       </div>
       <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
-      </div>
     </div>
   </div>
 </div>
