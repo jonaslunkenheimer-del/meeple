@@ -718,12 +718,14 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <!-- PROFIL MODAL -->
 <div id="profil-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;animation:up .2s ease;overflow:hidden">
-    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:24px;text-align:center">
-      <div class="av av-lg" id="profil-av" style="margin:0 auto 10px"></div>
-      <div style="font-size:1.1rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;max-height:90vh;display:flex;flex-direction:column;animation:up .2s ease;overflow:hidden">
+    <!-- Sticky header -->
+    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0">
+      <div class="av av-lg" id="profil-av" style="margin:0 auto 8px"></div>
+      <div style="font-size:1.05rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
     </div>
-    <div style="padding:24px">
+    <!-- Scrollable body -->
+    <div style="padding:20px 24px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch">
       <div class="form-field" style="margin-bottom:12px"><label>Anzeigename ändern</label><input class="input-field" id="profil-displayname" placeholder="Dein Name"></div>
       <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:16px" onclick="saveDisplayName()">✓ Name speichern</button>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
