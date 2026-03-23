@@ -1290,7 +1290,7 @@ async function showWhatsnew(){
     // Neue Chat-Nachrichten
     (t.chat||[]).forEach(function(m){
       if(m.author!==currentName&&m.ts&&new Date(m.ts)>since){
-        activity.push({tid:t.id,title:t.title,type:"chat",icon:"💬",label:"Chat-Nachricht",detail:h(m.author)+": „"+h(m.text.slice(0,60))+(m.text.length>60?"…":"")+""",author:m.author,ts:new Date(m.ts)});
+        activity.push({tid:t.id,title:t.title,type:"chat",icon:"💬",label:"Chat-Nachricht",detail:h(m.author)+": \""+h(m.text.slice(0,60))+(m.text.length>60?"…":"")+"\"",author:m.author,ts:new Date(m.ts)});
       }
     });
     // Neue Spiele
