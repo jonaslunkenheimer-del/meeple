@@ -463,7 +463,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div class="name-title">Die Meeples</div>
     <div class="name-sub">Spieleabend Planer</div>
     <label class="name-label" for="login-email">Vorname</label>
-    <form id="login-form" onsubmit="doLogin();return false;" style="width:100%">
+    <form id="login-form" onsubmit="event.preventDefault();doLogin();" style="width:100%">
       <input class="name-input" id="login-email" name="username" placeholder="z.B. Max" autocomplete="username" onkeydown="if(event.keyCode===13){event.preventDefault();doLogin();}">
       <label class="name-label" for="login-pw" style="margin-top:10px">Passwort</label>
       <input class="name-input" id="login-pw" name="password" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.keyCode===13){event.preventDefault();doLogin();}">
