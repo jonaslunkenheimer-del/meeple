@@ -2607,23 +2607,45 @@ function renderZusagen(){
   var mine=state.termine.filter(function(t){ return t.personen&&t.personen.includes(currentName); });
   mine.sort(function(a,b){ return new Date(a.date||0)-new Date(b.date||0); });
   if(!mine.length){ list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Zusagen.</p></div>"; return; }
+  // Show bulk export button only if at least one termin has a date
+  var hasAnyDate=mine.some(function(t){ return !!t.date; });
+  var bulkBtn=hasAnyDate
+    ? "<button onclick='exportAllZusagen()' class='btn btn-outline btn-sm' style='margin-bottom:16px'>&#128197; Alle exportieren (.ics)</button>"
+    : "";
+  list.innerHTML=bulkBtn;
   var now=new Date();
-  list.innerHTML=mine.map(function(t){
+  list.innerHTML+=mine.map(function(t){
     var dt=t.date?new Date(t.date):null; var past=dt&&dt<now;
     var diff=dt?Math.ceil((dt-now)/(1000*60*60*24)):null;
     var badge="";
     if(diff===0) badge="<span style='background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#128293; Heute!</span>";
     else if(diff===1) badge="<span style='background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#9200; Morgen!</span>";
     else if(diff&&diff>0) badge="<span style='background:#eff6ff;color:#3b82f6;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>in "+diff+" Tagen</span>";
+    var exportBtn=dt?"<button onclick='event.stopPropagation();exportIcal("+t.id+")' title='Als Kalendereintrag exportieren' style='background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap'>&#128197; .ics</button>":"";
     return "<div onclick='jumpToTermin("+t.id+")' style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;cursor:pointer;opacity:"+(past?".6":"1")+"'>"
-      +"<div style='background:"+(past?"#9ca3af":"var(--blue)")+";padding:12px 16px;display:flex;justify-content:space-between;align-items:center'>"
-      +"<div style='color:#fff'>"
+      +"<div style='background:"+(past?"#9ca3af":"var(--blue)")+";padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px'>"
+      +"<div style='color:#fff;flex:1;min-width:0'>"
       +(dt?"<div style='font-size:.72rem;opacity:.85'>"+dt.toLocaleDateString("de-DE",{weekday:"long"})+"</div><div style='font-size:1.1rem;font-weight:800'>"+dt.toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"})+"</div><div style='font-size:.8rem;opacity:.9'>"+dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr</div>":"<div style='font-size:.9rem;font-weight:600'>Kein Datum</div>")
-      +"</div>"+badge+"</div>"
+      +"</div>"
+      +"<div style='display:flex;align-items:center;gap:8px;flex-shrink:0'>"+badge+exportBtn+"</div>"
+      +"</div>"
       +"<div style='padding:12px 16px'><div style='font-weight:700;font-size:.95rem;margin-bottom:3px'>"+h(t.title)+"</div>"
       +(t.ort?"<div style='font-size:.78rem;color:var(--text-3)'>&#128205; "+h(t.ort)+"</div>":"")
       +"<div style='font-size:.72rem;color:var(--text-3);margin-top:3px'>&#128101; "+t.personen.length+" dabei &middot; &#127918; "+t.spiele.length+" Spiele</div></div></div>";
   }).join("");
+}
+
+function exportAllZusagen(){
+  var mine=state.termine.filter(function(t){ return t.personen&&t.personen.includes(currentName)&&t.date; });
+  if(!mine.length){ toast("Keine Termine mit Datum vorhanden."); return; }
+  function fmt(d){ return d.toISOString().replace(/[-:]/g,"").replace(".000",""); }
+  var events=mine.map(function(t){
+    var s=new Date(t.date); var e=new Date(s.getTime()+3*60*60*1000);
+    return "BEGIN:VEVENT\r\nDTSTAMP:"+fmt(new Date())+"\r\nDTSTART:"+fmt(s)+"\r\nDTEND:"+fmt(e)+"\r\nSUMMARY:"+t.title+"\r\nLOCATION:"+(t.ort||"")+"\r\nEND:VEVENT";
+  }).join("\r\n");
+  var ics="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nCALSCALE:GREGORIAN\r\nPRODID:-//Die Meeples//Spieleabend Planer//DE\r\n"+events+"\r\nEND:VCALENDAR";
+  var a=document.createElement("a"); a.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics); a.download="Meine-Zusagen.ics"; a.click();
+  toast("&#128197; "+mine.length+" Termine exportiert!");
 }
 
 // ── Marktplatz ──
