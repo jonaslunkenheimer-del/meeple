@@ -598,14 +598,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           </div>
         </div>
         <!-- Auto-refresh toggle -->
-        <div id="sammlung-bgg-info" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div id="sammlung-bgg-info" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="font-size:.8rem;color:#0369a1">
-            <strong>BGG-Profil:</strong> <span id="sammlung-bgg-name"></span>
+            🔄 <strong>BGG-Profil:</strong> <span id="sammlung-bgg-name"></span>
             <span id="sammlung-count-lbl" style="margin-left:8px;opacity:.7"></span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--text-2)">
-            <span>Auto-Sync beim Login</span>
-            <label class="toggle-wrap"><input type="checkbox" id="sammlung-auto-sync" onchange="saveSammlungAutoSync()"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+            <span style="opacity:.6;font-size:.72rem"> · Auto-Sync aktiv</span>
           </div>
         </div>
         <!-- Search/filter -->
@@ -3458,13 +3455,6 @@ async function saveMySammlung(){
   }catch(e){}
 }
 
-async function saveSammlungAutoSync(){
-  var on=document.getElementById("sammlung-auto-sync").checked;
-  try{
-    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,sammlung_auto_sync:on})});
-    toast(on?"✓ Auto-Sync aktiviert":"Auto-Sync deaktiviert");
-  }catch(e){}
-}
 
 async function fetchBggCollection(bggUser){
   // BGG collection API returns 202 on first request while it prepares data.
@@ -3507,8 +3497,10 @@ async function importFromBgg(){
     });
     sammlungData[currentName]=coll;
     await saveMySammlung();
+    // Auto-enable sync after first successful import
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,sammlung_auto_sync:true})});
     renderSammlung();
-    toast("✓ "+coll.length+" Spiele aus BGG importiert!");
+    toast("✓ "+coll.length+" Spiele aus BGG importiert! Auto-Sync aktiviert.");
   }catch(e){ toast("Fehler: "+e.message); }
   finally{ if(btn){ btn.textContent="↻ BGG importieren"; btn.disabled=false; } }
 }
@@ -3552,17 +3544,10 @@ function renderSammlung(filterUser){
   var infoBar=document.getElementById("sammlung-bgg-info");
   var bggNameEl=document.getElementById("sammlung-bgg-name");
   var countEl=document.getElementById("sammlung-count-lbl");
-  var autoSync=document.getElementById("sammlung-auto-sync");
   if(infoBar&&(viewUser===''||viewUser===currentName)&&bggProfiles[currentName]){
     infoBar.style.display="flex";
     if(bggNameEl) bggNameEl.textContent=bggProfiles[currentName];
     if(countEl) countEl.textContent=(sammlungData[currentName]||[]).length+" Spiele";
-    if(autoSync){
-      fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(currentName)+"&select=sammlung_auto_sync",{headers:authHdrs()})
-        .then(function(r){ return r.json(); })
-        .then(function(rows){ if(rows.length) autoSync.checked=!!rows[0].sammlung_auto_sync; })
-        .catch(function(){});
-    }
   } else if(infoBar){ infoBar.style.display="none"; }
 
   // Build combined list for "Alle Sammlungen"
