@@ -315,6 +315,16 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .tab-dropdown-menu button:last-child{border-bottom:none}
 .tab-dropdown-menu button:hover{background:var(--surface2)}
 .tab-dropdown-menu button.active{color:var(--blue);background:#eef2fe}
+/* SAMMLUNG */
+.sam-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:box-shadow .15s;position:relative}
+.sam-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.sam-img{width:100%;height:120px;object-fit:cover}
+.sam-img-ph{width:100%;height:120px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem}
+.sam-info{padding:8px 10px}
+.sam-name{font-weight:700;font-size:.82rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sam-sub{font-size:.68rem;color:var(--text-3)}
+.sam-del{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.5);border:none;color:#fff;cursor:pointer;font-size:.7rem;display:none;align-items:center;justify-content:center}
+.sam-card:hover .sam-del{display:flex}
 /* MOBILE */
 @media(max-width:600px){
   /* ── Header ── */
@@ -356,9 +366,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .chip{font-size:.68rem;padding:2px 7px}
   .persons-wrap{gap:5px}
   /* All tabs: identical padding on mobile */
-  #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt{padding:8px 14px 0}
+  #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt,#tab-sammlung{padding:8px 14px 0}
   /* Reset the inner wrapper padding on mobile */
-  #tab-zusagen > div:first-child,#tab-markt > div:first-child{padding:0;max-width:none}
+  #tab-zusagen > div:first-child,#tab-markt > div:first-child,#tab-sammlung > div:first-child{padding:0;max-width:none}
 
   /* ── FAB: Neuer Termin ── */
   #fab-new-termin.fab-active{
@@ -386,6 +396,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   #qr-modal,
   #confirm-modal,
   #markt-chat-modal,
+  #add-sammlung-modal,
   #whatsnew-modal{
     padding:0 !important;
     align-items:flex-end !important
@@ -399,6 +410,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   #qr-modal > div,
   #confirm-modal > div,
   #markt-chat-modal > div,
+  #add-sammlung-modal > div,
   #whatsnew-modal > div{
     max-width:100% !important;
     width:100% !important;
@@ -491,6 +503,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button class="tab active" id="tab-btn-termine" onclick="showTab('termine',this)">Termine</button>
         <button class="tab" id="tab-btn-kalender" onclick="showTab('kalender',this)">Kalender</button>
         <button class="tab" id="tab-btn-zusagen" onclick="showTab('zusagen',this)">Meine Zusagen</button>
+        <button class="tab" id="tab-btn-sammlung" onclick="showTab('sammlung',this)">🎮 Sammlung</button>
         <button class="tab" id="tab-btn-markt" onclick="showTab('markt',this)" style="display:none">Marktplatz</button>
       </div>
       <!-- Mobile Dropdown -->
@@ -503,6 +516,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="showTabMobile('termine')">Termine</button>
           <button onclick="showTabMobile('kalender')">Kalender</button>
           <button onclick="showTabMobile('zusagen')">Meine Zusagen</button>
+          <button onclick="showTabMobile('sammlung')">🎮 Sammlung</button>
           <button id="tab-dd-markt" onclick="showTabMobile('markt')" style="display:none">Marktplatz</button>
         </div>
       </div>
@@ -565,6 +579,43 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           </button>
         </div>
         <div id="zusagen-list"></div>
+      </div>
+    </div>
+
+    <!-- SAMMLUNG TAB -->
+    <div id="tab-sammlung" class="tab-content">
+      <div style="padding:20px;max-width:860px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">🎮 Meine Spielesammlung</div>
+            <div style="font-size:.78rem;color:var(--text-3)">Deine Spiele auf einen Blick</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="importFromBgg()" class="btn btn-outline btn-sm" id="bgg-import-btn">
+              <img src="https://cf.geekdo-static.com/icons/favicon2.ico" style="width:14px;height:14px;border-radius:2px;vertical-align:middle" onerror="this.style.display='none'"> BGG importieren
+            </button>
+            <button onclick="openAddSammlungModal()" class="btn btn-blue btn-sm">＋ Manuell hinzufügen</button>
+          </div>
+        </div>
+        <!-- Auto-refresh toggle -->
+        <div id="sammlung-bgg-info" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div style="font-size:.8rem;color:#0369a1">
+            <strong>BGG-Profil:</strong> <span id="sammlung-bgg-name"></span>
+            <span id="sammlung-count-lbl" style="margin-left:8px;opacity:.7"></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--text-2)">
+            <span>Auto-Sync beim Login</span>
+            <label class="toggle-wrap"><input type="checkbox" id="sammlung-auto-sync" onchange="saveSammlungAutoSync()"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          </div>
+        </div>
+        <!-- Search/filter -->
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <input class="input-field" id="sammlung-search" placeholder="Sammlung durchsuchen …" oninput="filterSammlung()" style="flex:1">
+          <select class="input-field" id="sammlung-view-user" onchange="filterSammlung()" style="max-width:160px">
+            <option value="">Meine Sammlung</option>
+          </select>
+        </div>
+        <div id="sammlung-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
       </div>
     </div>
 
@@ -664,6 +715,32 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     </div>
     <!-- Close btn (top right) -->
     <button onclick="closeNachrModal()" class="nachr-close-desktop" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
+  </div>
+</div>
+
+<!-- ADD SAMMLUNG MODAL -->
+<div id="add-sammlung-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeAddSammlungModal()">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;animation:up .2s ease">
+    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1">
+      <div style="font-size:1rem;font-weight:800;color:#fff">🎮 Spiel zur Sammlung hinzufügen</div>
+      <button onclick="closeAddSammlungModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:22px 24px">
+      <div class="as-wrap" style="margin-bottom:12px">
+        <input class="input-field" id="sammlung-search-input" placeholder="Spielname suchen (BGG) …" oninput="onSammlungSearchInput()" onkeydown="onSammlungSearchKey(event)" autocomplete="off">
+        <div class="as-drop" id="sammlung-as-drop"></div>
+      </div>
+      <div id="sammlung-search-status" style="font-size:.78rem;color:var(--text-3);margin-bottom:8px"></div>
+      <div id="sammlung-preview" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;display:none;gap:12px;align-items:center">
+        <img id="ssp-img" style="width:56px;height:56px;border-radius:8px;object-fit:cover;display:none" src="" alt="">
+        <div><div id="ssp-name" style="font-weight:700;margin-bottom:3px"></div><div id="ssp-sub" style="font-size:.75rem;color:var(--text-3)"></div></div>
+      </div>
+      <div id="sammlung-add-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeAddSammlungModal()" style="flex:1">Abbrechen</button>
+        <button class="btn btn-blue" onclick="confirmAddToSammlung()" style="flex:2">+ Zur Sammlung</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1194,6 +1271,7 @@ async function startApp(name){
   await loadBggToken();
   await loadBggProfiles();
   await loadNotifPrefs();
+  await loadAllSammlungen();
   // Pre-populate myAddedSpiele from DB data for this user
   if(state&&state.termine){
     state.termine.forEach(function(t){
@@ -1500,7 +1578,7 @@ function startPolling(){
 }
 
 // ── Tabs ──
-var TAB_LABELS={termine:"Termine",kalender:"Kalender",zusagen:"Meine Zusagen",nachrichten:"✉️ Nachrichten",markt:"Marktplatz"};
+var TAB_LABELS={termine:"Termine",kalender:"Kalender",zusagen:"Meine Zusagen",nachrichten:"✉️ Nachrichten",sammlung:"🎮 Sammlung",markt:"Marktplatz"};
 
 function showTab(name,btn){
   document.querySelectorAll(".tab-content").forEach(function(el){ el.classList.remove("active"); });
@@ -1511,6 +1589,7 @@ function showTab(name,btn){
   if(name==="zusagen") renderZusagen();
   if(name==="markt") renderMarkt();
   if(name==="nachrichten") renderNachrichten();
+  if(name==="sammlung") renderSammlung();
   // FAB nur im Termine-Tab sichtbar
   var fab=document.getElementById("fab-new-termin");
   if(fab) fab.classList.toggle("fab-active", name==="termine");
@@ -2254,6 +2333,12 @@ function buildSpielCard(t,s){
     +"<div class='spiel-img-ph' style='display:none'>&#127922;</div>"
     : "<div class='spiel-img-ph'>&#127922;</div>";
   var isDicePick=rolledSpiel[t.id]&&rolledSpiel[t.id]===s.id;
+  // Owners from sammlung
+  var owners=getSammlungOwners(s.bggId,t.personen);
+  var ownerHtml=owners.length?"<div style='display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;margin-bottom:2px'>"
+    +owners.map(function(p){ return "<span style='display:inline-flex;align-items:center;gap:3px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:1px 6px;font-size:.65rem;color:var(--green);font-weight:600'>"
+      +"<div class='av av-sm' style='background:"+nameColor(p)+";width:14px;height:14px;font-size:.45rem'>"+nameInit(p)+"</div>"+h(p)
+      +"</span>"; }).join("")+"</div>":"";
   var showVote=!t.privat&&!!t.voteOn;
   var voter=showVote&&currentName&&t.personen.includes(currentName)?currentName:"";
   var myVote=voter&&s.votes&&s.votes[voter]!==undefined?s.votes[voter]:null;
@@ -2278,6 +2363,7 @@ function buildSpielCard(t,s){
     +"<div class='spiel-sub'>"+(s.year?s.year+" &middot; ":"")+(s.players?s.players+" &middot; ":"")+(s.complexity?"Kompl. "+s.complexity:"")+"</div>"
     +voteHtml
     +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; "+h(s.vorschlaeger)+"</div>":"")
+    +ownerHtml
     +"<div style='display:flex;align-items:center;justify-content:space-between;margin-top:6px'>"
     +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='display:inline-flex;align-items:center;gap:4px;font-size:.72rem;color:var(--blue);text-decoration:none'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:13px;height:13px;border-radius:2px' onerror='this.style.display=\"none\"'> BoardGameGeek</a>":"<span></span>")
     +delBtn
@@ -3340,6 +3426,263 @@ function startNachrPolling(){
     var modalOpen=document.getElementById("nachr-modal").style.display==="flex";
     if(!modalOpen) await nachrPollOnce();
   },15000);
+}
+
+// ── Spielesammlung ──
+var sammlungData = {};    // { userName: [{bggId, name, year, players, image, bggUrl}] }
+var sammlungPending = null; // pending spiel to add
+var sammlungSearchDebounce = null;
+var sammlungAsResults = [], sammlungAsHi = -1;
+
+async function loadAllSammlungen(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,sammlung,sammlung_auto_sync",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    rows.forEach(function(row){
+      if(row.sammlung) sammlungData[row.user_name]=row.sammlung;
+    });
+    // Check auto-sync for current user
+    var myRow=rows.find(function(r){ return r.user_name===currentName; });
+    if(myRow&&myRow.sammlung_auto_sync){
+      var chk=document.getElementById("sammlung-auto-sync"); if(chk) chk.checked=true;
+      if(bggProfiles[currentName]) importFromBggSilent();
+    }
+  }catch(e){}
+}
+
+async function saveMySammlung(){
+  var coll=sammlungData[currentName]||[];
+  try{
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,sammlung:coll})});
+  }catch(e){}
+}
+
+async function saveSammlungAutoSync(){
+  var on=document.getElementById("sammlung-auto-sync").checked;
+  try{
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,sammlung_auto_sync:on})});
+    toast(on?"✓ Auto-Sync aktiviert":"Auto-Sync deaktiviert");
+  }catch(e){}
+}
+
+async function importFromBgg(){
+  var bggUser=bggProfiles[currentName];
+  if(!bggUser){ toast("Bitte zuerst BGG-Profil im Profil hinterlegen."); return; }
+  var btn=document.getElementById("bgg-import-btn");
+  if(btn){ btn.textContent="⏳ Importiere…"; btn.disabled=true; }
+  try{
+    var r=await fetch(SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser),{headers:authHdrs()});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    var xml=await r.text();
+    var doc=new DOMParser().parseFromString(xml,"text/xml");
+    var items=Array.from(doc.querySelectorAll("item"));
+    if(!items.length) throw new Error("Keine Spiele gefunden oder BGG-Profil nicht öffentlich.");
+    var coll=items.map(function(el){
+      var id=el.getAttribute("objectid");
+      var nameEl=el.querySelector("name"); var name=nameEl?nameEl.textContent.trim():"Unbekannt";
+      var yearEl=el.querySelector("yearpublished"); var year=yearEl?yearEl.textContent.trim():"";
+      var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
+      var minP=el.querySelector("stats[minplayers]"); var maxP=el.querySelector("stats[maxplayers]");
+      var players=minP&&maxP?minP.getAttribute("minplayers")+"-"+maxP.getAttribute("maxplayers")+" Spieler":"";
+      return {bggId:id,name:name,year:year,image:image,players:players,bggUrl:"https://boardgamegeek.com/boardgame/"+id};
+    });
+    sammlungData[currentName]=coll;
+    await saveMySammlung();
+    renderSammlung();
+    toast("✓ "+coll.length+" Spiele aus BGG importiert!");
+  }catch(e){ toast("Fehler: "+e.message); }
+  finally{ if(btn){ btn.textContent="↻ BGG importieren"; btn.disabled=false; } }
+}
+
+async function importFromBggSilent(){
+  var bggUser=bggProfiles[currentName]; if(!bggUser) return;
+  try{
+    var r=await fetch(SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser),{headers:authHdrs()});
+    if(!r.ok) return;
+    var xml=await r.text();
+    var doc=new DOMParser().parseFromString(xml,"text/xml");
+    var items=Array.from(doc.querySelectorAll("item"));
+    if(!items.length) return;
+    sammlungData[currentName]=items.map(function(el){
+      var id=el.getAttribute("objectid");
+      var nameEl=el.querySelector("name"); var name=nameEl?nameEl.textContent.trim():"";
+      var yearEl=el.querySelector("yearpublished"); var year=yearEl?yearEl.textContent.trim():"";
+      var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
+      return {bggId:id,name:name,year:year,image:image,bggUrl:"https://boardgamegeek.com/boardgame/"+id};
+    });
+    await saveMySammlung();
+  }catch(e){}
+}
+
+function renderSammlung(filterUser){
+  var grid=document.getElementById("sammlung-grid"); if(!grid) return;
+  var viewUser=filterUser||(document.getElementById("sammlung-view-user")?document.getElementById("sammlung-view-user").value:"");
+  var target=viewUser||currentName;
+  var coll=sammlungData[target]||[];
+  var q=(document.getElementById("sammlung-search")?document.getElementById("sammlung-search").value:"").toLowerCase();
+  if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
+
+  // Update BGG info bar
+  var infoBar=document.getElementById("sammlung-bgg-info");
+  var bggNameEl=document.getElementById("sammlung-bgg-name");
+  var countEl=document.getElementById("sammlung-count-lbl");
+  var autoSync=document.getElementById("sammlung-auto-sync");
+  if(infoBar&&target===currentName&&bggProfiles[currentName]){
+    infoBar.style.display="flex";
+    if(bggNameEl) bggNameEl.textContent=bggProfiles[currentName];
+    if(countEl) countEl.textContent=(sammlungData[currentName]||[]).length+" Spiele";
+    if(autoSync){
+      fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(currentName)+"&select=sammlung_auto_sync",{headers:authHdrs()})
+        .then(function(r){ return r.json(); })
+        .then(function(rows){ if(rows.length) autoSync.checked=!!rows[0].sammlung_auto_sync; })
+        .catch(function(){});
+    }
+  } else if(infoBar){ infoBar.style.display="none"; }
+
+  // Populate user selector
+  var sel=document.getElementById("sammlung-view-user");
+  if(sel){
+    var users=Object.keys(sammlungData).filter(function(u){ return u!==currentName&&sammlungData[u]&&sammlungData[u].length; });
+    var curVal=sel.value;
+    sel.innerHTML="<option value=''>Meine Sammlung ("+(sammlungData[currentName]||[]).length+")</option>"
+      +users.map(function(u){ return "<option value='"+h(u)+"'"+(u===curVal?" selected":"")+">"+(h(u))+" ("+sammlungData[u].length+")</option>"; }).join("");
+  }
+
+  if(!coll.length){
+    var isMe=target===currentName;
+    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>🎮</div><p>"+(isMe?"Noch keine Spiele. BGG importieren oder manuell hinzufügen!":"Keine Spiele in dieser Sammlung.")+"</p></div>";
+    return;
+  }
+  grid.innerHTML=coll.map(function(s,idx){
+    var pr=s.image?proxyImg(s.image):null;
+    var imgHtml=pr
+      ? "<img class='sam-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'><div class='sam-img-ph' style='display:none'>🎮</div>"
+      : "<div class='sam-img-ph'>🎮</div>";
+    var delBtn=target===currentName
+      ? "<button class='sam-del' onclick='removeFromSammlung("+idx+")' title='Entfernen'>✕</button>" : "";
+    return "<div class='sam-card'>"
+      +imgHtml
+      +delBtn
+      +"<div class='sam-info'>"
+      +"<div class='sam-name' title='"+h(s.name)+"'>"+h(s.name)+"</div>"
+      +"<div class='sam-sub'>"+(s.year||"")+(s.year&&s.players?" · ":"")+(s.players||"")+"</div>"
+      +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='font-size:.65rem;color:var(--blue);text-decoration:none'>BGG ↗</a>":"")
+      +"</div></div>";
+  }).join("");
+}
+
+function filterSammlung(){
+  var viewUser=document.getElementById("sammlung-view-user")?document.getElementById("sammlung-view-user").value:"";
+  renderSammlung(viewUser||currentName);
+}
+
+async function removeFromSammlung(idx){
+  var coll=sammlungData[currentName]||[];
+  coll.splice(idx,1);
+  sammlungData[currentName]=coll;
+  renderSammlung();
+  await saveMySammlung();
+  toast("Spiel entfernt.");
+}
+
+// Add-modal search
+function onSammlungSearchInput(){
+  clearTimeout(sammlungSearchDebounce);
+  var q=document.getElementById("sammlung-search-input").value.trim();
+  if(!q){ document.getElementById("sammlung-as-drop").style.display="none"; return; }
+  sammlungSearchDebounce=setTimeout(function(){ sammlungBggSearch(q); },350);
+}
+function onSammlungSearchKey(e){
+  if(e.keyCode===40){ e.preventDefault(); sammlungAsHi=Math.min(sammlungAsHi+1,sammlungAsResults.length-1); renderSammlungDrop(); }
+  else if(e.keyCode===38){ e.preventDefault(); sammlungAsHi=Math.max(sammlungAsHi-1,0); renderSammlungDrop(); }
+  else if(e.keyCode===13){ e.preventDefault(); if(sammlungAsHi>=0) selectSammlungResult(sammlungAsHi); }
+  else if(e.keyCode===27){ document.getElementById("sammlung-as-drop").style.display="none"; }
+}
+async function sammlungBggSearch(q){
+  var status=document.getElementById("sammlung-search-status"); status.textContent="Suche…";
+  try{
+    var r=await fetch(SB_URL+"/functions/v1/bgg-proxy?action=search&q="+encodeURIComponent(q),{headers:authHdrs()});
+    if(!r.ok) throw new Error(r.status);
+    var xml=await r.text();
+    var doc=new DOMParser().parseFromString(xml,"text/xml");
+    sammlungAsResults=Array.from(doc.querySelectorAll("item")).slice(0,10).map(function(el){
+      var id=el.getAttribute("id");
+      var nameEl=el.querySelector("name[type='primary']")||el.querySelector("name");
+      var name=nameEl?nameEl.getAttribute("value"):"Unbekannt";
+      var yearEl=el.querySelector("yearpublished");
+      return {id:id,name:name,year:yearEl?yearEl.getAttribute("value"):"",bggUrl:"https://boardgamegeek.com/boardgame/"+id};
+    });
+    sammlungAsHi=-1; status.textContent=sammlungAsResults.length?"":"Keine Ergebnisse.";
+    renderSammlungDrop();
+  }catch(e){ status.textContent="Fehler: "+e.message; }
+}
+function renderSammlungDrop(){
+  var drop=document.getElementById("sammlung-as-drop");
+  if(!sammlungAsResults.length){ drop.style.display="none"; return; }
+  drop.innerHTML=sammlungAsResults.map(function(r,i){
+    return "<div class='as-item"+(i===sammlungAsHi?" hi":"")+"' onmousedown='selectSammlungResult("+i+")'>"
+      +"<div class='as-thumb' style='display:flex;align-items:center;justify-content:center;font-size:1.2rem'>🎮</div>"
+      +"<div class='as-item-info'><div class='as-item-name'>"+h(r.name)+"</div>"+(r.year?"<div class='as-item-sub'>"+r.year+"</div>":"")+"</div></div>";
+  }).join("");
+  var inp=document.getElementById("sammlung-search-input");
+  var dropEl=document.getElementById("sammlung-as-drop");
+  var rect=inp.getBoundingClientRect();
+  dropEl.style.top=(rect.bottom+4)+"px"; dropEl.style.left=rect.left+"px"; dropEl.style.width=rect.width+"px";
+  drop.style.display="block";
+}
+function selectSammlungResult(i){
+  var res=sammlungAsResults[i]; if(!res) return;
+  document.getElementById("sammlung-search-input").value=res.name;
+  document.getElementById("sammlung-as-drop").style.display="none";
+  var status=document.getElementById("sammlung-search-status"); status.textContent="Lade Details…";
+  loadBggGameDetails(res.id).then(function(data){
+    sammlungPending=data; status.textContent="";
+    var preview=document.getElementById("sammlung-preview");
+    var img=document.getElementById("ssp-img");
+    if(data.image){ img.src=proxyImg(data.image); img.style.display="block"; } else { img.style.display="none"; }
+    document.getElementById("ssp-name").textContent=data.name;
+    document.getElementById("ssp-sub").textContent=[data.year,data.players].filter(Boolean).join(" · ");
+    preview.style.display="flex";
+  }).catch(function(e){ status.textContent="Fehler: "+e.message; });
+}
+async function confirmAddToSammlung(){
+  var errEl=document.getElementById("sammlung-add-error"); errEl.style.display="none";
+  if(!sammlungPending){ errEl.textContent="Bitte zuerst ein Spiel auswählen."; errEl.style.display="block"; return; }
+  var coll=sammlungData[currentName]||[];
+  if(coll.some(function(s){ return s.bggId&&s.bggId===sammlungPending.bggId; })){
+    errEl.textContent="Spiel bereits in deiner Sammlung."; errEl.style.display="block"; return;
+  }
+  coll.push({bggId:sammlungPending.bggId,name:sammlungPending.name,year:sammlungPending.year,image:sammlungPending.image,players:sammlungPending.players,bggUrl:sammlungPending.bggUrl});
+  sammlungData[currentName]=coll;
+  closeAddSammlungModal();
+  renderSammlung();
+  await saveMySammlung();
+  toast("✓ "+sammlungPending.name+" zur Sammlung hinzugefügt!");
+  sammlungPending=null;
+}
+function openAddSammlungModal(){
+  sammlungPending=null;
+  document.getElementById("sammlung-search-input").value="";
+  document.getElementById("sammlung-search-status").textContent="";
+  document.getElementById("sammlung-as-drop").style.display="none";
+  document.getElementById("sammlung-preview").style.display="none";
+  document.getElementById("sammlung-add-error").style.display="none";
+  document.getElementById("add-sammlung-modal").style.display="flex";
+  setTimeout(function(){ document.getElementById("sammlung-search-input").focus(); },60);
+}
+function closeAddSammlungModal(){
+  document.getElementById("add-sammlung-modal").style.display="none";
+  sammlungPending=null;
+}
+
+// ── Besitzer-Badge in Terminspiel-Karten ──
+function getSammlungOwners(bggId, personen){
+  if(!bggId) return [];
+  return personen.filter(function(p){
+    var coll=sammlungData[p]||[];
+    return coll.some(function(s){ return s.bggId&&String(s.bggId)===String(bggId); });
+  });
 }
 
 // ── E-Mail Benachrichtigungen ──
