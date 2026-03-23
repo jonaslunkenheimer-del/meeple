@@ -611,8 +611,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <!-- Search/filter -->
         <div style="display:flex;gap:8px;margin-bottom:14px">
           <input class="input-field" id="sammlung-search" placeholder="Sammlung durchsuchen …" oninput="filterSammlung()" style="flex:1">
-          <select class="input-field" id="sammlung-view-user" onchange="filterSammlung()" style="max-width:160px">
+          <select class="input-field" id="sammlung-view-user" onchange="filterSammlung()" style="max-width:180px">
             <option value="">Meine Sammlung</option>
+            <option value="__all__">🌐 Alle Sammlungen</option>
           </select>
         </div>
         <div id="sammlung-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
@@ -3531,18 +3532,29 @@ async function importFromBggSilent(){
 
 function renderSammlung(filterUser){
   var grid=document.getElementById("sammlung-grid"); if(!grid) return;
-  var viewUser=filterUser||(document.getElementById("sammlung-view-user")?document.getElementById("sammlung-view-user").value:"");
-  var target=viewUser||currentName;
-  var coll=sammlungData[target]||[];
+  var viewUser=filterUser!==undefined?filterUser:(document.getElementById("sammlung-view-user")?document.getElementById("sammlung-view-user").value:"");
   var q=(document.getElementById("sammlung-search")?document.getElementById("sammlung-search").value:"").toLowerCase();
-  if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
+
+  // Populate user selector
+  var sel=document.getElementById("sammlung-view-user");
+  if(sel){
+    var users=Object.keys(sammlungData).filter(function(u){ return sammlungData[u]&&sammlungData[u].length; });
+    var curVal=sel.value;
+    var myCount=(sammlungData[currentName]||[]).length;
+    var totalCount=users.reduce(function(s,u){ return s+sammlungData[u].length; },0);
+    sel.innerHTML="<option value='' "+(curVal===''?"selected":"")+">Meine Sammlung ("+myCount+")</option>"
+      +"<option value='__all__' "+(curVal==='__all__'?"selected":"")+">🌐 Alle Sammlungen ("+totalCount+")</option>"
+      +users.filter(function(u){ return u!==currentName; }).map(function(u){
+        return "<option value='"+h(u)+"'"+(u===curVal?" selected":"")+">"+(h(u))+" ("+sammlungData[u].length+")</option>";
+      }).join("");
+  }
 
   // Update BGG info bar
   var infoBar=document.getElementById("sammlung-bgg-info");
   var bggNameEl=document.getElementById("sammlung-bgg-name");
   var countEl=document.getElementById("sammlung-count-lbl");
   var autoSync=document.getElementById("sammlung-auto-sync");
-  if(infoBar&&target===currentName&&bggProfiles[currentName]){
+  if(infoBar&&(viewUser===''||viewUser===currentName)&&bggProfiles[currentName]){
     infoBar.style.display="flex";
     if(bggNameEl) bggNameEl.textContent=bggProfiles[currentName];
     if(countEl) countEl.textContent=(sammlungData[currentName]||[]).length+" Spiele";
@@ -3554,14 +3566,50 @@ function renderSammlung(filterUser){
     }
   } else if(infoBar){ infoBar.style.display="none"; }
 
-  // Populate user selector
-  var sel=document.getElementById("sammlung-view-user");
-  if(sel){
-    var users=Object.keys(sammlungData).filter(function(u){ return u!==currentName&&sammlungData[u]&&sammlungData[u].length; });
-    var curVal=sel.value;
-    sel.innerHTML="<option value=''>Meine Sammlung ("+(sammlungData[currentName]||[]).length+")</option>"
-      +users.map(function(u){ return "<option value='"+h(u)+"'"+(u===curVal?" selected":"")+">"+(h(u))+" ("+sammlungData[u].length+")</option>"; }).join("");
+  // Build combined list for "Alle Sammlungen"
+  if(viewUser==="__all__"){
+    // Merge all collections, deduplicate by bggId, track owners
+    var merged={};
+    Object.keys(sammlungData).forEach(function(user){
+      (sammlungData[user]||[]).forEach(function(s){
+        var key=s.bggId||s.name;
+        if(!merged[key]){ merged[key]=Object.assign({},s,{owners:[]}); }
+        merged[key].owners.push(user);
+      });
+    });
+    var coll=Object.values(merged);
+    if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
+    coll.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
+    if(!coll.length){
+      grid.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>🎮</div><p>Keine Spiele gefunden.</p></div>";
+      return;
+    }
+    grid.innerHTML=coll.map(function(s){
+      var pr=s.image?proxyImg(s.image):null;
+      var imgHtml=pr
+        ? "<img class='sam-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'><div class='sam-img-ph' style='display:none'>🎮</div>"
+        : "<div class='sam-img-ph'>🎮</div>";
+      var ownerChips=s.owners.map(function(p){
+        return "<span style='display:inline-flex;align-items:center;gap:3px;background:"+nameColor(p)+"22;border:1px solid "+nameColor(p)+"44;border-radius:10px;padding:1px 5px;font-size:.62rem;font-weight:600;color:var(--text-2)'>"
+          +"<div class='av av-sm' style='background:"+nameColor(p)+";width:12px;height:12px;font-size:.4rem'>"+nameInit(p)+"</div>"+h(p)+"</span>";
+      }).join("");
+      return "<div class='sam-card'>"
+        +imgHtml
+        +"<div class='sam-info'>"
+        +"<div class='sam-name' title='"+h(s.name)+"'>"+h(s.name)+"</div>"
+        +"<div class='sam-sub'>"+(s.year||"")+"</div>"
+        +"<div style='display:flex;flex-wrap:wrap;gap:2px;margin-top:4px'>"+ownerChips+"</div>"
+        +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='font-size:.62rem;color:var(--blue);text-decoration:none'>BGG ↗</a>":"")
+        +"</div></div>";
+    }).join("");
+    return;
   }
+
+  // Single user view
+  var target=viewUser||currentName;
+  var coll=(sammlungData[target]||[]).slice();
+  if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
+  coll.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
 
   if(!coll.length){
     var isMe=target===currentName;
@@ -3573,11 +3621,11 @@ function renderSammlung(filterUser){
     var imgHtml=pr
       ? "<img class='sam-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'><div class='sam-img-ph' style='display:none'>🎮</div>"
       : "<div class='sam-img-ph'>🎮</div>";
+    var realIdx=(sammlungData[target]||[]).findIndex(function(x){ return (x.bggId&&x.bggId===s.bggId)||x.name===s.name; });
     var delBtn=target===currentName
-      ? "<button class='sam-del' onclick='removeFromSammlung("+idx+")' title='Entfernen'>✕</button>" : "";
+      ? "<button class='sam-del' onclick='removeFromSammlung("+realIdx+")' title='Entfernen'>✕</button>" : "";
     return "<div class='sam-card'>"
-      +imgHtml
-      +delBtn
+      +imgHtml+delBtn
       +"<div class='sam-info'>"
       +"<div class='sam-name' title='"+h(s.name)+"'>"+h(s.name)+"</div>"
       +"<div class='sam-sub'>"+(s.year||"")+(s.year&&s.players?" · ":"")+(s.players||"")+"</div>"
