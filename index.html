@@ -1275,43 +1275,113 @@ async function getAndUpdateLogin(){
 async function showWhatsnew(){
   var last=await getAndUpdateLogin();
   var since=last||new Date(0);
-  var nt=state.termine.filter(function(t){ 
-    if(t.ts&&new Date(t.ts)>since&&t.creator!==currentName){
-      if(t.privat&&!t.personen.includes(currentName)) return false;
-      return true;
-    }
-    return false;
+
+  // 1. Neue Termine (nicht vom User selbst, sichtbar für User)
+  var nt=state.termine.filter(function(t){
+    if(!t.ts||new Date(t.ts)<=since||t.creator===currentName) return false;
+    if(t.privat&&!t.personen.includes(currentName)) return false;
+    return true;
   });
+
+  // 2. Aktivitäten in Terminen wo User dabei ist (seit letztem Login)
+  var activity=[]; // {tid, type, label, detail, author, ts}
+  state.termine.forEach(function(t){
+    if(!t.personen||!t.personen.includes(currentName)) return;
+    // Neue Chat-Nachrichten
+    (t.chat||[]).forEach(function(m){
+      if(m.author!==currentName&&m.ts&&new Date(m.ts)>since){
+        activity.push({tid:t.id,title:t.title,type:"chat",icon:"💬",label:"Chat-Nachricht",detail:h(m.author)+": „"+h(m.text.slice(0,60))+(m.text.length>60?"…":"")+""",author:m.author,ts:new Date(m.ts)});
+      }
+    });
+    // Neue Spiele
+    (t.spiele||[]).forEach(function(s){
+      if(s.vorschlaeger&&s.vorschlaeger!==currentName&&s.ts&&new Date(s.ts)>since){
+        activity.push({tid:t.id,title:t.title,type:"spiel",icon:"🎮",label:"Spiel vorgeschlagen",detail:h(s.vorschlaeger)+" schlug <strong>"+h(s.name)+"</strong> vor",author:s.vorschlaeger,ts:new Date(s.ts)});
+      }
+    });
+    // Neue Teilnehmer
+    // We can't reliably know when someone joined without a join timestamp,
+    // but we can check if personen changed — skip for now as there's no ts on personen
+  });
+  // Sort activity newest first, deduplicate by tid+type within same minute
+  activity.sort(function(a,b){ return b.ts-a.ts; });
+
+  // 3. Neue Marktplatz-Angebote
   var nm=mData.filter(function(m){ return m.ts&&new Date(m.ts)>since&&m.seller!==currentName; });
-  if(!nt.length&&!nm.length) return;
+
+  if(!nt.length&&!activity.length&&!nm.length) return;
+
+  function sectionHeader(label){
+    return "<div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>"+label+"</div>";
+  }
+  function itemRow(onclick, leftHtml, titleHtml, subHtml){
+    return "<div onclick='"+onclick+"' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg);transition:background .1s' onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background='var(--bg)'\">"
+      +leftHtml
+      +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.85rem;margin-bottom:1px'>"+titleHtml+"</div><div style='font-size:.72rem;color:var(--text-3)'>"+subHtml+"</div></div>"
+      +"<span style='font-size:.7rem;color:var(--blue);flex-shrink:0'>&rarr;</span></div>";
+  }
+
   var html="";
+
   if(nt.length){
-    html+="<div style='margin-bottom:16px'><div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>Neue Termine ("+nt.length+")</div>";
+    html+="<div style='margin-bottom:18px'>"+sectionHeader("Neue Termine ("+nt.length+")");
     nt.forEach(function(t){
       var d=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short"}):"Kein Datum";
-      html+="<div onclick='closeWhatsnew();jumpToTermin("+t.id+")' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)'>"
-        +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
-        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.88rem'>"+h(t.title)+"</div><div style='font-size:.72rem;color:var(--text-3)'>von "+h(t.creator||"?")+" &middot; "+d+"</div></div>"
-        +"<span style='font-size:.7rem;color:var(--blue)'>&rarr;</span></div>";
+      html+=itemRow(
+        "closeWhatsnew();jumpToTermin("+t.id+")",
+        "<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>",
+        h(t.title),
+        "von "+h(t.creator||"?")+" &middot; "+d
+      );
     });
     html+="</div>";
   }
+
+  if(activity.length){
+    html+="<div style='margin-bottom:18px'>"+sectionHeader("Neuigkeiten in deinen Terminen ("+activity.length+")");
+    // Group by termin
+    var byTermin={};
+    activity.forEach(function(a){
+      if(!byTermin[a.tid]) byTermin[a.tid]={title:a.title,items:[]};
+      byTermin[a.tid].items.push(a);
+    });
+    Object.keys(byTermin).forEach(function(tid){
+      var grp=byTermin[tid];
+      html+="<div style='margin-bottom:10px'>";
+      html+="<div style='font-size:.78rem;font-weight:700;color:var(--text-2);margin-bottom:5px;padding:0 2px'>📅 "+h(grp.title)+"</div>";
+      grp.items.forEach(function(a){
+        var timeStr=a.ts.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+        html+=itemRow(
+          "closeWhatsnew();jumpToTermin("+tid+")",
+          "<div style='width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0'>"+a.icon+"</div>",
+          a.label,
+          a.detail+" &middot; "+timeStr
+        );
+      });
+      html+="</div>";
+    });
+    html+="</div>";
+  }
+
   if(nm.length){
-    html+="<div><div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>Neue Marktplatz-Angebote ("+nm.length+")</div>";
+    html+="<div>"+sectionHeader("Neue Marktplatz-Angebote ("+nm.length+")");
     nm.forEach(function(m){
       var img=(m.images||[])[0];
-      html+="<div onclick='closeWhatsnew();showTab(\"markt\",document.getElementById(\"tab-btn-markt\"))' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)'>"
-        +(img?"<img src='"+h(img)+"' style='width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>"
-            :"<div style='width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>&#127922;</div>")
-        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.88rem'>"+h(m.titel)+"</div><div style='font-size:.72rem;color:var(--text-3)'>von "+h(m.seller)+" &middot; "+m.preis.toFixed(2)+" &euro;</div></div>"
-        +"<span style='font-size:.7rem;color:var(--blue)'>&rarr;</span></div>";
+      html+=itemRow(
+        "closeWhatsnew();showTab(\"markt\",document.getElementById(\"tab-btn-markt\"))",
+        img?"<img src='"+h(img)+"' style='width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>"
+           :"<div style='width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>&#127922;</div>",
+        h(m.titel),
+        "von "+h(m.seller)+" &middot; "+m.preis.toFixed(2)+" &euro;"
+      );
     });
     html+="</div>";
   }
+
   document.getElementById("whatsnew-body").innerHTML=html;
   document.getElementById("whatsnew-modal").style.display="flex";
   _whatsnewHtml=html;
-  _whatsnewCount=nt.length+nm.length;
+  _whatsnewCount=nt.length+activity.length+nm.length;
   setNotifBadge(_whatsnewCount);
 }
 function closeWhatsnew(){ document.getElementById("whatsnew-modal").style.display="none"; setNotifBadge(0); }
@@ -2451,6 +2521,7 @@ async function confirmAddSpiel(){
     spiel=Object.assign({id:"b"+Date.now(),votes:{}},window._pendingSpiel);
   }
   spiel.vorschlaeger=currentName;
+  spiel.ts=new Date().toISOString();
   if(spiel.bggId&&t.spiele.some(function(s){ return s.bggId&&s.bggId===spiel.bggId; })){
     errEl.textContent="Spiel bereits vorhanden."; errEl.style.display="block"; return;
   }
