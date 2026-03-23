@@ -612,7 +612,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div style="display:flex;gap:8px;margin-bottom:14px">
           <input class="input-field" id="sammlung-search" placeholder="Sammlung durchsuchen …" oninput="filterSammlung()" style="flex:1">
           <select class="input-field" id="sammlung-view-user" onchange="filterSammlung()" style="max-width:180px">
-            <option value="">Meine Sammlung</option>
             <option value="__all__">🌐 Alle Sammlungen</option>
           </select>
         </div>
@@ -3542,8 +3541,8 @@ function renderSammlung(filterUser){
     var curVal=sel.value;
     var myCount=(sammlungData[currentName]||[]).length;
     var totalCount=users.reduce(function(s,u){ return s+sammlungData[u].length; },0);
-    sel.innerHTML="<option value='' "+(curVal===''?"selected":"")+">Meine Sammlung ("+myCount+")</option>"
-      +"<option value='__all__' "+(curVal==='__all__'?"selected":"")+">🌐 Alle Sammlungen ("+totalCount+")</option>"
+    sel.innerHTML="<option value='__all__' "+(curVal==='__all__'?"selected":"")+">🌐 Alle Sammlungen ("+totalCount+")</option>"
+      +"<option value='' "+(curVal===''?"selected":"")+">Meine Sammlung ("+myCount+")</option>"
       +users.filter(function(u){ return u!==currentName; }).map(function(u){
         return "<option value='"+h(u)+"'"+(u===curVal?" selected":"")+">"+(h(u))+" ("+sammlungData[u].length+")</option>";
       }).join("");
