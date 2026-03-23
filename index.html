@@ -1339,6 +1339,9 @@ function startPolling(){
       if(fresh!==pollingLastHash && !saveLock){
     pollingLastHash=fresh;
     if(rows[0].data&&rows[0].data.termine){
+      // Smart diff: track previous state to detect setting changes
+      var prevState={};
+      state.termine.forEach(function(t){ prevState[t.id]={voteOn:t.voteOn,diceOn:t.diceOn,offen:t.offen}; });
       state=rows[0].data;
       if(!state.userColors) state.userColors={};
       // Smart diff: only add new cards or remove deleted ones; never rebuild existing
@@ -1359,14 +1362,20 @@ function startPolling(){
           var id=parseInt(el.id.replace("termin-",""));
           if(visIds.indexOf(id)===-1) el.remove();
         });
-        // Add new cards
+        // Add new or rerender changed cards
         vis.forEach(function(t,idx){
-          if(!document.getElementById("termin-"+t.id)){
+          var el=document.getElementById("termin-"+t.id);
+          var prev=prevState[t.id]||{};
+          var settingsChanged=prev.voteOn!==t.voteOn||prev.diceOn!==t.diceOn||prev.offen!==t.offen;
+          if(!el){
             var newEl=document.createElement("div");
             newEl.innerHTML=buildTerminCard(t,false);
             var card=newEl.firstElementChild;
             var ref=list.querySelectorAll(".termin-item")[idx];
             if(ref) list.insertBefore(card,ref); else list.appendChild(card);
+          } else if(settingsChanged){
+            // Settings changed: full rerender to show/hide vote buttons etc.
+            rerenderCard(t.id);
           }
         });
       }
@@ -2119,7 +2128,7 @@ function buildSpielCard(t,s){
     +"<div class='spiel-img-ph' style='display:none'>&#127922;</div>"
     : "<div class='spiel-img-ph'>&#127922;</div>";
   var isDicePick=rolledSpiel[t.id]&&rolledSpiel[t.id]===s.id;
-  var showVote=!t.privat&&t.voteOn===true;
+  var showVote=!t.privat&&!!t.voteOn;
   var voter=showVote&&currentName&&t.personen.includes(currentName)?currentName:"";
   var myVote=voter&&s.votes&&s.votes[voter]!==undefined?s.votes[voter]:null;
   var voteHtml="";
