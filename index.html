@@ -1702,6 +1702,7 @@ function closeEditModal(){ document.getElementById("edit-modal").style.display="
 async function saveEdit(){
   var t=getT(editTid); if(!t) return;
   if(!isAdmin&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
+  saveLock=true; // prevent poll from overwriting changes mid-save
   t.title=document.getElementById("edit-title").value.trim()||t.title;
   t.date=document.getElementById("edit-date").value;
   t.ort=document.getElementById("edit-ort").value.trim();
@@ -1709,8 +1710,8 @@ async function saveEdit(){
   t.privat=document.getElementById("edit-privat").checked;
   t.limitOn=document.getElementById("edit-limit-on").checked;
   t.limitVal=parseInt(document.getElementById("edit-limit-val").value)||0;
-  t.voteOn=document.getElementById("edit-vote-on").checked;
-  t.diceOn=document.getElementById("edit-dice-on").checked;
+  t.voteOn=document.getElementById("edit-vote-on").checked===true;
+  t.diceOn=document.getElementById("edit-dice-on").checked===true;
   var sucheOnEdit=document.getElementById("edit-suche-on").checked;
   if(sucheOnEdit&&(!t.limitOn||t.limitVal<1)){
     document.getElementById("edit-limit-on").checked=true;
@@ -1718,12 +1719,16 @@ async function saveEdit(){
     document.getElementById("edit-limit-val").style.borderColor="var(--red)";
     document.getElementById("edit-limit-val").focus();
     toast("⚠️ Bitte zuerst ein Teilnehmerlimit festlegen.");
+    saveLock=false;
     return;
   }
   document.getElementById("edit-limit-val").style.borderColor="";
   t.mitspielerGesucht=sucheOnEdit;
   var savedEditTid=editTid;
-  closeEditModal(); rerenderCard(savedEditTid); toast("Gespeichert \u2713"); await saveState();
+  closeEditModal();
+  rerenderCard(savedEditTid);
+  toast("Gespeichert \u2713");
+  await saveState();
 }
 
 // ── Termine: Render ──
