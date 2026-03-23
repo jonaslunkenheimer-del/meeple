@@ -747,6 +747,33 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
         <button class="btn btn-outline btn-sm" style="width:100%" onclick="saveBggProfile()">🎲 BGG Profil speichern</button>
       </div>
+      <!-- NOTIFICATION SETTINGS -->
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.88rem;margin-bottom:10px">🔔 E-Mail Benachrichtigungen</div>
+        <div class="form-field" style="margin-bottom:8px">
+          <label>Benachrichtigungs-E-Mail <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
+          <input class="input-field" id="profil-notif-email" type="email" placeholder="deine@email.de" autocomplete="email">
+          <div style="font-size:.7rem;color:var(--text-3);margin-top:4px">Getrennt von deiner Anmelde-E-Mail. Wird nur für Benachrichtigungen genutzt.</div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:12px" onclick="saveNotifEmail()">💾 E-Mail speichern</button>
+        <div id="notif-toggles-wrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px">
+            <div>
+              <div style="font-weight:600;font-size:.83rem">📅 Neue Termine</div>
+              <div style="font-size:.68rem;color:var(--text-3)">Wenn ein neuer Termin erstellt wird</div>
+            </div>
+            <label class="toggle-wrap"><input type="checkbox" id="profil-notif-termine"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px">
+            <div>
+              <div style="font-weight:600;font-size:.83rem">🛒 Neues im Marktplatz</div>
+              <div style="font-size:.68rem;color:var(--text-3)">Wenn ein Spiel inseriert wird</div>
+            </div>
+            <label class="toggle-wrap"><input type="checkbox" id="profil-notif-markt"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          </div>
+          <button class="btn btn-outline btn-sm" style="width:100%" onclick="saveNotifPrefs()">💾 Einstellungen speichern</button>
+        </div>
+      </div>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
         <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
@@ -1162,6 +1189,7 @@ async function startApp(name){
   try{ await loadState(); }catch(e){}
   await loadBggToken();
   await loadBggProfiles();
+  await loadNotifPrefs();
   // Pre-populate myAddedSpiele from DB data for this user
   if(state&&state.termine){
     state.termine.forEach(function(t){
@@ -1463,23 +1491,24 @@ function openProfileModal(){
   document.getElementById("profil-displayname").value=currentName;
   document.getElementById("profil-name-lbl").textContent=currentName;
   document.getElementById("profil-msg").style.display="none";
-  // Load BGG profile from session metadata
   var meta=session&&session.user&&session.user.user_metadata;
   var bggUser=(meta&&meta.bgg_profile)||"";
   document.getElementById("profil-bgg").value=bggUser;
   var currentColor=nameColor(currentName);
   setAv(document.getElementById("profil-av"),currentName);
-  // Init color picker
   var picker=document.getElementById("profil-color-picker");
   if(picker) picker.value=currentColor;
   var preview=document.getElementById("profil-av-preview");
   if(preview){ preview.style.background=currentColor; preview.textContent=nameInit(currentName); }
-  // Render presets
   var presets=["#e74c3c","#e67e22","#f1c40f","#2ecc71","#1abc9c","#3498db","#9b59b6","#e91e63","#00bcd4","#ff5722","#607d8b","#795548"];
   var presetsEl=document.getElementById("color-presets");
   if(presetsEl) presetsEl.innerHTML=presets.map(function(col){
     return "<div onclick='selectPresetColor(\""+col+"\")' style='width:22px;height:22px;border-radius:50%;background:"+col+";cursor:pointer;border:2px solid "+(col===currentColor?"#fff":"transparent")+";box-shadow:"+(col===currentColor?"0 0 0 2px var(--blue)":"none")+"'></div>";
   }).join("");
+  // Notification prefs
+  var ne=document.getElementById("profil-notif-email"); if(ne) ne.value=currentNotifEmail||"";
+  var nt=document.getElementById("profil-notif-termine"); if(nt) nt.checked=currentNotifPrefs.termine;
+  var nm=document.getElementById("profil-notif-markt"); if(nm) nm.checked=currentNotifPrefs.markt;
   document.getElementById("profil-modal").style.display="flex";
 }
 function closeProfileModal(){ document.getElementById("profil-modal").style.display="none"; }
@@ -1683,6 +1712,9 @@ async function createTermin(){
   };
   state.termine.unshift(t);
   closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89"); await saveState();
+  // Global notifications
+  var dtStr=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
+  sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3>"+(t.date?"<p>🗓 <strong>"+dtStr+"</strong></p>":"")+(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")+"<p>Erstellt von <strong>"+h(t.creator)+"</strong></p></div>");
 }
 async function deleteTermin(tid){
   var t=getT(tid); if(!t) return;
@@ -1741,6 +1773,8 @@ async function saveEdit(){
   renderTermine(); // full rebuild guarantees voteOn/diceOn changes always reflect correctly
   toast("Gespeichert \u2713");
   await saveState();
+  var tRef=getT(savedEditTid);
+  if(tRef) sendNotifToSubscribers(tRef,"✏️ Termin wurde geändert","<span class='chip'>"+h(currentName)+"</span> hat den Termin aktualisiert.");
 }
 
 // ── Termine: Render ──
@@ -2045,8 +2079,13 @@ function buildTerminCard(t, open){
     +"<div class='chips-row'>"+chips+"</div>"
     +"</div><span class='termin-chevron'>&#9660;</span></div>"
     +"<div class='termin-body'>"
-    +"<div style='display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px'>"
+    +"<div style='display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px;flex-wrap:wrap'>"
     +"<button class='btn btn-outline btn-sm' onclick='exportIcal("+t.id+")'>&#128197; Exportieren</button>"
+    +(currentNotifEmail?(function(){
+        var subs=t.subscribers||[];
+        var isSubscribed=subs.some(function(s){ return s.name===currentName; });
+        return "<button class='btn btn-sm' onclick='toggleTerminSubscribe("+t.id+")' style='background:"+(isSubscribed?"#f0fdf4":"var(--surface2)")+";color:"+(isSubscribed?"var(--green)":"var(--text-2)")+";border-color:"+(isSubscribed?"var(--green-bd)":"var(--border)")+";'>"+(isSubscribed?"🔔 Abonniert":"🔔 Abonnieren")+"</button>";
+      })():"")
     +mgmtBtns+"</div>"
     +"<div class='lbl'>Teilnehmer</div>"+joinBtn
     +"<div class='persons-wrap'>"+(persHtml||"<span style='font-size:.8rem;color:var(--text-3)'>Noch niemand.</span>")+"</div>"
@@ -2420,6 +2459,8 @@ async function confirmAddSpiel(){
   updateSpielSection(savedTid);
   toast("Spiel hinzugef\u00fcgt \u2713");
   await saveState();
+  var tRef=getT(savedTid);
+  if(tRef) sendNotifToSubscribers(tRef,"🎮 Neues Spiel vorgeschlagen","<span class='chip'>"+h(currentName)+"</span> schlug <strong>"+h(spiel.name)+"</strong> vor.");
 }
 async function deleteSpiel(tid,sid){
   tid=parseInt(tid);
@@ -2471,6 +2512,7 @@ async function sendChat(tid){
   var cb=document.getElementById("cb-"+tid);
   if(cb){ cb.innerHTML=buildChatMsgs(t); cb.scrollTop=cb.scrollHeight; }
   saveState();
+  sendNotifToSubscribers(t,"💬 Neue Chat-Nachricht","<span class='chip'>"+h(currentName)+"</span> schrieb: <em>"+h(text.slice(0,200))+"</em>");
 }
 
 // ── Date Poll ──
@@ -2773,6 +2815,9 @@ async function createInserat(){
     renderMarkt(false);
     toast("Inserat erstellt \u2713");
     await saveMarkt();
+    // Global notifications
+    var desc=document.getElementById("markt-desc")?document.getElementById("markt-desc").value.trim():"";
+    sendGlobalNotif("markt","Neues Angebot: "+titel,"<div class='section'><h3>🛒 "+h(titel)+"</h3><p>💶 <strong>"+preis.toFixed(2)+" €</strong></p>"+(desc?"<p>"+h(desc)+"</p>":"")+"<p>Verkäufer: <strong>"+h(currentName)+"</strong></p></div>");
   }
 }
 function submitInserat(){ createInserat(); }
@@ -3210,6 +3255,102 @@ function startNachrPolling(){
     var modalOpen=document.getElementById("nachr-modal").style.display==="flex";
     if(!modalOpen) await nachrPollOnce();
   },15000);
+}
+
+// ── E-Mail Benachrichtigungen ──
+var currentNotifEmail = "";       // loaded from user_meta
+var currentNotifPrefs = {termine:false,markt:false};
+const SB_NOTIF_FN = SB_URL+"/functions/v1/send-notification";
+
+async function loadNotifPrefs(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(currentName)+"&select=notif_email,notif_all_termine,notif_all_markt",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    if(!rows.length) return;
+    var row=rows[0];
+    currentNotifEmail=row.notif_email||"";
+    currentNotifPrefs.termine=!!row.notif_all_termine;
+    currentNotifPrefs.markt=!!row.notif_all_markt;
+  }catch(e){}
+}
+
+async function saveNotifEmail(){
+  var val=document.getElementById("profil-notif-email").value.trim();
+  try{
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,notif_email:val})});
+    currentNotifEmail=val;
+    var msg=document.getElementById("profil-msg");
+    msg.textContent=val?"✓ Benachrichtigungs-E-Mail gespeichert":"✓ E-Mail entfernt";
+    msg.style.color="var(--green)"; msg.style.display="block";
+    setTimeout(function(){ msg.style.display="none"; },2500);
+    renderTermine(); // update subscribe buttons
+  }catch(e){ toast("Fehler beim Speichern"); }
+}
+
+async function saveNotifPrefs(){
+  try{
+    var termine=document.getElementById("profil-notif-termine").checked;
+    var markt=document.getElementById("profil-notif-markt").checked;
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,notif_all_termine:termine,notif_all_markt:markt})});
+    currentNotifPrefs.termine=termine;
+    currentNotifPrefs.markt=markt;
+    var msg=document.getElementById("profil-msg");
+    msg.textContent="✓ Benachrichtigungseinstellungen gespeichert";
+    msg.style.color="var(--green)"; msg.style.display="block";
+    setTimeout(function(){ msg.style.display="none"; },2500);
+  }catch(e){ toast("Fehler beim Speichern"); }
+}
+
+async function toggleTerminSubscribe(tid){
+  var t=getT(tid); if(!t||!currentNotifEmail) return;
+  if(!t.subscribers) t.subscribers=[];
+  var idx=t.subscribers.findIndex(function(s){ return s.name===currentName; });
+  if(idx>-1){
+    t.subscribers.splice(idx,1);
+    toast("🔕 Abonnement beendet");
+  } else {
+    t.subscribers.push({name:currentName,email:currentNotifEmail});
+    toast("🔔 Abonniert! Du wirst bei Änderungen benachrichtigt.");
+  }
+  renderTermine();
+  saveState();
+}
+
+// ── Notification Email Sending ──
+function buildNotifEmail(subject, bodyHtml){
+  return "<!DOCTYPE html><html><head><meta charset='UTF-8'><style>body{font-family:sans-serif;background:#f4f6fb;margin:0;padding:0}.wrap{max-width:580px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#3b6ef5,#6a9af8);padding:24px;text-align:center;color:#fff}.header h1{margin:0;font-size:1.4rem}.logo{font-size:2rem;margin-bottom:8px}.body{padding:24px}.section{background:#f8f9fd;border-radius:8px;padding:14px 16px;margin-bottom:14px;border-left:4px solid #3b6ef5}.section h3{margin:0 0 6px;font-size:.95rem;color:#111827}.section p{margin:0;font-size:.85rem;color:#374151;line-height:1.5}.chip{display:inline-block;background:#eef2fe;color:#3b6ef5;border-radius:20px;padding:2px 10px;font-size:.78rem;font-weight:600;margin:2px}.footer{padding:16px 24px;text-align:center;font-size:.75rem;color:#9ca3af;border-top:1px solid #e4e8f0}</style></head><body><div style='padding:20px'><div class='wrap'><div class='header'><div class='logo'>🎲</div><h1>Die Meeples</h1><div style='font-size:.85rem;opacity:.85'>Spieleabend Planer</div></div><div class='body'>"+bodyHtml+"</div><div class='footer'>Du erhältst diese E-Mail weil du Benachrichtigungen aktiviert hast. <br>Du kannst sie in deinem Profil deaktivieren.</div></div></div></body></html>";
+}
+
+async function sendNotifToSubscribers(t, eventType, extraInfo){
+  if(!t.subscribers||!t.subscribers.length) return;
+  var dt=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
+  var bodyHtml="<div class='section'><h3>📅 "+h(t.title)+"</h3>"
+    +(t.date?"<p>🗓 <strong>"+dt+"</strong></p>":"")
+    +(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")
+    +"<p>👥 "+t.personen.length+" Teilnehmer &nbsp;•&nbsp; 🎮 "+t.spiele.length+" Spiele</p>"
+    +"</div>"
+    +"<div class='section'><h3>"+eventType+"</h3><p>"+extraInfo+"</p></div>";
+  var emailHtml=buildNotifEmail("Neuigkeit: "+t.title, bodyHtml);
+  var emails=t.subscribers.filter(function(s){ return s.name!==currentName&&s.email; });
+  if(!emails.length) return;
+  try{
+    await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails.map(function(s){ return s.email; }),subject:"🎲 "+t.title+" – "+eventType,html:emailHtml})});
+  }catch(e){}
+}
+
+async function sendGlobalNotif(type, subject, bodyHtml){
+  // Gather all users with global pref enabled for this type
+  try{
+    var field=type==="termine"?"notif_all_termine":"notif_all_markt";
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?"+field+"=eq.true&select=user_name,notif_email",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    var emails=rows.filter(function(row){ return row.notif_email&&row.user_name!==currentName; }).map(function(row){ return row.notif_email; });
+    if(!emails.length) return;
+    var emailHtml=buildNotifEmail(subject,bodyHtml);
+    await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails,subject:"🎲 "+subject,html:emailHtml})});
+  }catch(e){}
 }
 
 // ── QR Codes ──
