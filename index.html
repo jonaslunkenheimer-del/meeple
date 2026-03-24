@@ -3649,8 +3649,9 @@ function renderSammlung(filterUser){
     Object.keys(sammlungData).forEach(function(user){
       (sammlungData[user]||[]).forEach(function(s){
         var key=s.bggId||s.name;
-        if(!merged[key]){ merged[key]=Object.assign({},s,{owners:[]}); }
-        merged[key].owners.push(user);
+        if(!merged[key]){ merged[key]=Object.assign({},s,{owners:[],isExpansion:!!s.isExpansion}); }
+        else if(s.isExpansion) merged[key].isExpansion=true; // if any owner marks it as expansion, it is one
+        if(merged[key].owners.indexOf(user)===-1) merged[key].owners.push(user);
       });
     });
     var coll=Object.values(merged);
