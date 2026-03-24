@@ -3501,18 +3501,21 @@ async function saveMySammlung(){
 
 
 async function fetchBggCollection(bggUser){
-  // BGG collection API returns 202 on first request while it prepares data.
-  // We retry up to 8 times with increasing delays.
-  var delays=[3000,4000,5000,5000,5000,6000,6000,6000];
+  var delays=[4000,5000,6000,6000,7000,7000,8000,8000];
   for(var i=0;i<=delays.length;i++){
     var r=await fetch(SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser),{headers:authHdrs()});
-    if(!r.ok) throw new Error("HTTP "+r.status);
     var xml=await r.text();
+    // Edge Function returns 400 or 502 when BGG isn't ready yet — retry
+    if(!r.ok){
+      if(i>=delays.length) throw new Error("BGG antwortet nicht. Bitte manuell importieren.");
+      await new Promise(function(res){ setTimeout(res, delays[i]); });
+      continue;
+    }
     var doc=new DOMParser().parseFromString(xml,"text/xml");
-    // Check for 202-style "please try again" message
+    // BGG "please try again" message
     var msg=doc.querySelector("message");
     if(msg&&msg.textContent.toLowerCase().includes("try again")){
-      if(i>=delays.length) throw new Error("BGG antwortet nicht. Bitte in 1-2 Minuten erneut versuchen.");
+      if(i>=delays.length) throw new Error("BGG antwortet nicht. Bitte manuell importieren.");
       await new Promise(function(res){ setTimeout(res, delays[i]); });
       continue;
     }
