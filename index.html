@@ -2344,7 +2344,7 @@ function buildSpielCard(t,s){
   var maxSc=Math.max.apply(null,t.spiele.map(function(x){ return score(x); }));
   var isTop=t.voteOn&&ups>0&&sc===maxSc&&sc>0;
   var pr=s.image?proxyImg(s.image):null;
-  var canDel=isAdmin||myAddedSpiele[s.id]||!s.vorschlaeger||s.vorschlaeger===currentName||t.creator===currentName;
+  var canDel=isAdmin||myAddedSpiele[s.id]||!s.vorschlaeger||s.vorschlaeger===currentName||t.creator===currentName||(t.personen.includes(currentName)&&(t.offen!==false));
   var delBtn=canDel?"<button style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;font-size:.85rem;line-height:1' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='deleteSpiel(this.dataset.tid,this.dataset.sid)' title='Entfernen'>&#128465;</button>":"";
   var imgHtml=pr
     ? "<img class='spiel-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'>"
@@ -2664,7 +2664,7 @@ async function deleteSpiel(tid,sid){
   tid=parseInt(tid);
   var t=getT(tid); if(!t) return;
   var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
-  if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
+  if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName&&!(t.personen.includes(currentName)&&t.offen!==false)){ toast("Keine Berechtigung."); return; }
   t.spiele=t.spiele.filter(function(x){ return x.id!==sid; });
   updateSpielSection(tid);
   saveState();
