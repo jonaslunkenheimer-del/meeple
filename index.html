@@ -803,7 +803,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 <div id="profil-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:16px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;max-height:90vh;display:flex;flex-direction:column;animation:up .2s ease;overflow:hidden">
     <!-- Sticky header -->
-    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0">
+    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0;position:relative">
+      <button onclick="closeProfileModal()" style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center" title="Schließen">✕</button>
       <div class="av av-lg" id="profil-av" style="margin:0 auto 8px"></div>
       <div style="font-size:1.05rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
     </div>
