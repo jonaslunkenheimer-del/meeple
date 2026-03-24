@@ -3646,7 +3646,7 @@ function renderSammlung(filterUser){
     var coll=Object.values(merged);
     if(!sammlungShowErweiterungen) coll=coll.filter(function(s){ return !s.isExpansion; });
     if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
-    coll.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
+    coll.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"de"); });
     if(!coll.length){
       grid.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>🎮</div><p>Keine Spiele gefunden.</p></div>";
       return;
@@ -3679,8 +3679,8 @@ function renderSammlung(filterUser){
   if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
   // Update count badge
   var badge=document.getElementById("sammlung-count-badge");
-  if(badge){ var total=(sammlungData[target]||[]).length; var exp=(sammlungData[target]||[]).filter(function(s){ return s.isExpansion; }).length; badge.textContent=coll.length+" Spiele"+(exp?" ("+exp+" Erweiterungen)":""); }
-  coll.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
+  if(badge){ var totalCnt=(sammlungData[target]||[]).length; var expCnt=(sammlungData[target]||[]).filter(function(s){ return s.isExpansion; }).length; badge.textContent=coll.length+" Spiele"+(expCnt?" ("+expCnt+" Erweiterungen)":""); }
+  coll.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"de"); });
 
   if(!coll.length){
     var isMe=target===currentName;
