@@ -601,7 +601,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button onclick="importFromBgg()" class="btn btn-outline btn-sm" id="bgg-import-btn">
-              <img src="https://cf.geekdo-static.com/icons/favicon2.ico" style="width:14px;height:14px;border-radius:2px;vertical-align:middle" onerror="this.style.display='none'"> BGG importieren
+              <img src="https://cf.geekdo-static.com/icons/favicon2.ico" style="width:14px;height:14px;border-radius:2px;vertical-align:middle" onerror="this.style.display='none'"> <span id="bgg-import-btn-lbl">BGG importieren</span>
             </button>
             <button onclick="openAddSammlungModal()" class="btn btn-blue btn-sm">＋ Manuell hinzufügen</button>
           </div>
@@ -3492,41 +3492,44 @@ async function saveMySammlung(){
 
 
 async function fetchBggCollection(bggUser){
-  // Call BGG directly through the proxy but handle 202 entirely in the browser
   var url=SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser);
-  // Send wake-up request first
-  try{ fetch(url,{headers:authHdrs()}); }catch(e){}
-  // Wait 10s then poll until we get real data (up to 10 attempts x 8s = 80s total)
-  var maxAttempts=10;
-  for(var i=0;i<maxAttempts;i++){
-    await new Promise(function(res){ setTimeout(res, i===0?10000:8000); });
+  // Step 1: Wake-up request (BGG prepares the data)
+  try{ await fetch(url,{headers:authHdrs()}); }catch(e){}
+  // Step 2: Wait 12 seconds then poll every 8s up to 8 times
+  for(var i=0;i<8;i++){
+    await new Promise(function(res){ setTimeout(res, i===0?12000:8000); });
     try{
       var r=await fetch(url,{headers:authHdrs()});
       var text=await r.text();
-      // Check for BGG "not ready" message
-      if(text.includes("try again")||text.includes("queued")||text.includes("Your request")){
-        continue; // wait and retry
-      }
-      if(!r.ok) continue;
+      if(text.includes("try again")||text.includes("queued")||text.includes("Your request for")) continue;
       var doc=new DOMParser().parseFromString(text,"text/xml");
       var items=Array.from(doc.querySelectorAll("item"));
       if(items.length>0) return items;
-      // Empty but valid XML — check for error message
-      var errMsg=doc.querySelector("message");
-      if(errMsg) continue;
-      return items; // return empty if genuinely empty collection
+      var msg=doc.querySelector("message");
+      if(msg) continue; // still not ready
+      return items;
     }catch(e){ continue; }
   }
-  throw new Error("BGG nach mehreren Versuchen nicht erreichbar.");
+  throw new Error("BGG nicht erreichbar. Bitte in 1-2 Minuten nochmal versuchen.");
 }
 
 async function importFromBgg(){
-  var bggUser=bggProfiles[currentName];
+  var bggUser=bggProfiles[currentName]||(session&&session.user&&session.user.user_metadata&&session.user.user_metadata.bgg_profile)||"";
   if(!bggUser){ toast("Bitte zuerst BGG-Profil im Profil hinterlegen."); return; }
   var btn=document.getElementById("bgg-import-btn");
-  if(btn){ btn.textContent="⏳ BGG antwortet…"; btn.disabled=true; }
+  var lbl=document.getElementById("bgg-import-btn-lbl");
+  if(btn){ btn.disabled=true; }
+  if(lbl){ lbl.textContent="⏳ Verbinde BGG…"; }
+  // Show progress updates
+  var steps=["⏳ Verbinde BGG…","⏳ Warte auf BGG…","⏳ Lade Sammlung…","⏳ Fast fertig…"];
+  var stepIdx=0;
+  var stepTimer=setInterval(function(){
+    stepIdx=Math.min(stepIdx+1,steps.length-1);
+    if(lbl) lbl.textContent=steps[stepIdx];
+  },15000);
   try{
     var items=await fetchBggCollection(bggUser);
+    clearInterval(stepTimer);
     if(!items.length) throw new Error("Keine Spiele gefunden. Ist das BGG-Profil öffentlich?");
     var coll=items.map(function(el){
       var id=el.getAttribute("objectid");
@@ -3540,9 +3543,15 @@ async function importFromBgg(){
     sammlungData[currentName]=coll;
     await saveMySammlung();
     renderSammlung();
-    toast("✓ "+coll.length+" Spiele aus BGG importiert!");
-  }catch(e){ toast("Fehler: "+e.message); }
-  finally{ if(btn){ btn.textContent="↻ BGG importieren"; btn.disabled=false; } }
+    toast("✓ "+coll.length+" Spiele importiert!");
+    if(lbl) lbl.textContent="↻ Sammlung aktualisieren";
+  }catch(e){
+    clearInterval(stepTimer);
+    toast("Fehler: "+e.message);
+    if(lbl) lbl.textContent=(sammlungData[currentName]||[]).length?"↻ Sammlung aktualisieren":"BGG importieren";
+  }finally{
+    if(btn){ btn.disabled=false; }
+  }
 }
 
 async function importFromBggSilent(){
@@ -3584,8 +3593,9 @@ function renderSammlung(filterUser){
       }).join("");
   }
 
-  // Update BGG info bar
-  var infoBar=document.getElementById("sammlung-bgg-info");
+  // Update import button label
+  var lbl=document.getElementById("bgg-import-btn-lbl");
+  if(lbl) lbl.textContent=(sammlungData[currentName]||[]).length?"↻ Sammlung aktualisieren":"BGG importieren";
   var bggNameEl=document.getElementById("sammlung-bgg-name");
   var countEl=document.getElementById("sammlung-count-lbl");
   if(infoBar&&(viewUser===''||viewUser===currentName)&&bggProfiles[currentName]){
