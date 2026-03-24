@@ -3501,36 +3501,32 @@ async function saveMySammlung(){
 
 
 async function fetchBggCollection(bggUser){
+  // Call BGG directly through the proxy but handle 202 entirely in the browser
   var url=SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser);
-  // First request "wakes up" BGG's cache — almost always returns 400/202
-  try{ await fetch(url,{headers:authHdrs()}); }catch(e){}
-  // Wait for BGG to prepare
-  await new Promise(function(res){ setTimeout(res,8000); });
-  // Now retry up to 6 times
-  var delays=[5000,6000,7000,8000,9000,10000];
-  for(var i=0;i<=delays.length;i++){
+  // Send wake-up request first
+  try{ fetch(url,{headers:authHdrs()}); }catch(e){}
+  // Wait 10s then poll until we get real data (up to 10 attempts x 8s = 80s total)
+  var maxAttempts=10;
+  for(var i=0;i<maxAttempts;i++){
+    await new Promise(function(res){ setTimeout(res, i===0?10000:8000); });
     try{
       var r=await fetch(url,{headers:authHdrs()});
-      var xml=await r.text();
-      if(!r.ok||xml.includes("try again")||xml.includes("queued")){
-        if(i>=delays.length) throw new Error("BGG Timeout nach mehreren Versuchen.");
-        await new Promise(function(res){ setTimeout(res,delays[i]); });
-        continue;
+      var text=await r.text();
+      // Check for BGG "not ready" message
+      if(text.includes("try again")||text.includes("queued")||text.includes("Your request")){
+        continue; // wait and retry
       }
-      var doc=new DOMParser().parseFromString(xml,"text/xml");
+      if(!r.ok) continue;
+      var doc=new DOMParser().parseFromString(text,"text/xml");
       var items=Array.from(doc.querySelectorAll("item"));
-      if(!items.length&&xml.includes("message")){
-        if(i>=delays.length) throw new Error("BGG Timeout nach mehreren Versuchen.");
-        await new Promise(function(res){ setTimeout(res,delays[i]); });
-        continue;
-      }
-      return items;
-    }catch(e){
-      if(i>=delays.length) throw e;
-      await new Promise(function(res){ setTimeout(res,delays[i]); });
-    }
+      if(items.length>0) return items;
+      // Empty but valid XML — check for error message
+      var errMsg=doc.querySelector("message");
+      if(errMsg) continue;
+      return items; // return empty if genuinely empty collection
+    }catch(e){ continue; }
   }
-  throw new Error("BGG Timeout.");
+  throw new Error("BGG nach mehreren Versuchen nicht erreichbar.");
 }
 
 async function importFromBgg(){
