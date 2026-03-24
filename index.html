@@ -512,7 +512,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button class="tab active" id="tab-btn-termine" onclick="showTab('termine',this)">Termine</button>
         <button class="tab" id="tab-btn-kalender" onclick="showTab('kalender',this)">Kalender</button>
         <button class="tab" id="tab-btn-zusagen" onclick="showTab('zusagen',this)">Meine Zusagen</button>
-        <button class="tab" id="tab-btn-sammlung" onclick="showTab('sammlung',this)">🎮 Sammlung</button>
+        <button class="tab" id="tab-btn-sammlung" onclick="showTab('sammlung',this)">Sammlung</button>
         <button class="tab" id="tab-btn-markt" onclick="showTab('markt',this)" style="display:none">Marktplatz</button>
       </div>
       <!-- Mobile Dropdown -->
@@ -525,7 +525,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="showTabMobile('termine')">Termine</button>
           <button onclick="showTabMobile('kalender')">Kalender</button>
           <button onclick="showTabMobile('zusagen')">Meine Zusagen</button>
-          <button onclick="showTabMobile('sammlung')">🎮 Sammlung</button>
+          <button onclick="showTabMobile('sammlung')">Sammlung</button>
           <button id="tab-dd-markt" onclick="showTabMobile('markt')" style="display:none">Marktplatz</button>
         </div>
       </div>
@@ -596,7 +596,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div style="padding:20px;max-width:860px;margin:0 auto">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
           <div>
-            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">🎮 Meine Spielesammlung</div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meeple Sammlung</div>
             <div style="font-size:.78rem;color:var(--text-3)">Deine Spiele auf einen Blick</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1590,7 +1590,7 @@ function startPolling(){
 }
 
 // ── Tabs ──
-var TAB_LABELS={termine:"Termine",kalender:"Kalender",zusagen:"Meine Zusagen",nachrichten:"✉️ Nachrichten",sammlung:"🎮 Sammlung",markt:"Marktplatz"};
+var TAB_LABELS={termine:"Termine",kalender:"Kalender",zusagen:"Meine Zusagen",nachrichten:"✉️ Nachrichten",sammlung:"Sammlung",markt:"Marktplatz"};
 
 function showTab(name,btn){
   document.querySelectorAll(".tab-content").forEach(function(el){ el.classList.remove("active"); });
@@ -2352,7 +2352,7 @@ function buildSpielCard(t,s){
     +owners.map(function(p){ return "<span style='display:inline-flex;align-items:center;gap:3px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:1px 6px;font-size:.65rem;color:var(--green);font-weight:600'>"
       +"<div class='av av-sm' style='background:"+nameColor(p)+";width:14px;height:14px;font-size:.45rem'>"+nameInit(p)+"</div>"+h(p)
       +"</span>"; }).join("")+"</div>":"";
-  var showVote=!t.privat&&!!t.voteOn;
+  var showVote=!!t.voteOn;
   var voter=showVote&&currentName&&t.personen.includes(currentName)?currentName:"";
   var myVote=voter&&s.votes&&s.votes[voter]!==undefined?s.votes[voter]:null;
   var voteHtml="";
@@ -2375,7 +2375,7 @@ function buildSpielCard(t,s){
     +"<div class='spiel-name'>"+(isTop?"&#11088; ":"")+(isDicePick?"&#127922; ":"")+h(s.name)+"</div>"
     +"<div class='spiel-sub'>"+(s.year?s.year+" &middot; ":"")+(s.players?s.players+" &middot; ":"")+(s.complexity?"Kompl. "+s.complexity:"")+"</div>"
     +voteHtml
-    +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; "+h(s.vorschlaeger)+"</div>":"")
+    +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; hinzugef\u00fcgt von "+h(s.vorschlaeger)+"</div>":"")
     +ownerHtml
     +"<div style='display:flex;align-items:center;justify-content:space-between;margin-top:6px'>"
     +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='display:inline-flex;align-items:center;gap:4px;font-size:.72rem;color:var(--blue);text-decoration:none'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:13px;height:13px;border-radius:2px' onerror='this.style.display=\"none\"'> BoardGameGeek</a>":"<span></span>")
