@@ -2344,8 +2344,9 @@ function buildSpielCard(t,s){
   var maxSc=Math.max.apply(null,t.spiele.map(function(x){ return score(x); }));
   var isTop=t.voteOn&&ups>0&&sc===maxSc&&sc>0;
   var pr=s.image?proxyImg(s.image):null;
-  var canDel=isAdmin||myAddedSpiele[s.id]||!s.vorschlaeger||s.vorschlaeger===currentName||t.creator===currentName||(t.personen.includes(currentName)&&(t.offen!==false));
-  var delBtn=canDel?"<button style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;font-size:.85rem;line-height:1' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='deleteSpiel(this.dataset.tid,this.dataset.sid)' title='Entfernen'>&#128465;</button>":"";
+  var sIdx=t.spiele.indexOf(s);
+  var canDel=isAdmin||t.personen.includes(currentName)||s.vorschlaeger===currentName||t.creator===currentName||myAddedSpiele[s.id];
+  var delBtn=canDel?"<button style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;font-size:.85rem;line-height:1' onclick='deleteSpielByIndex("+t.id+","+sIdx+")' title='Entfernen'>&#128465;</button>":"";
   var imgHtml=pr
     ? "<img class='spiel-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'>"
     +"<div class='spiel-img-ph' style='display:none'>&#127922;</div>"
@@ -2660,6 +2661,16 @@ async function confirmAddSpiel(){
   var tRef=getT(savedTid);
   if(tRef) sendNotifToSubscribers(tRef,"🎮 Neues Spiel vorgeschlagen","<span class='chip'>"+h(currentName)+"</span> schlug <strong>"+h(spiel.name)+"</strong> vor.");
 }
+async function deleteSpielByIndex(tid,idx){
+  tid=parseInt(tid); idx=parseInt(idx);
+  var t=getT(tid); if(!t) return;
+  if(!t.spiele[idx]){ toast("Spiel nicht gefunden."); return; }
+  t.spiele.splice(idx,1);
+  updateSpielSection(tid);
+  saveState();
+  toast("Spiel entfernt.");
+}
+
 async function deleteSpiel(tid,sid){
   tid=parseInt(tid);
   var t=getT(tid); if(!t) return;
