@@ -1283,7 +1283,7 @@ async function startApp(name){
   await loadBggToken();
   await loadBggProfiles();
   await loadNotifPrefs();
-  await loadAllSammlungen();
+  await loadAllSammlungen(); // must be after loadBggProfiles so bggProfiles is populated for auto-sync
   // Pre-populate myAddedSpiele from DB data for this user
   if(state&&state.termine){
     state.termine.forEach(function(t){
@@ -3485,7 +3485,12 @@ async function loadAllSammlungen(){
     var myRow=rows.find(function(r){ return r.user_name===currentName; });
     if(myRow&&myRow.sammlung_auto_sync){
       var chk=document.getElementById("sammlung-auto-sync"); if(chk) chk.checked=true;
-      if(bggProfiles[currentName]) importFromBggSilent();
+      // Check bggProfiles first, fallback to session metadata
+      var bggUser=bggProfiles[currentName]||(session&&session.user&&session.user.user_metadata&&session.user.user_metadata.bgg_profile)||"";
+      if(bggUser){
+        bggProfiles[currentName]=bggUser; // ensure it's in the map
+        importFromBggSilent();
+      }
     }
   }catch(e){}
 }
