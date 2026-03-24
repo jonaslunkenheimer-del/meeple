@@ -315,6 +315,15 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .tab-dropdown-menu button:last-child{border-bottom:none}
 .tab-dropdown-menu button:hover{background:var(--surface2)}
 .tab-dropdown-menu button.active{color:var(--blue);background:#eef2fe}
+/* ACHIEVEMENTS */
+.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:10px;margin-bottom:10px}
+.ach-badge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface2);text-align:center;transition:all .15s}
+.ach-badge.unlocked{background:#fffbeb;border-color:#fcd34d;box-shadow:0 2px 8px rgba(251,191,36,.2)}
+.ach-badge.locked{opacity:.35;filter:grayscale(1)}
+.ach-icon{font-size:1.6rem;line-height:1}
+.ach-name{font-size:.6rem;font-weight:700;color:var(--text-2);line-height:1.2}
+.ach-badge.unlocked .ach-name{color:#92400e}
+.ach-cat{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:6px;margin-top:4px}
 /* SAMMLUNG */
 .sam-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:box-shadow .15s;position:relative}
 .sam-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
@@ -854,6 +863,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
         <button class="btn btn-outline btn-sm" style="width:100%;" onclick="savePassword()">🔑 Passwort ändern</button>
+      <!-- ACHIEVEMENTS -->
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:12px">🏆 Achievements</div>
+        <div id="profil-achievements"></div>
+      </div>
       <div id="profil-msg" style="display:none;font-size:.82rem;margin-bottom:12px"></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost" style="flex:1" onclick="closeProfileModal()">Schließen</button>
@@ -1660,6 +1674,7 @@ function openProfileModal(){
   var nt=document.getElementById("profil-notif-termine"); if(nt) nt.checked=currentNotifPrefs.termine;
   var nm=document.getElementById("profil-notif-markt"); if(nm) nm.checked=currentNotifPrefs.markt;
   document.getElementById("profil-modal").style.display="flex";
+  renderAchievements(currentName);
 }
 function closeProfileModal(){ document.getElementById("profil-modal").style.display="none"; }
 
@@ -3729,6 +3744,66 @@ function getSammlungOwners(bggId, personen){
     var coll=sammlungData[p]||[];
     return coll.some(function(s){ return s.bggId&&String(s.bggId)===String(bggId); });
   });
+}
+
+// ── Achievements ──
+var ACHIEVEMENTS=[
+  // 🎮 Spielabende
+  {id:"first_attend",cat:"🎮 Spielabende",icon:"🎲",name:"Erster Abend",desc:"Zum ersten Spieleabend zugesagt",check:function(u){ return state.termine.filter(function(t){ return t.personen&&t.personen.includes(u); }).length>=1; }},
+  {id:"attend_5",cat:"🎮 Spielabende",icon:"🎯",name:"Stammgast",desc:"5 Spieleabende dabei",check:function(u){ return state.termine.filter(function(t){ return t.personen&&t.personen.includes(u); }).length>=5; }},
+  {id:"attend_10",cat:"🎮 Spielabende",icon:"⭐",name:"Veteran",desc:"10 Spieleabende dabei",check:function(u){ return state.termine.filter(function(t){ return t.personen&&t.personen.includes(u); }).length>=10; }},
+  {id:"first_host",cat:"🎮 Spielabende",icon:"🏠",name:"Gastgeber",desc:"Ersten Termin erstellt",check:function(u){ return state.termine.filter(function(t){ return t.creator===u; }).length>=1; }},
+  {id:"host_5",cat:"🎮 Spielabende",icon:"🏰",name:"Serienveranstalter",desc:"5 Termine erstellt",check:function(u){ return state.termine.filter(function(t){ return t.creator===u; }).length>=5; }},
+  // 🃏 Spiele
+  {id:"first_suggest",cat:"🃏 Spiele",icon:"💡",name:"Ideengeber",desc:"Erstes Spiel vorgeschlagen",check:function(u){ return state.termine.some(function(t){ return (t.spiele||[]).some(function(s){ return s.vorschlaeger===u; }); }); }},
+  {id:"suggest_5",cat:"🃏 Spiele",icon:"📚",name:"Spielkenner",desc:"5 Spiele vorgeschlagen",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.spiele||[]).forEach(function(s){ if(s.vorschlaeger===u) n++; }); }); return n>=5; }},
+  {id:"suggest_10",cat:"🃏 Spiele",icon:"🧠",name:"Spieleexperte",desc:"10 Spiele vorgeschlagen",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.spiele||[]).forEach(function(s){ if(s.vorschlaeger===u) n++; }); }); return n>=10; }},
+  {id:"sammlung_10",cat:"🃏 Spiele",icon:"🗃️",name:"Sammler",desc:"10 Spiele in der Sammlung",check:function(u){ return (sammlungData[u]||[]).length>=10; }},
+  {id:"sammlung_50",cat:"🃏 Spiele",icon:"📦",name:"Großsammler",desc:"50 Spiele in der Sammlung",check:function(u){ return (sammlungData[u]||[]).length>=50; }},
+  {id:"sammlung_100",cat:"🃏 Spiele",icon:"🏛️",name:"Bibliothek",desc:"100 Spiele in der Sammlung",check:function(u){ return (sammlungData[u]||[]).length>=100; }},
+  // 💬 Soziales
+  {id:"first_chat",cat:"💬 Soziales",icon:"💬",name:"Erstes Wort",desc:"Erste Chat-Nachricht geschrieben",check:function(u){ return state.termine.some(function(t){ return (t.chat||[]).some(function(m){ return m.author===u; }); }); }},
+  {id:"chat_20",cat:"💬 Soziales",icon:"🗣️",name:"Gesprächig",desc:"20 Chat-Nachrichten geschrieben",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.chat||[]).forEach(function(m){ if(m.author===u) n++; }); }); return n>=20; }},
+  {id:"chat_100",cat:"💬 Soziales",icon:"📢",name:"Vielredner",desc:"100 Chat-Nachrichten geschrieben",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.chat||[]).forEach(function(m){ if(m.author===u) n++; }); }); return n>=100; }},
+  // 🛒 Marktplatz
+  {id:"first_inserat",cat:"🛒 Marktplatz",icon:"🏷️",name:"Händler",desc:"Erstes Inserat erstellt",check:function(u){ return mData.some(function(m){ return m.seller===u; }); }},
+  {id:"inserat_5",cat:"🛒 Marktplatz",icon:"🏪",name:"Marktprofi",desc:"5 Inserate erstellt",check:function(u){ return mData.filter(function(m){ return m.seller===u; }).length>=5; }},
+  {id:"first_interesse",cat:"🛒 Marktplatz",icon:"🤝",name:"Käufer",desc:"Interesse an einem Angebot bekundet",check:function(u){ return mData.some(function(m){ return (m.interesse||[]).includes(u); }); }},
+  // 🏆 Meilensteine
+  {id:"all_cats",cat:"🏆 Meilensteine",icon:"🌟",name:"Allrounder",desc:"In allen Kategorien mindestens 1 Achievement",check:function(u){
+    var cats=["🎮 Spielabende","🃏 Spiele","💬 Soziales","🛒 Marktplatz"];
+    return cats.every(function(cat){
+      return ACHIEVEMENTS.filter(function(a){ return a.cat===cat; }).some(function(a){ return a.check(u); });
+    });
+  }},
+  {id:"total_5",cat:"🏆 Meilensteine",icon:"🥉",name:"Aufsteiger",desc:"5 Achievements freigeschaltet",check:function(u){ return ACHIEVEMENTS.filter(function(a){ return a.id!=="total_5"&&a.id!=="total_10"&&a.id!=="total_15"&&a.check(u); }).length>=5; }},
+  {id:"total_10",cat:"🏆 Meilensteine",icon:"🥈",name:"Fortgeschrittener",desc:"10 Achievements freigeschaltet",check:function(u){ return ACHIEVEMENTS.filter(function(a){ return a.id!=="total_10"&&a.id!=="total_15"&&a.check(u); }).length>=10; }},
+  {id:"total_15",cat:"🏆 Meilensteine",icon:"🥇",name:"Meeple-Meister",desc:"15 Achievements freigeschaltet",check:function(u){ return ACHIEVEMENTS.filter(function(a){ return a.id!=="total_15"&&a.check(u); }).length>=15; }},
+];
+
+function renderAchievements(targetUser){
+  var el=document.getElementById("profil-achievements"); if(!el) return;
+  var u=targetUser||currentName;
+  var cats=["🎮 Spielabende","🃏 Spiele","💬 Soziales","🛒 Marktplatz","🏆 Meilensteine"];
+  var unlocked=ACHIEVEMENTS.filter(function(a){ return a.check(u); }).length;
+  var html="<div style='font-size:.78rem;color:var(--text-3);margin-bottom:12px'>"
+    +"<span style='font-weight:700;color:var(--text-2);font-size:.88rem'>"+unlocked+"</span> / "+ACHIEVEMENTS.length+" freigeschaltet"
+    +"<div style='height:6px;background:var(--border);border-radius:3px;margin-top:6px;overflow:hidden'>"
+    +"<div style='height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px;width:"+(Math.round(unlocked/ACHIEVEMENTS.length*100))+"%'></div>"
+    +"</div></div>";
+  cats.forEach(function(cat){
+    var badges=ACHIEVEMENTS.filter(function(a){ return a.cat===cat; });
+    html+="<div class='ach-cat'>"+cat+"</div><div class='ach-grid'>";
+    badges.forEach(function(a){
+      var done=a.check(u);
+      html+="<div class='ach-badge "+(done?"unlocked":"locked")+"' title='"+h(a.desc)+"'>"
+        +"<div class='ach-icon'>"+a.icon+"</div>"
+        +"<div class='ach-name'>"+h(a.name)+"</div>"
+        +"</div>";
+    });
+    html+="</div>";
+  });
+  el.innerHTML=html;
 }
 
 // ── E-Mail Benachrichtigungen ──
