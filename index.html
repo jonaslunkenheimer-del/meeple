@@ -3531,7 +3531,13 @@ async function importFromBgg(){
     var items=await fetchBggCollection(bggUser);
     clearInterval(stepTimer);
     if(!items.length){
-      toast("BGG meldet leere Sammlung — gespeicherte Spiele bleiben erhalten.");
+      // BGG returned empty — could be a cache issue, keep existing data
+      var existing=(sammlungData[currentName]||[]).length;
+      if(existing>0){
+        toast("BGG hat keine neuen Daten geliefert — "+existing+" gespeicherte Spiele bleiben.");
+      } else {
+        toast("Keine Spiele gefunden. Bitte in 1-2 Minuten erneut versuchen.");
+      }
       if(lbl) lbl.textContent="↻ Sammlung aktualisieren";
       if(btn){ btn.disabled=false; }
       return;
