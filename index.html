@@ -3551,9 +3551,11 @@ async function importFromBgg(){
 
 async function importFromBggSilent(){
   var bggUser=bggProfiles[currentName]||(session&&session.user&&session.user.user_metadata&&session.user.user_metadata.bgg_profile)||"";
-  if(!bggUser) return;
+  if(!bggUser){ toast("DEBUG silent: kein BGG-User"); return; }
   try{
+    toast("DEBUG silent: fetchBggCollection läuft...");
     var items=await fetchBggCollection(bggUser);
+    toast("DEBUG silent: "+items.length+" Items erhalten");
     if(!items.length) return;
     var coll=items.map(function(el){
       var id=el.getAttribute("objectid");
@@ -3562,16 +3564,13 @@ async function importFromBggSilent(){
       var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
       return {bggId:id,name:name,year:year,image:image,bggUrl:"https://boardgamegeek.com/boardgame/"+id};
     });
-    // Only save if something actually changed
     var oldCount=(sammlungData[currentName]||[]).length;
     sammlungData[currentName]=coll;
     await saveMySammlung();
-    if(coll.length!==oldCount){
-      // Re-render sammlung tab if open
-      var tab=document.getElementById("tab-sammlung");
-      if(tab&&tab.classList.contains("active")) renderSammlung();
-    }
-  }catch(e){}
+    toast("DEBUG silent: gespeichert. Alt:"+oldCount+" Neu:"+coll.length);
+    var tab=document.getElementById("tab-sammlung");
+    if(tab&&tab.classList.contains("active")) renderSammlung();
+  }catch(e){ toast("DEBUG silent Fehler: "+e.message); }
 }
 
 function renderSammlung(filterUser){
