@@ -2664,7 +2664,8 @@ async function deleteSpiel(tid,sid){
   tid=parseInt(tid);
   var t=getT(tid); if(!t) return;
   var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
-  if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName&&!(t.personen.includes(currentName)&&t.offen!==false)){ toast("Keine Berechtigung."); return; }
+  var canDelete=isAdmin||s.vorschlaeger===currentName||t.creator===currentName||myAddedSpiele[s.id]||t.personen.includes(currentName);
+  if(!canDelete){ toast("Keine Berechtigung."); return; }
   t.spiele=t.spiele.filter(function(x){ return x.id!==sid; });
   updateSpielSection(tid);
   saveState();
