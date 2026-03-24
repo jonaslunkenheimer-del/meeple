@@ -3484,11 +3484,10 @@ async function loadAllSammlungen(){
     // Check auto-sync for current user
     var myRow=rows.find(function(r){ return r.user_name===currentName; });
     if(myRow&&myRow.sammlung_auto_sync){
-      var chk=document.getElementById("sammlung-auto-sync"); if(chk) chk.checked=true;
-      // Check bggProfiles first, fallback to session metadata
       var bggUser=bggProfiles[currentName]||(session&&session.user&&session.user.user_metadata&&session.user.user_metadata.bgg_profile)||"";
       if(bggUser){
-        bggProfiles[currentName]=bggUser; // ensure it's in the map
+        bggProfiles[currentName]=bggUser;
+        // Run silent import in background — don't await so login isn't blocked
         importFromBggSilent();
       }
     }
@@ -3553,18 +3552,27 @@ async function importFromBgg(){
 }
 
 async function importFromBggSilent(){
-  var bggUser=bggProfiles[currentName]; if(!bggUser) return;
+  var bggUser=bggProfiles[currentName]||(session&&session.user&&session.user.user_metadata&&session.user.user_metadata.bgg_profile)||"";
+  if(!bggUser) return;
   try{
     var items=await fetchBggCollection(bggUser);
     if(!items.length) return;
-    sammlungData[currentName]=items.map(function(el){
+    var coll=items.map(function(el){
       var id=el.getAttribute("objectid");
       var nameEl=el.querySelector("name"); var name=nameEl?nameEl.textContent.trim():"";
       var yearEl=el.querySelector("yearpublished"); var year=yearEl?yearEl.textContent.trim():"";
       var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
       return {bggId:id,name:name,year:year,image:image,bggUrl:"https://boardgamegeek.com/boardgame/"+id};
     });
+    // Only save if something actually changed
+    var oldCount=(sammlungData[currentName]||[]).length;
+    sammlungData[currentName]=coll;
     await saveMySammlung();
+    if(coll.length!==oldCount){
+      // Re-render sammlung tab if open
+      var tab=document.getElementById("tab-sammlung");
+      if(tab&&tab.classList.contains("active")) renderSammlung();
+    }
   }catch(e){}
 }
 
