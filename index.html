@@ -29,12 +29,12 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .btn-name{width:100%;margin-top:16px;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:filter .15s}
 .btn-name:hover{filter:brightness(1.08)}
 /* HEADER */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap;position:sticky;top:0;z-index:100;min-width:0}
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:10px}
 .brand-icon{font-size:1.5rem}
 .brand-name{font-size:1rem;font-weight:800}
 .brand-sub{font-size:.65rem;color:var(--text-3);font-family:'DM Mono',monospace}
-.tab-bar{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;overflow-x:auto;min-width:0;flex-shrink:1}
+.tab-bar{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:10px;overflow-x:auto;max-width:100%}
 .tab{padding:7px 14px;border:none;background:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;color:var(--text-3);cursor:pointer;white-space:nowrap;transition:all .15s}
 .tab.active{background:var(--surface);color:var(--blue);box-shadow:var(--shadow)}
 /* MAIN */
@@ -72,11 +72,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .toggle-wrap input:checked+.toggle-track .toggle-thumb{transform:translateX(20px)}
 /* TERMIN */
 .termin-item{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
-/* MITSPIELER GESUCHT */
-@keyframes suche-pulse{0%,100%{box-shadow:0 0 0 0 rgba(234,88,12,.25),var(--shadow-lg)}60%{box-shadow:0 0 0 6px rgba(234,88,12,.0),var(--shadow-lg)}}
-.termin-item.mitspieler-suche{border:2px solid #f97316;box-shadow:0 4px 20px rgba(249,115,22,.2);animation:suche-pulse 2.4s ease-in-out infinite}
-.suche-banner{background:linear-gradient(90deg,#fff7ed,#ffedd5);border-bottom:1px solid #fed7aa;padding:8px 20px;display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:700;color:#c2410c}
-.chip-suche{color:#c2410c;background:#fff7ed;border-color:#fed7aa}
 .termin-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;transition:background .15s}
 .termin-header:hover{background:var(--surface2)}
 .termin-summary{flex:1;min-width:0}
@@ -130,10 +125,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .chat-send:hover{filter:brightness(1.1);transform:scale(1.07)}
 /* AUTOCOMPLETE */
 .as-wrap{position:relative}
-.as-drop{position:fixed;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9999;max-height:260px;overflow-y:auto;display:none;overflow-x:hidden}
-@media(max-width:600px){
-  .as-drop{left:0!important;right:0!important;width:100%!important;bottom:0!important;top:auto!important;border-radius:16px 16px 0 0;max-height:45vh;border-left:none;border-right:none;border-bottom:none;box-shadow:0 -4px 24px rgba(0,0,0,.15)}
-}
+.as-drop{position:absolute;top:calc(100% + 4px);left:0;right:0;width:100%;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9999;max-height:220px;overflow-y:auto;display:none;overflow-x:hidden}
 .as-item{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;font-size:.85rem;border-bottom:1px solid var(--border);transition:background .1s}
 .as-item:last-child{border-bottom:none}
 .as-item:hover,.as-item.hi{background:var(--surface2)}
@@ -172,29 +164,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .cal-dot-row{display:none}
   .cal-event{display:block;background:var(--blue);color:#fff;border-radius:4px;padding:1px 4px;font-size:.6rem;margin-top:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 }
-/* NOTIF BELL */
-.notif-btn{position:relative;width:38px;height:38px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:background .15s;flex-shrink:0}
-.notif-btn:hover{background:var(--border)}
-.notif-badge{position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;background:var(--red);color:#fff;border-radius:8px;font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface);pointer-events:none;display:none}
-/* MODAL DRAG HANDLE */
-.modal-drag-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 0;display:none}
-.modal-scroll-body{overflow-y:auto;-webkit-overflow-scrolling:touch}
-@media(max-width:600px){
-  .modal-drag-handle{display:block !important}
-}
-/* DATE POLL */
-.dpoll-wrap{background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:var(--radius-sm);padding:14px;margin-bottom:14px}
-.dpoll-slot{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:border-color .15s}
-.dpoll-slot.dp-yes{border-color:#16a34a;background:#f0fdf4}
-.dpoll-slot.dp-maybe{border-color:#d97706;background:#fffbeb}
-.dpoll-vote-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
-.dpoll-vbtn{border:1.5px solid var(--border);background:var(--surface2);border-radius:8px;padding:4px 10px;font-size:.78rem;cursor:pointer;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:4px}
-.dpoll-vbtn:hover{transform:scale(1.05)}
-.dpoll-vbtn.v-ja.active{background:#dcfce7;border-color:#16a34a;color:#15803d}
-.dpoll-vbtn.v-vll.active{background:#fef3c7;border-color:#d97706;color:#b45309}
-.dpoll-vbtn.v-nein.active{background:#fee2e2;border-color:#dc2626;color:#dc2626}
-.dpoll-bar{height:6px;border-radius:3px;background:var(--border);margin-top:6px;overflow:hidden}
-.dpoll-bar-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s}
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:10px 20px;border-radius:20px;font-size:.85rem;font-weight:600;opacity:0;transition:all .25s;z-index:999;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -217,270 +186,20 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 #lightbox img{max-width:90vw;max-height:90vh;border-radius:8px}
 /* MODAL BASE */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;display:none;align-items:center;justify-content:center;padding:20px}
-/* NACHRICHTEN MODAL */
-.nachr-modal-inner{
-  position:relative;display:flex;width:100%;max-width:860px;height:80vh;
-  background:var(--surface);border-radius:var(--radius);
-  box-shadow:var(--shadow-lg);overflow:hidden;animation:up .2s ease
-}
-.nachr-sidebar{
-  width:260px;flex-shrink:0;display:flex;flex-direction:column;
-  border-right:1px solid var(--border);background:var(--surface2)
-}
-.nachr-sidebar-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px 14px 8px;border-bottom:1px solid var(--border)
-}
-.nachr-compose-btn{
-  width:30px;height:30px;border-radius:8px;background:var(--blue);
-  color:#fff;border:none;cursor:pointer;font-size:1.2rem;font-weight:700;
-  display:flex;align-items:center;justify-content:center;transition:filter .15s;flex-shrink:0
-}
-.nachr-compose-btn:hover{filter:brightness(1.1)}
-.nachr-ftab{
-  flex:1;padding:5px 8px;border:none;background:none;border-radius:6px;
-  font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;
-  color:var(--text-3);cursor:pointer;transition:all .15s
-}
-.nachr-ftab.active{background:var(--surface);color:var(--blue);box-shadow:var(--shadow)}
-.nachr-conv-item{
-  display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;
-  transition:background .1s;border-bottom:1px solid var(--border)
-}
-.nachr-conv-item:hover{background:var(--border)}
-.nachr-conv-item.active{background:#eef2fe}
-.nachr-conv-item.unread .nachr-conv-name{color:var(--blue);font-weight:800}
-.nachr-conv-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nachr-conv-preview{font-size:.72rem;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nachr-conv-time{font-size:.65rem;color:var(--text-3);flex-shrink:0}
-.nachr-panel{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
-.nachr-panel-header{
-  display:flex;align-items:center;gap:10px;padding:12px 16px;
-  border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0
-}
-.nachr-back-btn{
-  display:none;background:none;border:none;font-size:1.4rem;cursor:pointer;
-  color:var(--text-3);padding:0 4px;line-height:1;flex-shrink:0
-}
-.nachr-close-mobile{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:.85rem;color:var(--text-3);align-items:center;justify-content:center}
-@media(max-width:600px){
-  .nachr-close-desktop{display:none !important}
-  .nachr-close-mobile{display:flex !important}
-}
-/* Mobile */
-@media(max-width:600px){
-  .nachr-modal-inner{
-    flex-direction:column;height:92vh;border-radius:20px 20px 0 0;
-    max-width:100%;margin:0
-  }
-  #nachr-modal{padding:0 !important;align-items:flex-end !important}
-  .nachr-sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border)}
-  .nachr-sidebar.mobile-hidden{display:none}
-  .nachr-panel.mobile-hidden{display:none}
-  .nachr-back-btn{display:block !important}
-}
-/* NACHRICHTEN */
-.nachr-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--surface);border-radius:var(--radius-sm);border:1.5px solid var(--border);margin-bottom:8px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
-.nachr-item:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(59,110,245,.1)}
-.nachr-item.unread{border-color:#bfdbfe;background:#f0f9ff}
-.nachr-item.unread .nachr-name{color:var(--blue)}
-.nachr-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:6px}
-.nachr-name{font-weight:700;font-size:.9rem;margin-bottom:2px}
-.nachr-subject{font-size:.82rem;color:var(--text-2);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nachr-preview{font-size:.75rem;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nachr-time{font-size:.68rem;color:var(--text-3);white-space:nowrap;flex-shrink:0;margin-left:auto;padding-left:8px;margin-top:2px}
-/* TAB DROPDOWN (mobile only) */
-.tab-dropdown{display:none;position:relative}
-.tab-dropdown-btn{
-  display:flex;align-items:center;gap:8px;
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:10px;padding:7px 12px;
-  font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;
-  color:var(--text);cursor:pointer;min-width:150px;
-  justify-content:space-between;transition:border-color .15s
-}
-.tab-dropdown-btn:focus,.tab-dropdown-btn.open{border-color:var(--blue)}
-.tab-dropdown-arrow{font-size:.7rem;color:var(--text-3);transition:transform .2s}
-.tab-dropdown-btn.open .tab-dropdown-arrow{transform:rotate(180deg)}
-.tab-dropdown-menu{
-  display:none;position:absolute;top:calc(100% + 6px);left:0;
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:12px;box-shadow:var(--shadow-lg);
-  overflow:hidden;z-index:200;min-width:100%;
-}
-.tab-dropdown-menu.open{display:block;animation:up .15s ease}
-.tab-dropdown-menu button{
-  display:block;width:100%;padding:11px 16px;
-  background:none;border:none;border-bottom:1px solid var(--border);
-  font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;
-  color:var(--text-2);cursor:pointer;text-align:left;transition:background .1s
-}
-.tab-dropdown-menu button:last-child{border-bottom:none}
-.tab-dropdown-menu button:hover{background:var(--surface2)}
-.tab-dropdown-menu button.active{color:var(--blue);background:#eef2fe}
-/* ACHIEVEMENTS */
-.ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:10px;margin-bottom:10px}
-.ach-badge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface2);text-align:center;transition:all .15s}
-.ach-badge.unlocked{background:#fffbeb;border-color:#fcd34d;box-shadow:0 2px 8px rgba(251,191,36,.2)}
-.ach-badge.locked{opacity:.35;filter:grayscale(1)}
-.ach-icon{font-size:1.6rem;line-height:1}
-.ach-name{font-size:.6rem;font-weight:700;color:var(--text-2);line-height:1.2}
-.ach-badge.unlocked .ach-name{color:#92400e}
-.ach-cat{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:6px;margin-top:4px}
-/* SAMMLUNG */
-.sam-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:box-shadow .15s;position:relative}
-.sam-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
-.sam-img{width:100%;height:120px;object-fit:cover}
-.sam-img-ph{width:100%;height:120px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem}
-@media(max-width:600px){
-  .sam-img,.sam-img-ph{height:90px}
-  .sam-name{font-size:.75rem}
-  .sam-info{padding:6px 8px}
-  #sammlung-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))!important;gap:8px!important}
-}
-.sam-info{padding:8px 10px}
-.sam-name{font-weight:700;font-size:.82rem;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sam-sub{font-size:.68rem;color:var(--text-3)}
-.sam-del{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.5);border:none;color:#fff;cursor:pointer;font-size:.7rem;display:none;align-items:center;justify-content:center}
-.sam-card:hover .sam-del{display:flex}
 /* MOBILE */
 @media(max-width:600px){
-  /* ── Header ── */
-  header{
-    padding:8px 12px;
-    flex-direction:column;
-    align-items:stretch;
-    gap:8px
-  }
-  .brand-sub{display:none}
-  header > div:last-child{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:6px;
-    flex-wrap:nowrap
-  }
-  /* Hide desktop tabs, show dropdown */
-  #desktop-tab-bar{display:none}
-  .tab-dropdown{display:block;flex:1}
-  .tab-dropdown-btn{width:100%}
-  #hdr-name{display:none}
-  .notif-btn{width:34px;height:34px;font-size:.95rem;flex-shrink:0}
-  .profile-trigger{padding:4px 6px}
-  #hdr-admin-btn{padding:5px 8px;font-size:.72rem}
-
-  /* ── Main ── */
-  .main{padding:0 0 80px}
-  .tab-content.active{padding:0}
-
-  /* ── Cards & sections ── */
-  .termin-item{margin-bottom:10px}
-  .termin-header{padding:14px 16px}
-  .termin-body{padding:0 16px 16px}
-  .form-card{padding:16px}
-  .spiele-grid{grid-template-columns:1fr}
-  .suche-banner{padding:7px 16px;font-size:.74rem}
-  .chips-row{gap:4px}
-  .chip{font-size:.68rem;padding:2px 7px}
-  .persons-wrap{gap:5px}
-  /* All tabs: identical padding on mobile */
-  #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt,#tab-sammlung{padding:8px 14px 0}
-  /* Reset the inner wrapper padding on mobile */
-  #tab-zusagen > div:first-child,#tab-markt > div:first-child,#tab-sammlung > div:first-child{padding:0;max-width:none}
-
-  /* ── FAB: Neuer Termin ── */
-  #fab-new-termin.fab-active{
-    display:flex !important;
-    position:fixed;bottom:20px;right:16px;
-    width:52px;height:52px;border-radius:50%;
-    background:var(--blue);color:#fff;
-    border:none;cursor:pointer;
-    align-items:center;justify-content:center;
-    font-size:1.5rem;font-weight:700;
-    box-shadow:0 4px 18px rgba(59,110,245,.45);
-    z-index:500;transition:transform .15s
-  }
-  #fab-new-termin:active{transform:scale(.93)}
-  /* hide inline "Neuer Termin" button on mobile */
-  #btn-new-termin-inline{display:none !important}
-
-  /* ── All modals: full-screen sheet from bottom ── */
-  #new-termin-modal,
-  #edit-modal,
-  #add-modal,
-  #profil-modal,
-  #inserat-modal,
-  #admin-modal,
-  #qr-modal,
-  #confirm-modal,
-  #markt-chat-modal,
-  #add-sammlung-modal,
-  #whatsnew-modal{
-    padding:0 !important;
-    align-items:flex-end !important
-  }
-  #new-termin-modal > div,
-  #edit-modal > div,
-  #add-modal > div,
-  #profil-modal > div,
-  #inserat-modal > div,
-  #admin-modal > div,
-  #qr-modal > div,
-  #confirm-modal > div,
-  #markt-chat-modal > div,
-  #add-sammlung-modal > div,
-  #whatsnew-modal > div{
-    max-width:100% !important;
-    width:100% !important;
-    border-radius:20px 20px 0 0 !important;
-    max-height:92vh !important;
-    overflow-y:auto !important;
-    animation:slide-up .25s ease !important
-  }
-  /* sticky modal header so close btn always visible */
-  #new-termin-modal > div > div:first-child,
-  #edit-modal > div > div:first-child,
-  #inserat-modal > div > div:first-child{
-    position:sticky;top:0;z-index:10
-  }
-  /* scrollable modal body: limit height and scroll */
-  #new-termin-modal .modal-scroll-body{
-    max-height:calc(92vh - 80px);
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch
-  }
-
-  /* ── Form inside modals ── */
+  header{padding:8px 12px}
   .form-grid{grid-template-columns:1fr}
-  #new-termin-modal .form-grid,
-  #edit-modal .form-grid{margin-bottom:10px}
-
-  /* Toggle rows: tighter on mobile */
-  #new-termin-modal [style*="padding:13px 15px"],
-  #edit-modal [style*="padding:12px 14px"]{
-    padding:10px 12px !important
-  }
-
-  /* ── Kalender ── */
-  .cal-day{min-height:36px;padding:3px 2px}
-  .cal-day-num{font-size:.65rem}
-
-  /* ── Chat ── */
-  .chat-box{max-height:180px}
-
-  /* ── Markt cards ── */
-  #markt-list{grid-template-columns:1fr !important}
-
-  /* ── Termine / Zusagen / Markt header ── */
-  #tab-termine > div:first-child,
-  #tab-zusagen > div:first-child,
-  #tab-markt > div:first-child{flex-direction:column;align-items:stretch}
-  #btn-new-termin-inline + *{margin-top:0}
-}
-
-@keyframes slide-up{
-  from{transform:translateY(40px);opacity:0}
-  to{transform:translateY(0);opacity:1}
+  .main{padding:12px}
+  .termin-body{padding:0 14px 16px}
+  .spiele-grid{grid-template-columns:1fr}
+  .tab{padding:6px 10px;font-size:.76rem}
+  /* Add-game modal: bottom sheet on mobile */
+  #add-modal{align-items:flex-end;padding:0}
+  #add-modal > div{max-width:100%;width:100%;max-height:82vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column}
+  #add-modal .add-modal-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #add-modal .add-modal-footer{flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);padding-bottom:max(12px,env(safe-area-inset-bottom))}
+  #add-modal .as-drop{max-height:160px}
 }
 </style>
 </head>
@@ -493,7 +212,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div class="name-title">Die Meeples</div>
     <div class="name-sub">Spieleabend Planer</div>
     <label class="name-label" for="login-email">Vorname</label>
-    <form id="login-form" onsubmit="event.preventDefault();doLogin();" style="width:100%">
+    <form id="login-form" onsubmit="doLogin();return false;" style="width:100%">
       <input class="name-input" id="login-email" name="username" placeholder="z.B. Max" autocomplete="username" onkeydown="if(event.keyCode===13){event.preventDefault();doLogin();}">
       <label class="name-label" for="login-pw" style="margin-top:10px">Passwort</label>
       <input class="name-input" id="login-pw" name="password" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.keyCode===13){event.preventDefault();doLogin();}">
@@ -515,35 +234,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="brand-icon">🎲</div>
       <div><div class="brand-name">Die Meeples</div><div class="brand-sub">Spieleabend Planer</div></div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0;flex-shrink:1">
-      <!-- Desktop Tabs -->
-      <div class="tab-bar" id="desktop-tab-bar">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div class="tab-bar">
         <button class="tab active" id="tab-btn-termine" onclick="showTab('termine',this)">Termine</button>
         <button class="tab" id="tab-btn-kalender" onclick="showTab('kalender',this)">Kalender</button>
         <button class="tab" id="tab-btn-zusagen" onclick="showTab('zusagen',this)">Meine Zusagen</button>
-        <button class="tab" id="tab-btn-sammlung" onclick="showTab('sammlung',this)">Sammlung</button>
         <button class="tab" id="tab-btn-markt" onclick="showTab('markt',this)" style="display:none">Marktplatz</button>
       </div>
-      <!-- Mobile Dropdown -->
-      <div class="tab-dropdown" id="tab-dropdown">
-        <button class="tab-dropdown-btn" id="tab-dropdown-btn" onclick="toggleTabDropdown()">
-          <span id="tab-dropdown-label">Termine</span>
-          <span class="tab-dropdown-arrow">▾</span>
-        </button>
-        <div class="tab-dropdown-menu" id="tab-dropdown-menu">
-          <button onclick="showTabMobile('termine')">Termine</button>
-          <button onclick="showTabMobile('kalender')">Kalender</button>
-          <button onclick="showTabMobile('zusagen')">Meine Zusagen</button>
-          <button onclick="showTabMobile('sammlung')">Sammlung</button>
-          <button id="tab-dd-markt" onclick="showTabMobile('markt')" style="display:none">Marktplatz</button>
-        </div>
-      </div>
-      <button class="notif-btn" id="nachr-btn" onclick="openNachrModal()" title="Nachrichten" style="font-size:1rem">
-        ✉️<div class="notif-badge" id="nachr-badge-btn"></div>
-      </button>
-      <button class="notif-btn" id="notif-btn" onclick="reopenWhatsnew()" title="Neuigkeiten anzeigen">
-        🔔<div class="notif-badge" id="notif-badge"></div>
-      </button>
       <div class="profile-trigger" onclick="openProfileModal()">
         <div class="av av-md" id="hdr-av"></div>
         <span style="font-size:.88rem;font-weight:600" id="hdr-name"></span>
@@ -560,7 +257,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spieleabende</div>
           <div style="font-size:.78rem;color:var(--text-3)">Alle geplanten Treffen auf einen Blick</div>
         </div>
-        <button id="btn-new-termin-inline" onclick="openNewTerminModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
+        <button onclick="openNewTerminModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
           <span style="font-size:1.1rem">＋</span> Neuer Termin
         </button>
       </div>
@@ -586,180 +283,25 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
     <!-- ZUSAGEN TAB -->
     <div id="tab-zusagen" class="tab-content">
-      <div style="padding:20px;max-width:860px;margin:0 auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meine Zusagen</div>
-            <div style="font-size:.78rem;color:var(--text-3)">Termine bei denen du dabei bist</div>
-          </div>
-          <button onclick="exportAllZusagen()" style="display:flex;align-items:center;gap:8px;background:var(--surface);color:var(--text-2);border:1.5px solid var(--border);border-radius:12px;padding:10px 18px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;transition:all .15s" onmouseenter="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--text-2)'">
-            📅 Alle exportieren
-          </button>
-        </div>
+      <div style="max-width:860px;margin:0 auto">
+        <div class="section-lbl">Meine Zusagen</div>
         <div id="zusagen-list"></div>
-      </div>
-    </div>
-
-    <!-- SAMMLUNG TAB -->
-    <div id="tab-sammlung" class="tab-content">
-      <div style="padding:20px;max-width:860px;margin:0 auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meeple Sammlung</div>
-            <div style="font-size:.78rem;color:var(--text-3)">Deine Spiele auf einen Blick</div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button onclick="importFromBgg()" class="btn btn-outline btn-sm" id="bgg-import-btn">
-              <img src="https://cf.geekdo-static.com/icons/favicon2.ico" style="width:14px;height:14px;border-radius:2px;vertical-align:middle" onerror="this.style.display='none'"> <span id="bgg-import-btn-lbl">BGG importieren</span>
-            </button>
-            <button onclick="openAddSammlungModal()" class="btn btn-blue btn-sm">＋ Manuell hinzufügen</button>
-          </div>
-        </div>
-        <!-- BGG info bar -->
-        <div id="sammlung-bgg-info" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <div style="font-size:.8rem;color:#0369a1">
-            🔗 <strong>BGG-Profil:</strong> <span id="sammlung-bgg-name"></span>
-            <span id="sammlung-count-lbl" style="margin-left:8px;opacity:.7"></span>
-          </div>
-        </div>
-        <!-- Search/filter -->
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <input class="input-field" id="sammlung-search" placeholder="Sammlung durchsuchen …" oninput="filterSammlung()" style="flex:1">
-          <select class="input-field" id="sammlung-view-user" onchange="filterSammlung()" style="max-width:180px">
-            <option value="__all__">🌐 Alle Sammlungen</option>
-          </select>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-          <div onclick="toggleSammlungErweiterungen()" style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer;user-select:none;transition:all .15s" id="erweiterung-toggle">
-            <span id="erweiterung-icon">🚫</span>
-            <span id="erweiterung-lbl" style="font-weight:600;color:var(--text-2)">Erweiterungen ausgeblendet</span>
-          </div>
-          <span id="sammlung-count-badge" style="font-size:.75rem;color:var(--text-3)"></span>
-        </div>
-        <div id="sammlung-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
       </div>
     </div>
 
     <!-- MARKTPLATZ TAB -->
     <div id="tab-markt" class="tab-content">
-      <div style="padding:20px;max-width:860px;margin:0 auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-          <div>
-            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spielemarktplatz</div>
-            <div style="font-size:.78rem;color:var(--text-3)">Kaufe und verkaufe Spiele innerhalb der Gruppe</div>
-          </div>
-          <button onclick="openInseratModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
-            <span style="font-size:1.1rem">＋</span> Spiel inserieren
-          </button>
+      <div style="max-width:860px;margin:0 auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spielemarktplatz</div>
+          <div style="font-size:.78rem;color:var(--text-3)">Kaufe und verkaufe Spiele innerhalb der Gruppe</div>
         </div>
-        <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
+        <button onclick="openInseratModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
+          <span style="font-size:1.1rem">＋</span> Spiel inserieren
+        </button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- NACHRICHTEN MODAL (Discord-style) -->
-<div id="nachr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeNachrModal()">
-  <div class="nachr-modal-inner">
-    <!-- LEFT SIDEBAR -->
-    <div class="nachr-sidebar" id="nachr-sidebar">
-      <div class="nachr-sidebar-header">
-        <div style="font-size:.95rem;font-weight:800">✉️ Nachrichten</div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button id="nachr-refresh-btn" onclick="manualNachrRefresh()" title="Aktualisieren" style="width:30px;height:30px;border-radius:8px;background:none;border:1px solid var(--border);cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:all .15s">⟳</button>
-          <button class="nachr-compose-btn" onclick="showComposePanel()" title="Neue Nachricht">＋</button>
-          <button class="nachr-close-mobile" onclick="closeNachrModal()" title="Schließen">✕</button>
-        </div>
-      </div>
-      <!-- Filter tabs hidden: all conversations shown together -->
-      <div style="display:none">
-        <button id="ns-tab-inbox" class="nachr-ftab active" onclick="setNachrTab('inbox')">📥 Eingang</button>
-        <button id="ns-tab-sent" class="nachr-ftab" onclick="setNachrTab('sent')">📤 Gesendet</button>
-      </div>
-      <div id="nachr-conv-list" style="flex:1;overflow-y:auto;padding:8px 0"></div>
-    </div>
-    <!-- RIGHT PANEL -->
-    <div class="nachr-panel" id="nachr-panel">
-      <!-- Compose view -->
-      <div id="nachr-compose-view" style="display:none;flex-direction:column;height:100%">
-        <div class="nachr-panel-header">
-          <button class="nachr-back-btn" onclick="showConvList()" title="Zurück">‹</button>
-          <div style="font-weight:700;font-size:.95rem">Neue Nachricht</div>
-          <div style="flex:1"></div>
-        </div>
-        <div style="padding:20px;flex:1;overflow-y:auto">
-          <div class="form-field" style="margin-bottom:12px">
-            <label>Empfänger</label>
-            <div style="position:relative">
-              <div id="compose-to-display" style="min-height:40px;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:pointer" onclick="toggleUserPicker()">
-                <span id="compose-to-placeholder" style="font-size:.88rem;color:var(--text-3)">Empfänger auswählen …</span>
-              </div>
-              <div id="user-picker-drop" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:var(--shadow-lg);z-index:9999;max-height:200px;overflow-y:auto">
-                <div style="padding:8px 12px;border-bottom:1px solid var(--border)">
-                  <input class="input-field" id="user-picker-search" placeholder="Suchen …" oninput="filterUserPicker()" style="font-size:.82rem;padding:7px 10px">
-                </div>
-                <div id="user-picker-list"></div>
-              </div>
-            </div>
-          </div>
-          <div class="form-field" style="display:none">
-            <label>Betreff</label>
-            <input class="input-field" id="compose-subject" placeholder="Worum geht's?">
-          </div>
-          <div class="form-field" style="margin-bottom:16px">
-            <label>Nachricht</label>
-            <textarea class="input-field" id="compose-body" rows="6" placeholder="Schreib deine Nachricht …" style="resize:vertical;font-family:inherit"></textarea>
-          </div>
-          <div id="compose-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
-          <button class="btn btn-blue" onclick="sendNachricht()" style="width:100%">📨 Senden</button>
-        </div>
-      </div>
-      <!-- Chat view -->
-      <div id="nachr-chat-view" style="display:flex;flex-direction:column;height:100%">
-        <div class="nachr-panel-header" id="nachr-chat-header">
-          <button class="nachr-back-btn" onclick="showConvList()" title="Zurück">‹</button>
-          <div class="av av-md" id="konv-av" style="flex-shrink:0"></div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:.92rem" id="konv-partner"></div>
-            <div style="font-size:.7rem;color:var(--text-3)" id="konv-subject"></div>
-          </div>
-          
-        </div>
-        <div id="konv-chat-box" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
-          <div class="chat-empty" style="margin:auto">Wähle eine Konversation aus.</div>
-        </div>
-        <div id="nachr-reply-bar" style="display:none;padding:12px 16px;border-top:1px solid var(--border);gap:8px;align-items:center">
-          <input class="chat-input" id="nachr-quick-reply" placeholder="Antwort schreiben …" onkeydown="if(event.keyCode===13)sendQuickReply()">
-          <button class="chat-send" onclick="sendQuickReply()">➤</button>
-        </div>
-      </div>
-    </div>
-    <!-- Close btn (top right) -->
-    <button onclick="closeNachrModal()" class="nachr-close-desktop" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
-  </div>
-</div>
-
-<!-- ADD SAMMLUNG MODAL -->
-<div id="add-sammlung-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeAddSammlungModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;animation:up .2s ease">
-    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1">
-      <div style="font-size:1rem;font-weight:800;color:#fff">🎮 Spiel zur Sammlung hinzufügen</div>
-      <button onclick="closeAddSammlungModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
-    </div>
-    <div style="padding:22px 24px">
-      <div class="as-wrap" style="margin-bottom:12px">
-        <input class="input-field" id="sammlung-search-input" placeholder="Spielname suchen (BGG) …" oninput="onSammlungSearchInput()" onkeydown="onSammlungSearchKey(event)" autocomplete="off">
-        <div class="as-drop" id="sammlung-as-drop"></div>
-      </div>
-      <div id="sammlung-search-status" style="font-size:.78rem;color:var(--text-3);margin-bottom:8px"></div>
-      <div id="sammlung-preview" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;display:none;gap:12px;align-items:center">
-        <img id="ssp-img" style="width:56px;height:56px;border-radius:8px;object-fit:cover;display:none" src="" alt="">
-        <div><div id="ssp-name" style="font-weight:700;margin-bottom:3px"></div><div id="ssp-sub" style="font-size:.75rem;color:var(--text-3)"></div></div>
-      </div>
-      <div id="sammlung-add-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" onclick="closeAddSammlungModal()" style="flex:1">Abbrechen</button>
-        <button class="btn btn-blue" onclick="confirmAddToSammlung()" style="flex:2">+ Zur Sammlung</button>
+      <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
       </div>
     </div>
   </div>
@@ -816,15 +358,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <!-- PROFIL MODAL -->
 <div id="profil-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;max-height:90vh;display:flex;flex-direction:column;animation:up .2s ease;overflow:hidden">
-    <!-- Sticky header -->
-    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0;position:relative">
-      <button onclick="closeProfileModal()" style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center" title="Schließen">✕</button>
-      <div class="av av-lg" id="profil-av" style="margin:0 auto 8px"></div>
-      <div style="font-size:1.05rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;animation:up .2s ease;overflow:hidden">
+    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:24px;text-align:center">
+      <div class="av av-lg" id="profil-av" style="margin:0 auto 10px"></div>
+      <div style="font-size:1.1rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
     </div>
-    <!-- Scrollable body -->
-    <div style="padding:20px 24px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch">
+    <div style="padding:24px">
       <div class="form-field" style="margin-bottom:12px"><label>Anzeigename ändern</label><input class="input-field" id="profil-displayname" placeholder="Dein Name"></div>
       <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:16px" onclick="saveDisplayName()">✓ Name speichern</button>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
@@ -848,42 +387,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
         <button class="btn btn-outline btn-sm" style="width:100%" onclick="saveBggProfile()">🎲 BGG Profil speichern</button>
       </div>
-      <!-- NOTIFICATION SETTINGS -->
-      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
-        <div style="font-weight:700;font-size:.88rem;margin-bottom:10px">🔔 E-Mail Benachrichtigungen</div>
-        <div class="form-field" style="margin-bottom:8px">
-          <label>Benachrichtigungs-E-Mail <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
-          <input class="input-field" id="profil-notif-email" type="email" placeholder="deine@email.de" autocomplete="email">
-          <div style="font-size:.7rem;color:var(--text-3);margin-top:4px">Getrennt von deiner Anmelde-E-Mail. Wird nur für Benachrichtigungen genutzt.</div>
-        </div>
-        <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:12px" onclick="saveNotifEmail()">💾 E-Mail speichern</button>
-        <div id="notif-toggles-wrap">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px">
-            <div>
-              <div style="font-weight:600;font-size:.83rem">📅 Neue Termine</div>
-              <div style="font-size:.68rem;color:var(--text-3)">Wenn ein neuer Termin erstellt wird</div>
-            </div>
-            <label class="toggle-wrap"><input type="checkbox" id="profil-notif-termine"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px">
-            <div>
-              <div style="font-weight:600;font-size:.83rem">🛒 Neues im Marktplatz</div>
-              <div style="font-size:.68rem;color:var(--text-3)">Wenn ein Spiel inseriert wird</div>
-            </div>
-            <label class="toggle-wrap"><input type="checkbox" id="profil-notif-markt"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-          </div>
-          <button class="btn btn-outline btn-sm" style="width:100%" onclick="saveNotifPrefs()">💾 Einstellungen speichern</button>
-        </div>
-      </div>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
         <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
         <button class="btn btn-outline btn-sm" style="width:100%;" onclick="savePassword()">🔑 Passwort ändern</button>
-      <!-- ACHIEVEMENTS -->
-      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;margin-bottom:16px">
-        <div style="font-weight:700;font-size:.9rem;margin-bottom:12px">🏆 Achievements</div>
-        <div id="profil-achievements"></div>
-      </div>
       <div id="profil-msg" style="display:none;font-size:.82rem;margin-bottom:12px"></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost" style="flex:1" onclick="closeProfileModal()">Schließen</button>
@@ -895,13 +402,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 </div>
 
 <!-- ADD SPIEL MODAL -->
-<div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:flex-start;justify-content:center;padding:12px 12px 0" onclick="if(event.target===this)closeAddModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:90vh;overflow-y:auto;animation:up .2s ease;margin-top:8px">
-    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+<div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeAddModal()">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:80vh;overflow:hidden;animation:up .2s ease;display:flex;flex-direction:column">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
       <div style="font-size:1rem;font-weight:800">🎲 Spiel hinzufügen</div>
       <button onclick="closeAddModal()" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-3)">✕</button>
     </div>
-    <div style="padding:20px 24px">
+    <div class="add-modal-body" style="padding:20px 24px;overflow-y:auto;flex:1">
       <div style="display:flex;gap:8px;margin-bottom:16px">
         <button class="btn btn-sm" id="add-tab-search" onclick="setAddTab('search')" style="flex:1;background:var(--blue);color:#fff;border-color:var(--blue)">🔍 BGG Suche</button>
         <button class="btn btn-sm btn-ghost" id="add-tab-link" onclick="setAddTab('link')" style="flex:1">🔗 BGG Link</button>
@@ -928,10 +435,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div><div id="sp-name" style="font-weight:700;margin-bottom:3px"></div><div id="sp-sub" style="font-size:.75rem;color:var(--text-3)"></div></div>
       </div>
       <div id="add-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-ghost" onclick="closeAddModal()" style="flex:1">Abbrechen</button>
-        <button class="btn btn-blue" onclick="confirmAddSpiel()" style="flex:2">+ Hinzufügen</button>
-      </div>
+    </div>
+    <div class="add-modal-footer" style="padding:16px 24px;display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="closeAddModal()" style="flex:1">Abbrechen</button>
+      <button class="btn btn-blue" onclick="confirmAddSpiel()" style="flex:2">+ Hinzufügen</button>
     </div>
   </div>
 </div>
@@ -948,7 +455,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div class="form-field"><label>Titel</label><input class="input-field" id="edit-title"></div>
         <div class="form-field"><label>Datum & Uhrzeit</label><input class="input-field" id="edit-date" type="datetime-local"></div>
         <div class="form-field"><label>Ort</label><input class="input-field" id="edit-ort"></div>
-        <div class="form-field"><label>Google Maps Link <span style="color:var(--text-3);font-weight:400">(optional)</span></label><input class="input-field" id="edit-maps" placeholder="https://maps.app.goo.gl/…"></div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">Spielvorschläge erlauben</div></div>
@@ -965,10 +471,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div id="edit-limit-wrap" style="display:none;padding:12px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--radius-sm);margin-bottom:10px">
         <label style="font-size:.78rem;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px">Maximale Teilnehmerzahl</label>
         <input class="input-field" id="edit-limit-val" type="number" min="1" max="100" placeholder="z.B. 8">
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
-        <div><div style="font-weight:600;font-size:.88rem">🔍 Mitspieler gesucht</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Hebt den Termin hervor – erfordert Teilnehmerlimit</div></div>
-        <label class="toggle-wrap"><input type="checkbox" id="edit-suche-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">👍 Spieleabstimmung</div></div>
@@ -989,7 +491,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 <!-- NEUER TERMIN MODAL -->
 <div id="new-termin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeNewTerminModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;animation:up .2s ease;overflow:hidden">
-    <div style="display:none" class="modal-drag-handle" aria-hidden="true"></div>
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;display:flex;align-items:center;justify-content:space-between">
       <div>
         <div style="font-size:1.1rem;font-weight:800;color:#fff">📅 Neuen Termin erstellen</div>
@@ -997,26 +498,18 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       </div>
       <button onclick="closeNewTerminModal()" style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
-    <div class="modal-scroll-body" style="padding:24px">
-      <div class="form-grid" style="margin-bottom:12px">
+    <div style="padding:24px">
+      <div class="form-grid" style="margin-bottom:16px">
         <div class="form-field"><label>Titel</label><input class="input-field" id="new-title" placeholder="z.B. Spieleabend bei Max"></div>
-        <div class="form-field">
-          <label>Datum & Uhrzeit</label>
-          <input class="input-field" id="new-date" type="datetime-local">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:6px">
-            <span style="font-size:.8rem;font-weight:600;color:var(--text-2)">Datum noch offen</span>
-            <label class="toggle-wrap"><input type="checkbox" id="new-no-date" onchange="var d=document.getElementById('new-date');d.disabled=this.checked;d.style.opacity=this.checked?'.35':'1';if(this.checked)d.value='';"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-          </div>
-        </div>
+        <div class="form-field"><label>Datum & Uhrzeit</label><input class="input-field" id="new-date" type="datetime-local"></div>
         <div class="form-field"><label>Ort</label><input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …"></div>
-        <div class="form-field"><label>Google Maps Link <span style="color:var(--text-3);font-weight:400">(optional)</span></label><input class="input-field" id="new-maps" placeholder="https://maps.app.goo.gl/…"></div>
         <input type="hidden" id="new-creator">
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">Spielvorschläge erlauben</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Alle Teilnehmer können Spiele hinzufügen</div></div>
         <label class="toggle-wrap"><input type="checkbox" id="new-offen" checked><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:22px">
         <div><div style="font-weight:600;font-size:.88rem">🔒 Privater Termin</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Nur eingeladene Personen sehen diesen Termin</div></div>
         <label class="toggle-wrap"><input type="checkbox" id="new-privat"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
@@ -1029,14 +522,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <input class="input-field" id="new-limit-val" type="number" min="1" max="100" placeholder="z.B. 8">
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
-        <div><div style="font-weight:600;font-size:.88rem">🔍 Mitspieler gesucht</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Hebt den Termin hervor – erfordert Teilnehmerlimit</div></div>
-        <label class="toggle-wrap"><input type="checkbox" id="new-suche-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">👍 Spieleabstimmung</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Teilnehmer können für Spiele abstimmen</div></div>
         <label class="toggle-wrap"><input type="checkbox" id="new-vote-on" onchange="if(this.checked){var d=document.getElementById('new-dice-on');if(d)d.checked=false;}"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:22px">
         <div><div style="font-weight:600;font-size:.88rem">🎲 Spiel auswürfeln</div><div style="font-family:'DM Mono',monospace;font-size:.63rem;color:var(--text-3)">Zufälliges Spiel per Würfelbutton wählen</div></div>
         <label class="toggle-wrap"><input type="checkbox" id="new-dice-on" onchange="if(this.checked){var v=document.getElementById('new-vote-on');if(v)v.checked=false;}"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
@@ -1191,7 +680,7 @@ function h(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").r
 function proxyImg(u){ if(!u) return null; if(u.startsWith("//")) u="https:"+u; return "https://images.weserv.nl/?url="+encodeURIComponent(u)+"&w=400&fit=cover&output=webp"; }
 function fmtDate(d){ if(!d) return "\u2014"; return new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
 function fmtTime(t){ return new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
-function toast(msg,duration){ var el=document.getElementById("toast"); el.querySelector("span").textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("show"); },duration||(msg.toLowerCase().includes("fehler")||msg.toLowerCase().includes("nicht")?5000:2400)); }
+function toast(msg){ var el=document.getElementById("toast"); el.querySelector("span").textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("show"); },2400); }
 function getT(id){ return state.termine.find(function(t){ return t.id===id; }); }
 function avg(s){ if(!s.votes||!Object.keys(s.votes).length) return 0; var v=Object.values(s.votes); return v.reduce(function(a,b){ return a+b; },0)/v.length; }
 function score(s){ if(!s.votes) return 0; return Object.values(s.votes).filter(function(v){ return v===1; }).length; }
@@ -1291,14 +780,11 @@ async function startApp(name){
   setAv(document.getElementById("hdr-av"),name);
   document.getElementById("hdr-name").textContent=name;
   document.getElementById("tab-btn-markt").style.display="";
-  var ddMarkt=document.getElementById("tab-dd-markt"); if(ddMarkt) ddMarkt.style.display="";
   var adminBtn=document.getElementById("hdr-admin-btn");
   if(adminBtn) adminBtn.style.display=isAdmin?"":"none";
   try{ await loadState(); }catch(e){}
   await loadBggToken();
   await loadBggProfiles();
-  await loadNotifPrefs();
-  await loadAllSammlungen(); // must be after loadBggProfiles so bggProfiles is populated for auto-sync
   // Pre-populate myAddedSpiele from DB data for this user
   if(state&&state.termine){
     state.termine.forEach(function(t){
@@ -1309,11 +795,7 @@ async function startApp(name){
     saveMyAddedSpiele();
   }
   renderTermine();
-  var fab=document.getElementById("fab-new-termin"); if(fab) fab.classList.add("fab-active");
   startPolling();
-  await loadNachrichten();
-  updateNachrBadge();
-  startNachrPolling();
   await renderMarkt();
   showWhatsnew();
 }
@@ -1332,29 +814,6 @@ async function switchUser(){
 
 // ── What's New ──
 var bggProfiles={}; // name -> bgg_username
-var _whatsnewHtml=""; // cached for re-open
-var _whatsnewCount=0;
-
-function reopenWhatsnew(){
-  if(!_whatsnewHtml){ toast("Keine Neuigkeiten vorhanden."); return; }
-  document.getElementById("whatsnew-body").innerHTML=_whatsnewHtml;
-  document.getElementById("whatsnew-modal").style.display="flex";
-}
-
-function setNotifBadge(count){
-  var badge=document.getElementById("notif-badge"); if(!badge) return;
-  var btn=document.getElementById("notif-btn"); if(!btn) return;
-  if(count>0){
-    badge.style.display="flex";
-    badge.textContent=count>9?"9+":String(count);
-    btn.style.background="#fef2f2";
-    btn.style.borderColor="#fca5a5";
-  } else {
-    badge.style.display="none";
-    btn.style.background="";
-    btn.style.borderColor="";
-  }
-}
 
 async function loadBggProfiles(){
   try{
@@ -1382,116 +841,43 @@ async function getAndUpdateLogin(){
 async function showWhatsnew(){
   var last=await getAndUpdateLogin();
   var since=last||new Date(0);
-
-  // 1. Neue Termine (nicht vom User selbst, sichtbar für User)
-  var nt=state.termine.filter(function(t){
-    if(!t.ts||new Date(t.ts)<=since||t.creator===currentName) return false;
-    if(t.privat&&!t.personen.includes(currentName)) return false;
-    return true;
+  var nt=state.termine.filter(function(t){ 
+    if(t.ts&&new Date(t.ts)>since&&t.creator!==currentName){
+      if(t.privat&&!t.personen.includes(currentName)) return false;
+      return true;
+    }
+    return false;
   });
-
-  // 2. Aktivitäten in Terminen wo User dabei ist (seit letztem Login)
-  var activity=[]; // {tid, type, label, detail, author, ts}
-  state.termine.forEach(function(t){
-    if(!t.personen||!t.personen.includes(currentName)) return;
-    // Neue Chat-Nachrichten
-    (t.chat||[]).forEach(function(m){
-      if(m.author!==currentName&&m.ts&&new Date(m.ts)>since){
-        activity.push({tid:t.id,title:t.title,type:"chat",icon:"💬",label:"Chat-Nachricht",detail:h(m.author)+": \""+h(m.text.slice(0,60))+(m.text.length>60?"…":"")+"\"",author:m.author,ts:new Date(m.ts)});
-      }
-    });
-    // Neue Spiele
-    (t.spiele||[]).forEach(function(s){
-      if(s.vorschlaeger&&s.vorschlaeger!==currentName&&s.ts&&new Date(s.ts)>since){
-        activity.push({tid:t.id,title:t.title,type:"spiel",icon:"🎮",label:"Spiel vorgeschlagen",detail:h(s.vorschlaeger)+" schlug <strong>"+h(s.name)+"</strong> vor",author:s.vorschlaeger,ts:new Date(s.ts)});
-      }
-    });
-    // Neue Teilnehmer
-    // We can't reliably know when someone joined without a join timestamp,
-    // but we can check if personen changed — skip for now as there's no ts on personen
-  });
-  // Sort activity newest first, deduplicate by tid+type within same minute
-  activity.sort(function(a,b){ return b.ts-a.ts; });
-
-  // 3. Neue Marktplatz-Angebote
   var nm=mData.filter(function(m){ return m.ts&&new Date(m.ts)>since&&m.seller!==currentName; });
-
-  if(!nt.length&&!activity.length&&!nm.length) return;
-
-  function sectionHeader(label){
-    return "<div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>"+label+"</div>";
-  }
-  function itemRow(onclick, leftHtml, titleHtml, subHtml){
-    return "<div onclick='"+onclick+"' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg);transition:background .1s' onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background='var(--bg)'\">"
-      +leftHtml
-      +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.85rem;margin-bottom:1px'>"+titleHtml+"</div><div style='font-size:.72rem;color:var(--text-3)'>"+subHtml+"</div></div>"
-      +"<span style='font-size:.7rem;color:var(--blue);flex-shrink:0'>&rarr;</span></div>";
-  }
-
+  if(!nt.length&&!nm.length) return;
   var html="";
-
   if(nt.length){
-    html+="<div style='margin-bottom:18px'>"+sectionHeader("Neue Termine ("+nt.length+")");
+    html+="<div style='margin-bottom:16px'><div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>Neue Termine ("+nt.length+")</div>";
     nt.forEach(function(t){
       var d=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short"}):"Kein Datum";
-      html+=itemRow(
-        "closeWhatsnew();jumpToTermin("+t.id+")",
-        "<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>",
-        h(t.title),
-        "von "+h(t.creator||"?")+" &middot; "+d
-      );
+      html+="<div onclick='closeWhatsnew();jumpToTermin("+t.id+")' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)'>"
+        +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
+        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.88rem'>"+h(t.title)+"</div><div style='font-size:.72rem;color:var(--text-3)'>von "+h(t.creator||"?")+" &middot; "+d+"</div></div>"
+        +"<span style='font-size:.7rem;color:var(--blue)'>&rarr;</span></div>";
     });
     html+="</div>";
   }
-
-  if(activity.length){
-    html+="<div style='margin-bottom:18px'>"+sectionHeader("Neuigkeiten in deinen Terminen ("+activity.length+")");
-    // Group by termin
-    var byTermin={};
-    activity.forEach(function(a){
-      if(!byTermin[a.tid]) byTermin[a.tid]={title:a.title,items:[]};
-      byTermin[a.tid].items.push(a);
-    });
-    Object.keys(byTermin).forEach(function(tid){
-      var grp=byTermin[tid];
-      html+="<div style='margin-bottom:10px'>";
-      html+="<div style='font-size:.78rem;font-weight:700;color:var(--text-2);margin-bottom:5px;padding:0 2px'>📅 "+h(grp.title)+"</div>";
-      grp.items.forEach(function(a){
-        var timeStr=a.ts.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
-        html+=itemRow(
-          "closeWhatsnew();jumpToTermin("+tid+")",
-          "<div style='width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0'>"+a.icon+"</div>",
-          a.label,
-          a.detail+" &middot; "+timeStr
-        );
-      });
-      html+="</div>";
-    });
-    html+="</div>";
-  }
-
   if(nm.length){
-    html+="<div>"+sectionHeader("Neue Marktplatz-Angebote ("+nm.length+")");
+    html+="<div><div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>Neue Marktplatz-Angebote ("+nm.length+")</div>";
     nm.forEach(function(m){
       var img=(m.images||[])[0];
-      html+=itemRow(
-        "closeWhatsnew();showTab(\"markt\",document.getElementById(\"tab-btn-markt\"))",
-        img?"<img src='"+h(img)+"' style='width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>"
-           :"<div style='width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>&#127922;</div>",
-        h(m.titel),
-        "von "+h(m.seller)+" &middot; "+m.preis.toFixed(2)+" &euro;"
-      );
+      html+="<div onclick='closeWhatsnew();showTab(\"markt\",document.getElementById(\"tab-btn-markt\"))' style='display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;background:var(--bg)'>"
+        +(img?"<img src='"+h(img)+"' style='width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>"
+            :"<div style='width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>&#127922;</div>")
+        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.88rem'>"+h(m.titel)+"</div><div style='font-size:.72rem;color:var(--text-3)'>von "+h(m.seller)+" &middot; "+m.preis.toFixed(2)+" &euro;</div></div>"
+        +"<span style='font-size:.7rem;color:var(--blue)'>&rarr;</span></div>";
     });
     html+="</div>";
   }
-
   document.getElementById("whatsnew-body").innerHTML=html;
   document.getElementById("whatsnew-modal").style.display="flex";
-  _whatsnewHtml=html;
-  _whatsnewCount=nt.length+activity.length+nm.length;
-  setNotifBadge(_whatsnewCount);
 }
-function closeWhatsnew(){ document.getElementById("whatsnew-modal").style.display="none"; setNotifBadge(0); }
+function closeWhatsnew(){ document.getElementById("whatsnew-modal").style.display="none"; }
 
 // ── Supabase ──
 async function loadState(){
@@ -1549,9 +935,6 @@ function startPolling(){
       if(fresh!==pollingLastHash && !saveLock){
     pollingLastHash=fresh;
     if(rows[0].data&&rows[0].data.termine){
-      // Smart diff: track previous state to detect setting changes
-      var prevState={};
-      state.termine.forEach(function(t){ prevState[t.id]={voteOn:t.voteOn,diceOn:t.diceOn,offen:t.offen}; });
       state=rows[0].data;
       if(!state.userColors) state.userColors={};
       // Smart diff: only add new cards or remove deleted ones; never rebuild existing
@@ -1572,20 +955,14 @@ function startPolling(){
           var id=parseInt(el.id.replace("termin-",""));
           if(visIds.indexOf(id)===-1) el.remove();
         });
-        // Add new or rerender changed cards
+        // Add new cards
         vis.forEach(function(t,idx){
-          var el=document.getElementById("termin-"+t.id);
-          var prev=prevState[t.id]||{};
-          var settingsChanged=prev.voteOn!==t.voteOn||prev.diceOn!==t.diceOn||prev.offen!==t.offen;
-          if(!el){
+          if(!document.getElementById("termin-"+t.id)){
             var newEl=document.createElement("div");
             newEl.innerHTML=buildTerminCard(t,false);
             var card=newEl.firstElementChild;
             var ref=list.querySelectorAll(".termin-item")[idx];
             if(ref) list.insertBefore(card,ref); else list.appendChild(card);
-          } else if(settingsChanged){
-            // Settings changed: full rerender to show/hide vote buttons etc.
-            rerenderCard(t.id);
           }
         });
       }
@@ -1605,8 +982,6 @@ function startPolling(){
 }
 
 // ── Tabs ──
-var TAB_LABELS={termine:"Termine",kalender:"Kalender",zusagen:"Meine Zusagen",nachrichten:"✉️ Nachrichten",sammlung:"Sammlung",markt:"Marktplatz"};
-
 function showTab(name,btn){
   document.querySelectorAll(".tab-content").forEach(function(el){ el.classList.remove("active"); });
   document.querySelectorAll(".tab").forEach(function(el){ el.classList.remove("active"); });
@@ -1615,82 +990,31 @@ function showTab(name,btn){
   if(name==="kalender") renderKalender();
   if(name==="zusagen") renderZusagen();
   if(name==="markt") renderMarkt();
-  if(name==="nachrichten") renderNachrichten();
-  if(name==="sammlung") renderSammlung();
-  // FAB nur im Termine-Tab sichtbar
-  var fab=document.getElementById("fab-new-termin");
-  if(fab) fab.classList.toggle("fab-active", name==="termine");
-  // Sync dropdown label & active state
-  var lbl=document.getElementById("tab-dropdown-label");
-  if(lbl) lbl.textContent=TAB_LABELS[name]||name;
-  document.querySelectorAll(".tab-dropdown-menu button").forEach(function(b){
-    b.classList.remove("active");
-  });
-  var ddBtn=document.getElementById("tab-dd-"+name);
-  // fallback: match by text
-  if(!ddBtn){
-    document.querySelectorAll(".tab-dropdown-menu button").forEach(function(b){
-      if(b.textContent.trim()===(TAB_LABELS[name]||name)) ddBtn=b;
-    });
-  }
-  if(ddBtn) ddBtn.classList.add("active");
-  closeTabDropdown();
 }
-
-function showTabMobile(name){
-  var btn=document.getElementById("tab-btn-"+name);
-  showTab(name,btn);
-}
-
-function toggleTabDropdown(){
-  var menu=document.getElementById("tab-dropdown-menu");
-  var triggerBtn=document.getElementById("tab-dropdown-btn");
-  var isOpen=menu.classList.contains("open");
-  if(isOpen){ closeTabDropdown(); } else {
-    menu.classList.add("open");
-    triggerBtn.classList.add("open");
-  }
-}
-function closeTabDropdown(){
-  var menu=document.getElementById("tab-dropdown-menu");
-  var triggerBtn=document.getElementById("tab-dropdown-btn");
-  if(menu) menu.classList.remove("open");
-  if(triggerBtn) triggerBtn.classList.remove("open");
-}
-// Close dropdown when tapping outside
-document.addEventListener("click",function(e){
-  var dd=document.getElementById("tab-dropdown");
-  if(dd&&!dd.contains(e.target)) closeTabDropdown();
-  var up=document.getElementById("user-picker-drop");
-  var upWrap=document.getElementById("compose-to-display");
-  if(up&&upWrap&&!upWrap.contains(e.target)&&!up.contains(e.target)) up.style.display="none";
-});
 
 // ── Profile ──
 function openProfileModal(){
   document.getElementById("profil-displayname").value=currentName;
   document.getElementById("profil-name-lbl").textContent=currentName;
   document.getElementById("profil-msg").style.display="none";
+  // Load BGG profile from session metadata
   var meta=session&&session.user&&session.user.user_metadata;
   var bggUser=(meta&&meta.bgg_profile)||"";
   document.getElementById("profil-bgg").value=bggUser;
   var currentColor=nameColor(currentName);
   setAv(document.getElementById("profil-av"),currentName);
+  // Init color picker
   var picker=document.getElementById("profil-color-picker");
   if(picker) picker.value=currentColor;
   var preview=document.getElementById("profil-av-preview");
   if(preview){ preview.style.background=currentColor; preview.textContent=nameInit(currentName); }
+  // Render presets
   var presets=["#e74c3c","#e67e22","#f1c40f","#2ecc71","#1abc9c","#3498db","#9b59b6","#e91e63","#00bcd4","#ff5722","#607d8b","#795548"];
   var presetsEl=document.getElementById("color-presets");
   if(presetsEl) presetsEl.innerHTML=presets.map(function(col){
     return "<div onclick='selectPresetColor(\""+col+"\")' style='width:22px;height:22px;border-radius:50%;background:"+col+";cursor:pointer;border:2px solid "+(col===currentColor?"#fff":"transparent")+";box-shadow:"+(col===currentColor?"0 0 0 2px var(--blue)":"none")+"'></div>";
   }).join("");
-  // Notification prefs
-  var ne=document.getElementById("profil-notif-email"); if(ne) ne.value=currentNotifEmail||"";
-  var nt=document.getElementById("profil-notif-termine"); if(nt) nt.checked=currentNotifPrefs.termine;
-  var nm=document.getElementById("profil-notif-markt"); if(nm) nm.checked=currentNotifPrefs.markt;
   document.getElementById("profil-modal").style.display="flex";
-  renderAchievements(currentName);
 }
 function closeProfileModal(){ document.getElementById("profil-modal").style.display="none"; }
 
@@ -1737,35 +1061,14 @@ function refreshAllAvatars(){
 async function saveDisplayName(){
   var n=document.getElementById("profil-displayname").value.trim();
   if(!n) return;
-  var oldName=currentName;
   try{
     await fetch(SB_URL+"/auth/v1/user",{method:"PUT",headers:authHdrs(),body:JSON.stringify({data:{display_name:n}})});
-    // Store display_name in user_meta under the ORIGINAL user_name (login name)
-    var loginName=session&&session.user&&session.user.email?session.user.email.replace("@meeple.de",""):oldName;
-    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:loginName,display_name:n})});
-    // Update all references in termine
-    if(oldName!==n){
-      var changed=false;
-      state.termine.forEach(function(t){
-        if(t.creator===oldName){ t.creator=n; changed=true; }
-        if(t.personen){
-          var idx=t.personen.indexOf(oldName);
-          if(idx>-1){ t.personen[idx]=n; changed=true; }
-        }
-        (t.chat||[]).forEach(function(m){ if(m.author===oldName){ m.author=n; changed=true; } });
-        (t.spiele||[]).forEach(function(s){ if(s.vorschlaeger===oldName){ s.vorschlaeger=n; changed=true; } });
-        if(t.subscribers){ t.subscribers.forEach(function(s){ if(s.name===oldName){ s.name=n; changed=true; } }); }
-      });
-      if(changed){ saveState(); }
-    }
     currentName=n;
     document.getElementById("hdr-name").textContent=n;
     setAv(document.getElementById("hdr-av"),n);
-    renderTermine();
     var msg=document.getElementById("profil-msg");
-    msg.textContent="\u2713 Name gespeichert"+(oldName!==n?" und in allen Terminen aktualisiert":"");
-    msg.style.color="var(--green)"; msg.style.display="block";
-    setTimeout(function(){ msg.style.display="none"; },3000);
+    msg.textContent="\u2713 Name gespeichert"; msg.style.color="var(--green)"; msg.style.display="block";
+    setTimeout(function(){ msg.style.display="none"; },2000);
   }catch(e){ toast("Fehler beim Speichern"); }
 }
 async function saveBggProfile(){
@@ -1865,8 +1168,7 @@ function openNewTerminModal(){
 }
 function closeNewTerminModal(){
   document.getElementById("new-termin-modal").style.display="none";
-  ["new-title","new-ort","new-date","new-maps"].forEach(function(id){ var el=document.getElementById(id); if(el){ el.value=""; el.disabled=false; el.style.opacity="1"; } });
-  var nd=document.getElementById("new-no-date"); if(nd) nd.checked=false;
+  ["new-title","new-ort","new-date"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
   var o=document.getElementById("new-offen"); if(o) o.checked=true;
   var p=document.getElementById("new-privat"); if(p) p.checked=false;
   var lo=document.getElementById("new-limit-on"); if(lo) lo.checked=false;
@@ -1874,50 +1176,30 @@ function closeNewTerminModal(){
   var lv=document.getElementById("new-limit-val"); if(lv) lv.value="";
   var vo=document.getElementById("new-vote-on"); if(vo) vo.checked=false;
   var dco=document.getElementById("new-dice-on"); if(dco) dco.checked=false;
-  var so=document.getElementById("new-suche-on"); if(so) so.checked=false;
 }
 async function createTermin(){
   var title=document.getElementById("new-title").value.trim();
   if(!title){ document.getElementById("new-title").style.borderColor="var(--red)"; return; }
   document.getElementById("new-title").style.borderColor="";
-  var noDate=document.getElementById("new-no-date").checked===true;
-  var dateVal=noDate?"":document.getElementById("new-date").value;
-  if(!noDate&&dateVal&&new Date(dateVal)<new Date()){ document.getElementById("new-date").style.borderColor="var(--red)"; alert("Datum liegt in der Vergangenheit."); return; }
+  var dateVal=document.getElementById("new-date").value;
+  if(dateVal&&new Date(dateVal)<new Date()){ document.getElementById("new-date").style.borderColor="var(--red)"; alert("Datum liegt in der Vergangenheit."); return; }
   document.getElementById("new-date").style.borderColor="";
-  var sucheOn=document.getElementById("new-suche-on").checked===true;
-  var limitOn=document.getElementById("new-limit-on").checked===true;
-  var limitVal=parseInt(document.getElementById("new-limit-val").value)||0;
-  if(sucheOn&&(!limitOn||limitVal<1)){
-    document.getElementById("new-limit-on").closest("div.toggle-wrap")||document.getElementById("new-limit-on");
-    document.getElementById("new-limit-on").checked=true;
-    document.getElementById("new-limit-wrap").style.display="block";
-    document.getElementById("new-limit-val").style.borderColor="var(--red)";
-    document.getElementById("new-limit-val").focus();
-    toast("⚠️ Bitte zuerst ein Teilnehmerlimit festlegen.");
-    return;
-  }
-  document.getElementById("new-limit-val").style.borderColor="";
   var t={
     id:state.nextId++, title:title,
-    date:dateVal,
+    date:document.getElementById("new-date").value,
     ort:document.getElementById("new-ort").value.trim(),
     creator:currentName,
     offen:document.getElementById("new-offen").checked!==false,
     privat:document.getElementById("new-privat").checked===true,
-    mapsUrl:document.getElementById("new-maps").value.trim(),
-    limitOn:limitOn,
-    limitVal:limitVal,
+    limitOn:document.getElementById("new-limit-on").checked===true,
+    limitVal:parseInt(document.getElementById("new-limit-val").value)||0,
     voteOn:document.getElementById("new-vote-on").checked===true,
     diceOn:document.getElementById("new-dice-on").checked===true,
-    mitspielerGesucht:sucheOn,
     personen:[currentName], spiele:[], chat:[], qrcodes:[],
     ts:new Date().toISOString()
   };
   state.termine.unshift(t);
   closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89"); await saveState();
-  // Global notifications
-  var dtStr=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
-  sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3>"+(t.date?"<p>🗓 <strong>"+dtStr+"</strong></p>":"")+(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")+"<p>Erstellt von <strong>"+h(t.creator)+"</strong></p></div>");
 }
 async function deleteTermin(tid){
   var t=getT(tid); if(!t) return;
@@ -1934,7 +1216,6 @@ function openEditModal(tid){
   document.getElementById("edit-title").value=t.title||"";
   document.getElementById("edit-date").value=t.date||"";
   document.getElementById("edit-ort").value=t.ort||"";
-  document.getElementById("edit-maps").value=t.mapsUrl||"";
   document.getElementById("edit-offen").checked=t.offen!==false;
   document.getElementById("edit-privat").checked=!!t.privat;
   var limitOn=!!t.limitOn;
@@ -1943,43 +1224,23 @@ function openEditModal(tid){
   document.getElementById("edit-limit-val").value=t.limitVal||"";
   document.getElementById("edit-vote-on").checked=!!t.voteOn;
   document.getElementById("edit-dice-on").checked=!!t.diceOn;
-  document.getElementById("edit-suche-on").checked=!!t.mitspielerGesucht;
   document.getElementById("edit-modal").style.display="flex";
 }
 function closeEditModal(){ document.getElementById("edit-modal").style.display="none"; editTid=null; }
 async function saveEdit(){
   var t=getT(editTid); if(!t) return;
   if(!isAdmin&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
-  saveLock=true; // prevent poll from overwriting changes mid-save
   t.title=document.getElementById("edit-title").value.trim()||t.title;
   t.date=document.getElementById("edit-date").value;
   t.ort=document.getElementById("edit-ort").value.trim();
-  t.mapsUrl=document.getElementById("edit-maps").value.trim();
   t.offen=document.getElementById("edit-offen").checked;
   t.privat=document.getElementById("edit-privat").checked;
   t.limitOn=document.getElementById("edit-limit-on").checked;
   t.limitVal=parseInt(document.getElementById("edit-limit-val").value)||0;
-  t.voteOn=document.getElementById("edit-vote-on").checked===true;
-  t.diceOn=document.getElementById("edit-dice-on").checked===true;
-  var sucheOnEdit=document.getElementById("edit-suche-on").checked;
-  if(sucheOnEdit&&(!t.limitOn||t.limitVal<1)){
-    document.getElementById("edit-limit-on").checked=true;
-    document.getElementById("edit-limit-wrap").style.display="block";
-    document.getElementById("edit-limit-val").style.borderColor="var(--red)";
-    document.getElementById("edit-limit-val").focus();
-    toast("⚠️ Bitte zuerst ein Teilnehmerlimit festlegen.");
-    saveLock=false;
-    return;
-  }
-  document.getElementById("edit-limit-val").style.borderColor="";
-  t.mitspielerGesucht=sucheOnEdit;
+  t.voteOn=document.getElementById("edit-vote-on").checked;
+  t.diceOn=document.getElementById("edit-dice-on").checked;
   var savedEditTid=editTid;
-  closeEditModal();
-  renderTermine(); // full rebuild guarantees voteOn/diceOn changes always reflect correctly
-  toast("Gespeichert \u2713");
-  await saveState();
-  var tRef=getT(savedEditTid);
-  if(tRef) sendNotifToSubscribers(tRef,"✏️ Termin wurde geändert","<span class='chip'>"+h(currentName)+"</span> hat den Termin aktualisiert.");
+  closeEditModal(); rerenderCard(savedEditTid); toast("Gespeichert \u2713"); await saveState();
 }
 
 // ── Termine: Render ──
@@ -2095,23 +1356,6 @@ function updateJoinBtn(tid){
   var el=document.getElementById("termin-"+tid); if(!el) return;
   var alreadyIn=currentName&&t.personen.includes(currentName);
   var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
-  var suchActive=t.mitspielerGesucht&&!isFull;
-  // Update suche highlight class
-  el.classList.toggle("mitspieler-suche",!!suchActive);
-  // Update banner
-  var banner=el.querySelector(".suche-banner");
-  var freePlätze=suchActive&&t.limitVal>0?(t.limitVal-t.personen.length):0;
-  if(suchActive){
-    if(!banner){
-      var b=document.createElement("div"); b.className="suche-banner";
-      b.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei!";
-      el.insertBefore(b,el.firstChild);
-    } else {
-      banner.innerHTML="&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei!";
-    }
-  } else {
-    if(banner) banner.remove();
-  }
   var joinHtml="";
   if(currentName&&!alreadyIn){
     if(isFull){
@@ -2134,25 +1378,17 @@ function updateJoinBtn(tid){
 function buildTerminCard(t, open){
   var canManage=isAdmin||t.creator===currentName;
   var alreadyIn=currentName&&t.personen.includes(currentName);
-  var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
-  var suchActive=t.mitspielerGesucht&&!isFull;
-  var freePlätze=suchActive&&t.limitVal>0?(t.limitVal-t.personen.length):0;
 
   // Chips
   var chips="";
   if(t.date) chips+="<span class='chip'>&#128197; "+fmtDate(t.date)+"</span>";
-  else chips+="<span class='chip' style='color:#0369a1;background:#f0f9ff;border-color:#bae6fd'>&#128197; Datum noch offen</span>";
-  if(t.ort){
-    var mapsTarget=t.mapsUrl||("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(t.ort));
-    chips+="<a href='"+h(mapsTarget)+"' target='_blank' onclick='event.stopPropagation()' style='text-decoration:none'><span class='chip' style='color:#0369a1;background:#f0f9ff;border-color:#bae6fd;cursor:pointer' title='In Google Maps öffnen'>&#128205; "+h(t.ort)+" <span style='font-size:.65rem;opacity:.7'>🗺</span></span></a>";
-  }
+  if(t.ort)  chips+="<span class='chip'>&#128205; "+h(t.ort)+"</span>";
   chips+="<span class='chip chip-green'>&#128101; "+t.personen.length+(t.limitOn&&t.limitVal?" / "+t.limitVal:"")+" dabei</span>";
   chips+="<span class='chip'>&#127918; "+t.spiele.length+" Spiele</span>";
   if((t.chat||[]).length) chips+="<span class='chip'>&#128172; "+t.chat.length+"</span>";
   if(t.offen!==false) chips+="<span class='chip' style='color:var(--green);background:var(--green-lt);border-color:var(--green-bd)'>&#129001; Spielvorschl\u00e4ge</span>";
   else chips+="<span class='chip' style='color:var(--gold);background:#fffbeb;border-color:#fde68a'>&#128204; Festgelegt</span>";
   if(t.privat) chips+="<span class='chip' style='color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe'>&#128274; Privat</span>";
-  if(suchActive) chips+="<span class='chip chip-suche'>&#128269; "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei</span>";
 
   // Personen
   var persHtml=t.personen.map(function(p){
@@ -2191,80 +1427,14 @@ function buildTerminCard(t, open){
   // Member picker — only for creator/admin on private termins
   var picker="";
   if(t.privat&&(isAdmin||t.creator===currentName)){
-    picker="<div id='member-picker-"+t.id+"' style='background:var(--bg);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden'>"
-      +"<div onclick='toggleMemberPicker("+t.id+")' style='display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;user-select:none'>"
-      +"<div style='font-size:.75rem;color:var(--text-3);font-weight:700'>&#128100; Mitglied hinzuf\u00fcgen</div>"
-      +"<span id='member-picker-arrow-"+t.id+"' style='font-size:.7rem;color:var(--text-3);transition:transform .2s;display:inline-block'>&#9650;</span>"
-      +"</div>"
-      +"<div id='member-picker-body-"+t.id+"' style='padding:0 10px 10px'>"
+    picker="<div id='member-picker-"+t.id+"' style='background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px'>"
+      +"<div style='font-size:.75rem;color:var(--text-3);margin-bottom:8px;font-weight:600'>&#128100; Mitglied hinzuf\u00fcgen</div>"
       +"<div id='member-list-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;max-height:140px;overflow-y:auto'></div>"
       +"<div style='display:flex;gap:6px;margin-top:4px'>"
       +"<input class='input-field' id='pi-"+t.id+"' placeholder='Gast ohne Account ...' onkeydown='if(event.keyCode===13)addPerson("+t.id+")' style='flex:1;font-size:.82rem'>"
       +"<button class='btn btn-outline btn-sm' onclick='addPerson("+t.id+")'>+ Hinzuf\u00fcgen</button>"
       +"</div>"
-      +"</div>"
       +"</div>";
-  }
-
-  // Date Poll section (only when no date set)
-  var datePollHtml="";
-  if(!t.date){
-    var dp=t.datePoll||{active:false,slots:[]};
-    var isCreator=canManage;
-    var isParticipant=t.personen.includes(currentName)||isAdmin;
-    if(dp.active&&dp.slots&&dp.slots.length){
-      var slotsHtml=dp.slots.map(function(slot){
-        var myVote=slot.votes&&slot.votes[currentName];
-        var jaCount=Object.values(slot.votes||{}).filter(function(v){ return v==="ja"; }).length;
-        var vllCount=Object.values(slot.votes||{}).filter(function(v){ return v==="vll"; }).length;
-        var total=t.personen.length||1;
-        var pct=Math.round((jaCount/total)*100);
-        var cls=myVote==="ja"?" dp-yes":myVote==="vll"?" dp-maybe":"";
-        var dtFmt=new Date(slot.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
-        var voterNames=Object.entries(slot.votes||{}).map(function(e){
-          var icon=e[1]==="ja"?"✅":e[1]==="vll"?"🤔":"❌";
-          return icon+" "+h(e[0]);
-        }).join("  ");
-        var confirmBtn=isCreator?"<button class='btn btn-sm' style='background:var(--green-lt);color:var(--green);border-color:var(--green-bd);margin-top:6px' onclick='confirmDateSlot("+t.id+",\""+slot.id+"\")'>✓ Dieses Datum bestätigen</button>":"";
-        var delBtn=isCreator?"<button onclick='removeDateSlot("+t.id+",\""+slot.id+"\")' style='background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.8rem;padding:2px 4px;margin-left:4px'>✕</button>":"";
-        var voteRow=isParticipant?"<div class='dpoll-vote-row'>"
-          +"<button class='dpoll-vbtn v-ja"+(myVote==="ja"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"ja\")'>✅ Ja <span style='opacity:.6'>("+jaCount+")</span></button>"
-          +"<button class='dpoll-vbtn v-vll"+(myVote==="vll"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"vll\")'>🤔 Vielleicht <span style='opacity:.6'>("+vllCount+")</span></button>"
-          +"<button class='dpoll-vbtn v-nein"+(myVote==="nein"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"nein\")'>❌ Nein</button>"
-          +"</div>":"";
-        return "<div class='dpoll-slot"+cls+"'>"
-          +"<div style='display:flex;align-items:flex-start;justify-content:space-between'>"
-          +"<div style='font-weight:700;font-size:.88rem'>📅 "+dtFmt+"</div>"+delBtn+"</div>"
-          +"<div class='dpoll-bar'><div class='dpoll-bar-fill' style='width:"+pct+"%'></div></div>"
-          +(voterNames?"<div style='font-size:.68rem;color:var(--text-3);margin-top:4px'>"+voterNames+"</div>":"")
-          +voteRow+confirmBtn
-          +"</div>";
-      }).join("");
-      var addSlotForm=isCreator
-        ? "<div style='display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center'>"
-          +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem'>"
-          +"<button class='btn btn-outline btn-sm' onclick='addDateSlot("+t.id+")'>+ Vorschlag hinzufügen</button>"
-          +"<button class='btn btn-ghost btn-sm' style='color:var(--red)' onclick='closeDatePoll("+t.id+")'>Abstimmung schließen</button>"
-          +"</div>" : "";
-      datePollHtml="<div class='lbl' style='margin-top:18px'>📅 Terminabstimmung</div>"
-        +"<div class='dpoll-wrap'>"+slotsHtml+addSlotForm+"</div>";
-    } else if(!dp.active&&isCreator){
-      datePollHtml="<div style='margin:14px 0 6px'>"
-        +"<button class='btn btn-outline btn-sm' onclick='startDatePoll("+t.id+")'>📅 Terminabstimmung starten</button>"
-        +"</div>";
-    } else if(dp.active&&isCreator){
-      // active but no slots yet
-      datePollHtml="<div class='lbl' style='margin-top:18px'>📅 Terminabstimmung</div>"
-        +"<div class='dpoll-wrap'><div style='font-size:.82rem;color:var(--text-3);margin-bottom:8px'>Noch keine Vorschläge. Füge Termine hinzu:</div>"
-        +"<div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center'>"
-        +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem'>"
-        +"<button class='btn btn-outline btn-sm' onclick='addDateSlot("+t.id+")'>+ Vorschlag hinzufügen</button>"
-        +"</div></div>";
-    } else if(isParticipant&&dp.active){
-      datePollHtml="<div style='margin:10px 0;font-size:.82rem;color:var(--text-3);background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 12px'>📅 Der Ersteller plant gerade die Terminabstimmung.</div>";
-    } else if(!isCreator){
-      datePollHtml="<div style='margin:10px 0;font-size:.82rem;color:var(--text-3);background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 12px'>📅 Datum noch nicht festgelegt.</div>";
-    }
   }
 
   // Chat
@@ -2273,6 +1443,7 @@ function buildTerminCard(t, open){
   // QR codes
   var qrHtml=buildQrList(t);
 
+  var isFull=t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal;
   var joinBtn="";
   if(currentName&&!alreadyIn){
     if(isFull){
@@ -2282,8 +1453,7 @@ function buildTerminCard(t, open){
     }
   }
 
-  return "<div class='termin-item"+(open?" open":"")+(suchActive?" mitspieler-suche":"")+"' id='termin-"+t.id+"'>"
-    +(suchActive?"<div class='suche-banner'>&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei!</div>":"")
+  return "<div class='termin-item"+(open?" open":"")+"' id='termin-"+t.id+"'>"
     +"<div class='termin-header' onclick='toggleTermin("+t.id+")'>"
     +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
     +"<div class='termin-summary'>"
@@ -2292,22 +1462,12 @@ function buildTerminCard(t, open){
     +"<div class='chips-row'>"+chips+"</div>"
     +"</div><span class='termin-chevron'>&#9660;</span></div>"
     +"<div class='termin-body'>"
-    +"<div style='display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px;flex-wrap:wrap'>"
+    +"<div style='display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px'>"
     +"<button class='btn btn-outline btn-sm' onclick='exportIcal("+t.id+")'>&#128197; Exportieren</button>"
-    +(t.ort?(function(){
-        var url=t.mapsUrl||("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(t.ort));
-        return "<a href='"+h(url)+"' target='_blank' class='btn btn-outline btn-sm' style='text-decoration:none;color:#0369a1;border-color:#bae6fd;background:#f0f9ff'>🗺 Maps</a>";
-      })():"")
-    +(currentNotifEmail?(function(){
-        var subs=t.subscribers||[];
-        var isSubscribed=subs.some(function(s){ return s.name===currentName; });
-        return "<button class='btn btn-sm' onclick='toggleTerminSubscribe("+t.id+")' style='background:"+(isSubscribed?"#f0fdf4":"var(--surface2)")+";color:"+(isSubscribed?"var(--green)":"var(--text-2)")+";border-color:"+(isSubscribed?"var(--green-bd)":"var(--border)")+";'>"+(isSubscribed?"🔔 Abonniert":"🔔 Abonnieren")+"</button>";
-      })():"")
     +mgmtBtns+"</div>"
     +"<div class='lbl'>Teilnehmer</div>"+joinBtn
     +"<div class='persons-wrap'>"+(persHtml||"<span style='font-size:.8rem;color:var(--text-3)'>Noch niemand.</span>")+"</div>"
     +picker
-    +datePollHtml
     +"<hr class='divider'>"
     +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:12px'>"
     +"<div class='lbl' style='margin-bottom:0'>Spiele</div></div>"
@@ -2380,21 +1540,14 @@ function buildSpielCard(t,s){
   var maxSc=Math.max.apply(null,t.spiele.map(function(x){ return score(x); }));
   var isTop=t.voteOn&&ups>0&&sc===maxSc&&sc>0;
   var pr=s.image?proxyImg(s.image):null;
-  var sIdx=t.spiele.indexOf(s);
-  var canDel=isAdmin||t.personen.includes(currentName)||s.vorschlaeger===currentName||t.creator===currentName||myAddedSpiele[s.id];
-  var delBtn=canDel?"<button style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;font-size:.85rem;line-height:1' onclick='deleteSpielByIndex("+t.id+","+sIdx+")' title='Entfernen'>&#128465;</button>":"";
+  var canDel=isAdmin||myAddedSpiele[s.id]||!s.vorschlaeger||s.vorschlaeger===currentName||t.creator===currentName;
+  var delBtn=canDel?"<button style='background:#fef2f2;color:var(--red);border:1px solid #fca5a5;border-radius:8px;padding:5px 8px;cursor:pointer;font-size:.85rem;line-height:1' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='deleteSpiel(this.dataset.tid,this.dataset.sid)' title='Entfernen'>&#128465;</button>":"";
   var imgHtml=pr
     ? "<img class='spiel-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'>"
     +"<div class='spiel-img-ph' style='display:none'>&#127922;</div>"
     : "<div class='spiel-img-ph'>&#127922;</div>";
   var isDicePick=rolledSpiel[t.id]&&rolledSpiel[t.id]===s.id;
-  // Owners from sammlung
-  var owners=getSammlungOwners(s.bggId,t.personen);
-  var ownerHtml=owners.length?"<div style='display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;margin-bottom:2px'>"
-    +owners.map(function(p){ return "<span style='display:inline-flex;align-items:center;gap:3px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:1px 6px;font-size:.65rem;color:var(--green);font-weight:600'>"
-      +"<div class='av av-sm' style='background:"+nameColor(p)+";width:14px;height:14px;font-size:.45rem'>"+nameInit(p)+"</div>"+h(p)
-      +"</span>"; }).join("")+"</div>":"";
-  var showVote=!!t.voteOn;
+  var showVote=!t.privat&&t.voteOn===true;
   var voter=showVote&&currentName&&t.personen.includes(currentName)?currentName:"";
   var myVote=voter&&s.votes&&s.votes[voter]!==undefined?s.votes[voter]:null;
   var voteHtml="";
@@ -2415,10 +1568,9 @@ function buildSpielCard(t,s){
   return "<div class='spiel-card"+(isTop?" top-pick":"")+(isDicePick?" dice-pick":"")+"'>"+imgHtml
     +"<div class='spiel-info'>"
     +"<div class='spiel-name'>"+(isTop?"&#11088; ":"")+(isDicePick?"&#127922; ":"")+h(s.name)+"</div>"
-    +"<div class='spiel-sub'>"+(s.players?s.players+" &middot; ":"")+(s.complexity?"Kompl. "+s.complexity:"")+"</div>"
+    +"<div class='spiel-sub'>"+(s.year?s.year+" &middot; ":"")+(s.players?s.players+" &middot; ":"")+(s.complexity?"Kompl. "+s.complexity:"")+"</div>"
     +voteHtml
-    +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; hinzugef\u00fcgt von "+h(s.vorschlaeger)+"</div>":"")
-    +ownerHtml
+    +(s.vorschlaeger?"<div style='font-size:.7rem;color:var(--text-3);margin-top:4px'>&#128100; "+h(s.vorschlaeger)+"</div>":"")
     +"<div style='display:flex;align-items:center;justify-content:space-between;margin-top:6px'>"
     +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='display:inline-flex;align-items:center;gap:4px;font-size:.72rem;color:var(--blue);text-decoration:none'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:13px;height:13px;border-radius:2px' onerror='this.style.display=\"none\"'> BoardGameGeek</a>":"<span></span>")
     +delBtn
@@ -2427,15 +1579,6 @@ function buildSpielCard(t,s){
 }
 
 // ── Personen ──
-function toggleMemberPicker(tid){
-  var body=document.getElementById("member-picker-body-"+tid);
-  var arrow=document.getElementById("member-picker-arrow-"+tid);
-  if(!body) return;
-  var isOpen=body.style.display!=="none";
-  body.style.display=isOpen?"none":"block";
-  if(arrow) arrow.style.transform=isOpen?"rotate(180deg)":"rotate(0deg)";
-}
-
 async function addSelf(tid){
   var t=getT(tid); if(!t||!currentName) return;
   if(t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal){ toast("Der Termin ist leider voll."); return; }
@@ -2470,25 +1613,17 @@ async function loadMemberPicker(tid){
   listEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Lade\u2026</span>";
   if(!userCache){
     try{
-      // Try with display_name first, fall back to just user_name if column missing
-      var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name&order=user_name",{headers:authHdrs()});
-      if(!r.ok) r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
+      var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
       if(!r.ok) throw new Error("HTTP "+r.status);
       var rows=await r.json();
+      userCache=[];
       var seen={};
-      function normKey(n){ return n.toLowerCase().replace(/[^a-z0-9äöüß]/g,""); }
       rows.forEach(function(row){
-        var name=(row.display_name&&row.display_name.trim())||row.user_name;
+        var name=row.user_name;
         if(!name||!name.length) return;
-        var key=normKey(name);
-        if(!key) return;
-        if(!seen[key]){
-          seen[key]=name;
-        } else if(name.length>seen[key].length){
-          seen[key]=name;
-        }
+        var key=name.toLowerCase().trim().replace(/[\s\-_.]+/g,"");
+        if(!seen[key]){ seen[key]=true; userCache.push(name); }
       });
-      userCache=Object.values(seen).sort(function(a,b){ return a.localeCompare(b,"de"); });
     }catch(e){
       listEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>";
       return;
@@ -2517,17 +1652,10 @@ function openAddModal(tid){
   document.getElementById("bgg-search-status").textContent="";
   document.getElementById("as-drop").style.display="none";
   document.getElementById("add-modal").style.display="flex";
-  // Reposition dropdown on scroll/resize
-  var modal=document.getElementById("add-modal");
-  modal._reposition=function(){ positionDrop(); };
-  window.addEventListener("resize",modal._reposition);
-  modal.addEventListener("scroll",modal._reposition);
 }
 function closeAddModal(){
   document.getElementById("add-modal").style.display="none";
   document.getElementById("as-drop").style.display="none";
-  var modal=document.getElementById("add-modal");
-  if(modal._reposition){ window.removeEventListener("resize",modal._reposition); }
   addTid=null;
 }
 function setAddTab(tab){
@@ -2575,15 +1703,7 @@ async function bggSearch(q){
     renderAsDrop();
   }catch(e){ status.textContent="Fehler: "+e.message; }
 }
-function positionDrop(){
-  var inp=document.getElementById("bgg-search-input");
-  var drop=document.getElementById("as-drop");
-  if(!inp||!drop) return;
-  var r=inp.getBoundingClientRect();
-  drop.style.top=(r.bottom+4)+"px";
-  drop.style.left=r.left+"px";
-  drop.style.width=r.width+"px";
-}
+function positionDrop(){ /* no-op: dropdown is position:absolute within .as-wrap */ }
 function renderAsDrop(){
   var drop=document.getElementById("as-drop");
   if(!asResults.length){ drop.style.display="none"; return; }
@@ -2670,7 +1790,6 @@ async function confirmAddSpiel(){
     spiel=Object.assign({id:"b"+Date.now(),votes:{}},window._pendingSpiel);
   }
   spiel.vorschlaeger=currentName;
-  spiel.ts=new Date().toISOString();
   if(spiel.bggId&&t.spiele.some(function(s){ return s.bggId&&s.bggId===spiel.bggId; })){
     errEl.textContent="Spiel bereits vorhanden."; errEl.style.display="block"; return;
   }
@@ -2681,25 +1800,12 @@ async function confirmAddSpiel(){
   updateSpielSection(savedTid);
   toast("Spiel hinzugef\u00fcgt \u2713");
   await saveState();
-  var tRef=getT(savedTid);
-  if(tRef) sendNotifToSubscribers(tRef,"🎮 Neues Spiel vorgeschlagen","<span class='chip'>"+h(currentName)+"</span> schlug <strong>"+h(spiel.name)+"</strong> vor.");
 }
-async function deleteSpielByIndex(tid,idx){
-  tid=parseInt(tid); idx=parseInt(idx);
-  var t=getT(tid); if(!t) return;
-  if(!t.spiele[idx]){ toast("Spiel nicht gefunden."); return; }
-  t.spiele.splice(idx,1);
-  updateSpielSection(tid);
-  saveState();
-  toast("Spiel entfernt.");
-}
-
 async function deleteSpiel(tid,sid){
   tid=parseInt(tid);
   var t=getT(tid); if(!t) return;
   var s=t.spiele.find(function(x){ return x.id===sid; }); if(!s) return;
-  var canDelete=isAdmin||s.vorschlaeger===currentName||t.creator===currentName||myAddedSpiele[s.id]||t.personen.includes(currentName);
-  if(!canDelete){ toast("Keine Berechtigung."); return; }
+  if(!isAdmin&&s.vorschlaeger!==currentName&&t.creator!==currentName){ toast("Keine Berechtigung."); return; }
   t.spiele=t.spiele.filter(function(x){ return x.id!==sid; });
   updateSpielSection(tid);
   saveState();
@@ -2745,56 +1851,6 @@ async function sendChat(tid){
   var cb=document.getElementById("cb-"+tid);
   if(cb){ cb.innerHTML=buildChatMsgs(t); cb.scrollTop=cb.scrollHeight; }
   saveState();
-  sendNotifToSubscribers(t,"💬 Neue Chat-Nachricht","<span class='chip'>"+h(currentName)+"</span> schrieb: <em>"+h(text.slice(0,200))+"</em>");
-}
-
-// ── Date Poll ──
-function startDatePoll(tid){
-  var t=getT(tid); if(!t) return;
-  if(!t.datePoll) t.datePoll={active:false,slots:[]};
-  t.datePoll.active=true;
-  if(!t.datePoll.slots) t.datePoll.slots=[];
-  rerenderCard(tid); saveState(); toast("Terminabstimmung gestartet 📅");
-}
-function closeDatePoll(tid){
-  var t=getT(tid); if(!t||!t.datePoll) return;
-  t.datePoll.active=false;
-  rerenderCard(tid); saveState(); toast("Abstimmung geschlossen.");
-}
-function addDateSlot(tid){
-  var t=getT(tid); if(!t) return;
-  var inp=document.getElementById("dpoll-new-"+tid); if(!inp||!inp.value){ toast("Bitte ein Datum auswählen."); return; }
-  var d=new Date(inp.value);
-  if(d<new Date()){ toast("Datum liegt in der Vergangenheit."); return; }
-  if(!t.datePoll) t.datePoll={active:true,slots:[]};
-  // Prevent duplicates
-  if(t.datePoll.slots.some(function(s){ return s.date===inp.value; })){ toast("Dieser Vorschlag existiert bereits."); return; }
-  t.datePoll.slots.push({id:"ds"+Date.now(),date:inp.value,votes:{}});
-  inp.value="";
-  rerenderCard(tid); saveState(); toast("Vorschlag hinzugefügt ✓");
-}
-function removeDateSlot(tid,sid){
-  var t=getT(tid); if(!t||!t.datePoll) return;
-  t.datePoll.slots=t.datePoll.slots.filter(function(s){ return s.id!==sid; });
-  rerenderCard(tid); saveState();
-}
-function voteDateSlot(tid,sid,val){
-  var t=getT(tid); if(!t||!t.datePoll||!currentName) return;
-  if(!t.personen.includes(currentName)){ toast("Du musst dabei sein um abzustimmen!"); return; }
-  var slot=t.datePoll.slots.find(function(s){ return s.id===sid; }); if(!slot) return;
-  if(!slot.votes) slot.votes={};
-  // Toggle: same vote again removes it
-  if(slot.votes[currentName]===val) delete slot.votes[currentName];
-  else slot.votes[currentName]=val;
-  rerenderCard(tid); saveState();
-}
-async function confirmDateSlot(tid,sid){
-  var t=getT(tid); if(!t||!t.datePoll) return;
-  var slot=t.datePoll.slots.find(function(s){ return s.id===sid; }); if(!slot) return;
-  t.date=slot.date;
-  t.datePoll.active=false;
-  t.datePoll.slots=[];
-  rerenderCard(tid); toast("Datum festgelegt! 🎉"); await saveState();
 }
 
 // ── ICS ──
@@ -2887,54 +1943,21 @@ function renderZusagen(){
   if(!mine.length){ list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Zusagen.</p></div>"; return; }
   var now=new Date();
   list.innerHTML=mine.map(function(t){
-    var dt=t.date?new Date(t.date):null;
-    var past=dt&&dt<now;
+    var dt=t.date?new Date(t.date):null; var past=dt&&dt<now;
     var diff=dt?Math.ceil((dt-now)/(1000*60*60*24)):null;
     var badge="";
     if(diff===0) badge="<span style='background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#128293; Heute!</span>";
     else if(diff===1) badge="<span style='background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#9200; Morgen!</span>";
     else if(diff&&diff>0) badge="<span style='background:#eff6ff;color:#3b82f6;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>in "+diff+" Tagen</span>";
-    var exportBtn=dt
-      ? "<span onclick='exportIcalSingle("+t.id+");return false;' style='display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:5px 11px;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0' title='.ics herunterladen'>&#128197; .ics</span>"
-      : "";
-    return "<div style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;opacity:"+(past?".6":"1")+"'>"
-      +"<div onclick='jumpToTermin("+t.id+")' style='background:"+(past?"#9ca3af":"var(--blue)")+";padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer'>"
-      +"<div style='color:#fff;flex:1;min-width:0'>"
-      +(dt?"<div style='font-size:.72rem;opacity:.85'>"+dt.toLocaleDateString("de-DE",{weekday:"long"})+"</div>"
-          +"<div style='font-size:1.1rem;font-weight:800'>"+dt.toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"})+"</div>"
-          +"<div style='font-size:.8rem;opacity:.9'>"+dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr</div>"
-        :"<div style='font-size:.9rem;font-weight:600'>Kein Datum</div>")
-      +"</div>"
-      +"<div style='display:flex;align-items:center;gap:8px;flex-shrink:0'>"+badge+exportBtn+"</div>"
-      +"</div>"
-      +"<div onclick='jumpToTermin("+t.id+")' style='padding:12px 16px;cursor:pointer'>"
-      +"<div style='font-weight:700;font-size:.95rem;margin-bottom:3px'>"+h(t.title)+"</div>"
+    return "<div onclick='jumpToTermin("+t.id+")' style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;cursor:pointer;opacity:"+(past?".6":"1")+"'>"
+      +"<div style='background:"+(past?"#9ca3af":"var(--blue)")+";padding:12px 16px;display:flex;justify-content:space-between;align-items:center'>"
+      +"<div style='color:#fff'>"
+      +(dt?"<div style='font-size:.72rem;opacity:.85'>"+dt.toLocaleDateString("de-DE",{weekday:"long"})+"</div><div style='font-size:1.1rem;font-weight:800'>"+dt.toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"})+"</div><div style='font-size:.8rem;opacity:.9'>"+dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr</div>":"<div style='font-size:.9rem;font-weight:600'>Kein Datum</div>")
+      +"</div>"+badge+"</div>"
+      +"<div style='padding:12px 16px'><div style='font-weight:700;font-size:.95rem;margin-bottom:3px'>"+h(t.title)+"</div>"
       +(t.ort?"<div style='font-size:.78rem;color:var(--text-3)'>&#128205; "+h(t.ort)+"</div>":"")
-      +"<div style='font-size:.72rem;color:var(--text-3);margin-top:3px'>&#128101; "+t.personen.length+" dabei &middot; &#127918; "+t.spiele.length+" Spiele</div>"
-      +"</div></div>";
+      +"<div style='font-size:.72rem;color:var(--text-3);margin-top:3px'>&#128101; "+t.personen.length+" dabei &middot; &#127918; "+t.spiele.length+" Spiele</div></div></div>";
   }).join("");
-}
-
-function exportIcalSingle(tid){
-  var t=getT(tid); if(!t||!t.date){ toast("Dieser Termin hat kein Datum."); return; }
-  function fmt(d){ return d.toISOString().replace(/[-:]/g,"").replace(".000",""); }
-  var s=new Date(t.date); var e=new Date(s.getTime()+3*60*60*1000);
-  var ics="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nCALSCALE:GREGORIAN\r\nPRODID:-//Die Meeples//DE\r\n"
-    +"BEGIN:VEVENT\r\nDTSTAMP:"+fmt(new Date())+"\r\nDTSTART:"+fmt(s)+"\r\nDTEND:"+fmt(e)+"\r\nSUMMARY:"+t.title+"\r\nLOCATION:"+(t.ort||"")+"\r\nEND:VEVENT\r\nEND:VCALENDAR";
-  var a=document.createElement("a"); a.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics); a.download=t.title+".ics"; a.click();
-}
-
-function exportAllZusagen(){
-  var mine=state.termine.filter(function(t){ return t.personen&&t.personen.includes(currentName)&&t.date; });
-  if(!mine.length){ toast("Keine Termine mit Datum vorhanden."); return; }
-  function fmt(d){ return d.toISOString().replace(/[-:]/g,"").replace(".000",""); }
-  var events=mine.map(function(t){
-    var s=new Date(t.date); var e=new Date(s.getTime()+3*60*60*1000);
-    return "BEGIN:VEVENT\r\nDTSTAMP:"+fmt(new Date())+"\r\nDTSTART:"+fmt(s)+"\r\nDTEND:"+fmt(e)+"\r\nSUMMARY:"+t.title+"\r\nLOCATION:"+(t.ort||"")+"\r\nEND:VEVENT";
-  }).join("\r\n");
-  var ics="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nCALSCALE:GREGORIAN\r\nPRODID:-//Die Meeples//DE\r\n"+events+"\r\nEND:VCALENDAR";
-  var a=document.createElement("a"); a.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics); a.download="Meine-Zusagen.ics"; a.click();
-  toast("&#128197; "+mine.length+" Termin"+(mine.length!==1?"e":"")+" exportiert!");
 }
 
 // ── Marktplatz ──
@@ -2965,7 +1988,7 @@ async function renderMarkt(reload){
       +(isSeller&&interessenten.length?"<div style='font-size:.75rem;color:var(--blue);margin-bottom:8px;background:#eff6ff;padding:6px 10px;border-radius:6px'>&#128587; Interesse von: "+interessenten.map(h).join(", ")+"</div>":"")
       +"<div style='display:flex;gap:6px;flex-wrap:wrap;margin-top:8px'>"
       +interestBtn
-      +(m.bgg?"<a href='"+h(m.bgg)+"' target='_blank' class='btn btn-outline btn-sm' title='BoardGameGeek' style='padding:6px 8px'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:16px;height:16px;border-radius:3px;display:block' onerror='this.outerHTML=\"BGG\"'></a>":"")
+      +(m.bgg?"<a href='"+h(m.bgg)+"' target='_blank' class='btn btn-outline btn-sm'>BGG</a>":"")
       +"<button class='btn btn-ghost btn-sm' onclick='openMarktChat("+m.id+")'>&#128172; Chat</button>"
       +(!m.sold&&isSeller?"<button class='btn btn-sm' style='background:var(--green-lt);color:var(--green);border-color:var(--green-bd)' onclick='markSold("+m.id+")'>&#10003; Verkauft</button>":"")
       +(!m.sold&&(isSeller||isAdmin)?"<button class='btn btn-outline btn-sm' onclick='openEditInseratModal("+m.id+")'>&#9999;&#65039; Bearbeiten</button>":"")
@@ -3048,9 +2071,6 @@ async function createInserat(){
     renderMarkt(false);
     toast("Inserat erstellt \u2713");
     await saveMarkt();
-    // Global notifications
-    var desc=document.getElementById("markt-desc")?document.getElementById("markt-desc").value.trim():"";
-    sendGlobalNotif("markt","Neues Angebot: "+titel,"<div class='section'><h3>🛒 "+h(titel)+"</h3><p>💶 <strong>"+preis.toFixed(2)+" €</strong></p>"+(desc?"<p>"+h(desc)+"</p>":"")+"<p>Verkäufer: <strong>"+h(currentName)+"</strong></p></div>");
   }
 }
 function submitInserat(){ createInserat(); }
@@ -3119,899 +2139,6 @@ async function sendMarktChat(){
   renderMarktChatBox(); saveMarkt();
 }
 
-// ── Nachrichten ──
-const SB_NACHR = "nachrichten";
-var nachrData = [];
-var nachrTab = "inbox";
-var konvPartner = null;
-var konvSubject = null;
-var composeToUser = null;
-
-var nachrSaveLock=false;
-
-async function loadNachrichten(){
-  try{
-    var r=await fetch(SB_URL+"/rest/v1/"+SB_NACHR+"?id=eq.1&select=data",{headers:authHdrs()});
-    if(!r.ok) return;
-    var rows=await r.json();
-    nachrData=(rows.length&&rows[0].data)?rows[0].data:[];
-  }catch(e){ nachrData=[]; }
-}
-async function saveNachrichten(){
-  nachrSaveLock=true;
-  try{
-    await fetch(SB_URL+"/rest/v1/"+SB_NACHR,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({id:1,data:nachrData})});
-  }catch(e){}
-  setTimeout(function(){ nachrSaveLock=false; },3000);
-}
-
-function nachrUnreadCount(){
-  return nachrData.filter(function(m){ return m.to===currentName&&!m.read; }).length;
-}
-function updateNachrBadge(){
-  var n=nachrUnreadCount();
-  var btn=document.getElementById("nachr-badge-btn");
-  if(btn){ btn.style.display=n>0?"flex":"none"; btn.textContent=n>9?"9+":String(n); }
-}
-
-// ── Open / Close main modal ──
-function openNachrModal(){
-  document.getElementById("nachr-modal").style.display="flex";
-  loadUserPickerList();
-  setNachrTab(nachrTab);
-  // On mobile: show sidebar first
-  var isMobile=window.innerWidth<=600;
-  if(isMobile){
-    document.getElementById("nachr-sidebar").classList.remove("mobile-hidden");
-    document.getElementById("nachr-panel").classList.add("mobile-hidden");
-  }
-  // Show placeholder chat view
-  showChatPlaceholder();
-}
-function closeNachrModal(){
-  document.getElementById("nachr-modal").style.display="none";
-  document.getElementById("user-picker-drop").style.display="none";
-}
-
-// ── Mobile panel switching ──
-function showConvList(){
-  var isMobile=window.innerWidth<=600;
-  if(!isMobile) return;
-  document.getElementById("nachr-sidebar").classList.remove("mobile-hidden");
-  document.getElementById("nachr-panel").classList.add("mobile-hidden");
-}
-function showChatPanel(){
-  var isMobile=window.innerWidth<=600;
-  if(!isMobile) return;
-  document.getElementById("nachr-sidebar").classList.add("mobile-hidden");
-  document.getElementById("nachr-panel").classList.remove("mobile-hidden");
-}
-function showChatPlaceholder(){
-  document.getElementById("nachr-compose-view").style.display="none";
-  document.getElementById("nachr-chat-view").style.display="flex";
-  document.getElementById("konv-partner").textContent="";
-  document.getElementById("konv-subject").textContent="";
-  document.getElementById("nachr-reply-bar").style.display="none";
-  document.getElementById("konv-chat-box").innerHTML="<div class='empty' style='margin:auto'><div class='empty-icon'>✉️</div><p>Wähle eine Konversation oder starte eine neue Nachricht.</p></div>";
-  // Clear active conv items
-  document.querySelectorAll(".nachr-conv-item.active").forEach(function(el){ el.classList.remove("active"); });
-}
-
-// ── Sidebar conversation list ──
-function setNachrTab(tab){
-  nachrTab=tab;
-  document.getElementById("ns-tab-inbox").classList.toggle("active",tab==="inbox");
-  document.getElementById("ns-tab-sent").classList.toggle("active",tab==="sent");
-  renderConvList();
-}
-
-function getThreads(){
-  // Show ALL conversations the current user is part of (sent or received)
-  var msgs=nachrData.filter(function(m){ return m.from===currentName||m.to===currentName; });
-  var threads={};
-  msgs.forEach(function(m){
-    var key=m.thread_id||m.id;
-    var partner=m.from===currentName?m.to:m.from;
-    if(!threads[key]){
-      threads[key]={partner:partner,subject:m.subject,latest:m,unread:0,count:0,key:key};
-    } else if(new Date(m.ts)>new Date(threads[key].latest.ts)){
-      threads[key].latest=m;
-    }
-    threads[key].count++;
-    if(!m.read&&m.to===currentName) threads[key].unread++;
-  });
-  return Object.values(threads).sort(function(a,b){ return new Date(b.latest.ts)-new Date(a.latest.ts); });
-}
-
-function renderConvList(){
-  var list=document.getElementById("nachr-conv-list"); if(!list) return;
-  var threads=getThreads();
-  if(!threads.length){
-    list.innerHTML="<div style='padding:20px 14px;font-size:.82rem;color:var(--text-3);text-align:center'>📭 Noch keine Nachrichten</div>";
-    return;
-  }
-  var now=new Date();
-  list.innerHTML=threads.map(function(t){
-    var dt=new Date(t.latest.ts);
-    var timeStr=dt.toDateString()===now.toDateString()
-      ? dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})
-      : dt.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"});
-    var isActive=konvPartner===t.partner&&konvSubject===t.subject;
-    return "<div class='nachr-conv-item"+(t.unread?" unread":"")+(isActive?" active":"")+"' onclick='openKonv(\""+h(t.partner)+"\",\""+h(t.subject)+"\")'>"
-      +"<div style='position:relative;flex-shrink:0'>"
-      +"<div class='av av-md' style='background:"+nameColor(t.partner)+"'>"+nameInit(t.partner)+"</div>"
-      +(t.unread?"<div style='position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--blue);border-radius:50%;border:2px solid var(--surface2)'></div>":"")
-      +"</div>"
-      +"<div style='flex:1;min-width:0'>"
-      +"<div style='display:flex;justify-content:space-between;align-items:center;gap:4px'>"
-      +"<div class='nachr-conv-name'>"+h(t.partner)+"</div>"
-      +"<div style='display:flex;align-items:center;gap:4px'>"
-      +"<div class='nachr-conv-time'>"+timeStr+"</div>"
-      +"<button onclick='event.stopPropagation();deleteConv(\""+h(t.key)+"\")' title='Konversation löschen' style='background:none;border:none;color:var(--text-3);cursor:pointer;font-size:.75rem;padding:2px 4px;border-radius:4px;opacity:.6;line-height:1' onmouseover=\"this.style.opacity='1';this.style.color='var(--red)'\" onmouseout=\"this.style.opacity='.6';this.style.color='var(--text-3)'\">🗑</button>"
-      +"</div></div>"
-      +"<div class='nachr-conv-preview'>"+(t.unread?"<strong>":"")+h((t.subject||"")+(t.subject?" · ":"")+t.latest.body.slice(0,50))+(t.unread?"</strong>":"")+"</div>"
-      +"</div>"
-      +"</div>";
-  }).join("");
-}
-
-// ── Delete a conversation ──
-function deleteConv(threadKey){
-  showConfirm("Konversation löschen?","Alle Nachrichten in dieser Konversation werden für dich entfernt.",async function(){
-    nachrData=nachrData.filter(function(m){ return (m.thread_id||m.id)!==threadKey; });
-    if(konvPartner&&(konvPartner+konvSubject===(threadKey))){
-      showChatPlaceholder();
-    }
-    // If the deleted conv was open, clear it
-    konvPartner=null; konvSubject=null;
-    showChatPlaceholder();
-    renderConvList();
-    updateNachrBadge();
-    await saveNachrichten();
-    toast("Konversation gelöscht.");
-  });
-}
-
-// ── Open a conversation ──
-function openKonv(partner,subject){
-  konvPartner=partner; konvSubject=subject;
-  // Mark as read
-  nachrData.forEach(function(m){ if(m.to===currentName&&m.from===partner&&m.subject===subject) m.read=true; });
-  updateNachrBadge();
-  saveNachrichten();
-  // Update header
-  var av=document.getElementById("konv-av"); if(av) setAv(av,partner);
-  document.getElementById("konv-partner").textContent=partner;
-  document.getElementById("konv-subject").textContent=subject||"Konversation";
-  // Show chat view
-  document.getElementById("nachr-compose-view").style.display="none";
-  document.getElementById("nachr-chat-view").style.display="flex";
-  document.getElementById("nachr-reply-bar").style.display="flex";
-  renderKonvChat(partner,subject);
-  // Highlight in list
-  document.querySelectorAll(".nachr-conv-item").forEach(function(el){ el.classList.remove("active"); });
-  renderConvList(); // re-render to update active state
-  // Mobile: switch to panel
-  showChatPanel();
-}
-
-function renderKonvChat(partner,subject){
-  var box=document.getElementById("konv-chat-box"); if(!box) return;
-  var pair=[currentName,partner].sort().join("_");
-  var expectedThreadId="t_"+pair;
-  var thread=nachrData.filter(function(m){
-    // Match by thread_id (partner pair) OR by old subject-based matching for backward compat
-    var byThread=(m.thread_id&&m.thread_id===expectedThreadId);
-    var byPair=(m.from===currentName&&m.to===partner)||(m.from===partner&&m.to===currentName);
-    return byThread||byPair;
-  }).sort(function(a,b){ return new Date(a.ts)-new Date(b.ts); });
-  if(!thread.length){ box.innerHTML="<div class='chat-empty'>Noch keine Nachrichten.</div>"; return; }
-  box.innerHTML=thread.map(function(m){
-    var mine=m.from===currentName;
-    var dt=new Date(m.ts);
-    var now=new Date();
-    var timeStr=dt.toDateString()===now.toDateString()
-      ? dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})
-      : dt.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
-    return "<div class='msg-row"+(mine?" mine":"")+"'>"
-      +"<div class='av av-sm' style='background:"+nameColor(m.from)+";display:"+(mine?"none":"flex")+";align-items:center;justify-content:center'>"+nameInit(m.from)+"</div>"
-      +"<div class='bubble'>"
-      +(!mine?"<div class='bubble-name'>"+h(m.from)+"</div>":"")
-      +"<div style='white-space:pre-wrap;word-break:break-word'>"+h(m.body)+"</div>"
-      +"<div class='bubble-time'>"+timeStr+"</div>"
-      +"</div></div>";
-  }).join("");
-  box.scrollTop=box.scrollHeight;
-}
-
-// ── Compose panel ──
-function showComposePanel(preToUser){
-  composeToUser=preToUser||null;
-  document.getElementById("compose-subject").value=konvSubject&&preToUser?("Re: "+(konvSubject.replace(/^Re:\s*/i,"").trim())):"";
-  document.getElementById("compose-body").value="";
-  document.getElementById("compose-error").style.display="none";
-  renderComposeToDisplay();
-  document.getElementById("nachr-chat-view").style.display="none";
-  document.getElementById("nachr-compose-view").style.display="flex";
-  loadUserPickerList();
-  showChatPanel();
-  setTimeout(function(){ if(!composeToUser) document.getElementById("compose-subject").focus(); else document.getElementById("compose-body").focus(); },80);
-}
-
-function renderComposeToDisplay(){
-  var wrap=document.getElementById("compose-to-display");
-  var ph=document.getElementById("compose-to-placeholder");
-  if(!composeToUser){
-    wrap.innerHTML=""; wrap.appendChild(ph); ph.style.display="";
-  } else {
-    ph.style.display="none";
-    wrap.innerHTML="<span style='display:inline-flex;align-items:center;gap:5px;background:var(--blue);color:#fff;border-radius:20px;padding:3px 10px 3px 5px;font-size:.8rem;font-weight:600'>"
-      +"<div class='av av-sm' style='background:rgba(255,255,255,.25)'>"+nameInit(composeToUser)+"</div>"
-      +h(composeToUser)
-      +"<span onclick='clearComposeTo()' style='cursor:pointer;opacity:.8;margin-left:2px;font-size:.85rem'>✕</span>"
-      +"</span>";
-  }
-}
-function clearComposeTo(){ composeToUser=null; renderComposeToDisplay(); }
-
-function toggleUserPicker(){
-  var drop=document.getElementById("user-picker-drop");
-  drop.style.display=drop.style.display==="none"?"block":"none";
-  if(drop.style.display==="block"){ document.getElementById("user-picker-search").value=""; filterUserPicker(); document.getElementById("user-picker-search").focus(); }
-}
-async function loadUserPickerList(){
-  if(userCache) return;
-  try{
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name&order=user_name",{headers:authHdrs()});
-    if(!r.ok) return;
-    var rows=await r.json();
-    function normKey(n){ return n.toLowerCase().replace(/[^a-z0-9äöüß]/g,""); }
-    function isNicerName(a,b){
-      var aHasSpace=a.indexOf(" ")>-1, bHasSpace=b.indexOf(" ")>-1;
-      var aHasDash=a.indexOf("-")>-1||a.indexOf("_")>-1||a.indexOf(".")>-1;
-      var bHasDash=b.indexOf("-")>-1||b.indexOf("_")>-1||b.indexOf(".")>-1;
-      if(aHasSpace&&!bHasSpace) return true;
-      if(bHasSpace&&!aHasSpace) return false;
-      if(!aHasDash&&bHasDash) return true;
-      if(a!==a.toLowerCase()&&b===b.toLowerCase()) return true;
-      return false;
-    }
-    var seen={};
-    rows.forEach(function(row){
-      var name=row.user_name; if(!name) return;
-      var key=normKey(name); if(!key) return;
-      if(!seen[key]||isNicerName(name,seen[key])) seen[key]=name;
-    });
-    userCache=Object.values(seen).sort(function(a,b){ return a.localeCompare(b,"de"); });
-  }catch(e){}
-}
-function filterUserPicker(){
-  var q=(document.getElementById("user-picker-search").value||"").toLowerCase();
-  var users=(userCache||[]).filter(function(u){ return u!==currentName&&(!q||u.toLowerCase().includes(q)); });
-  var listEl=document.getElementById("user-picker-list");
-  if(!users.length){ listEl.innerHTML="<div style='padding:10px 14px;font-size:.82rem;color:var(--text-3)'>Keine Nutzer gefunden.</div>"; return; }
-  listEl.innerHTML=users.map(function(u){
-    return "<div onclick='selectComposeUser(\""+u.replace(/\\/g,"\\\\").replace(/"/g,"&quot;")+"\")'"
-      +" style='display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s'"
-      +" onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background=''\"> "
-      +"<div class='av av-sm' style='background:"+nameColor(u)+"'>"+nameInit(u)+"</div>"
-      +"<span style='font-size:.85rem;font-weight:600'>"+h(u)+"</span>"
-      +"</div>";
-  }).join("");
-}
-function selectComposeUser(u){
-  composeToUser=u; renderComposeToDisplay();
-  document.getElementById("user-picker-drop").style.display="none";
-  document.getElementById("compose-body").focus();
-}
-
-async function sendNachricht(){
-  var errEl=document.getElementById("compose-error"); errEl.style.display="none";
-  if(!composeToUser){ errEl.textContent="Bitte einen Empfänger auswählen."; errEl.style.display="block"; return; }
-  var body=document.getElementById("compose-body").value.trim();
-  if(!body){ errEl.textContent="Nachricht darf nicht leer sein."; errEl.style.display="block"; return; }
-  var pair=[currentName,composeToUser].sort().join("_");
-  var threadId="t_"+pair;
-  var subj="Chat mit "+composeToUser;
-  var msg={id:"n"+Date.now(),thread_id:threadId,from:currentName,to:composeToUser,subject:subj,body:body,ts:new Date().toISOString(),read:false};
-  nachrSaveLock=true; // lock BEFORE modifying so poll can't overwrite
-  nachrData.unshift(msg);
-  // Update UI immediately
-  konvPartner=composeToUser; konvSubject=subj;
-  document.getElementById("compose-subject").value="";
-  document.getElementById("compose-body").value="";
-  composeToUser=null;
-  renderComposeToDisplay();
-  document.getElementById("nachr-compose-view").style.display="none";
-  document.getElementById("nachr-chat-view").style.display="flex";
-  document.getElementById("nachr-reply-bar").style.display="flex";
-  var av=document.getElementById("konv-av"); if(av) setAv(av,konvPartner);
-  document.getElementById("konv-partner").textContent=konvPartner;
-  document.getElementById("konv-subject").textContent="";
-  renderKonvChat(konvPartner,konvSubject);
-  renderConvList();
-  updateNachrBadge();
-  toast("Nachricht gesendet ✓");
-  await saveNachrichten(); // lock released after save
-}
-
-async function sendQuickReply(){
-  var inp=document.getElementById("nachr-quick-reply");
-  var body=inp.value.trim(); if(!body||!konvPartner) return;
-  inp.value="";
-  var pair=[currentName,konvPartner].sort().join("_");
-  var msg={id:"n"+Date.now(),thread_id:"t_"+pair,from:currentName,to:konvPartner,subject:konvSubject||("Chat mit "+konvPartner),body:body,ts:new Date().toISOString(),read:false};
-  nachrSaveLock=true;
-  nachrData.unshift(msg);
-  renderKonvChat(konvPartner,konvSubject);
-  renderConvList();
-  updateNachrBadge();
-  await saveNachrichten();
-}
-
-async function manualNachrRefresh(){
-  var btn=document.getElementById("nachr-refresh-btn");
-  if(btn){ btn.style.transform="rotate(360deg)"; btn.style.transition="transform .4s ease"; btn.style.color="var(--blue)"; }
-  await nachrPollOnce();
-  setTimeout(function(){ if(btn){ btn.style.transform=""; btn.style.transition=""; btn.style.color=""; } },500);
-}
-
-async function nachrPollOnce(){
-  try{
-    var r=await fetch(SB_URL+"/rest/v1/"+SB_NACHR+"?id=eq.1&select=data",{headers:authHdrs()});
-    if(!r.ok) return;
-    var rows=await r.json();
-    var fresh=(rows.length&&rows[0].data)?rows[0].data:[];
-    if(nachrSaveLock) return;
-    var oldCount=nachrUnreadCount();
-    nachrData=fresh;
-    var newCount=nachrUnreadCount();
-    updateNachrBadge();
-    if(newCount>oldCount) toast("📬 Neue Nachricht!");
-    if(document.getElementById("nachr-modal").style.display==="flex"){
-      renderConvList();
-      if(konvPartner) renderKonvChat(konvPartner,konvSubject);
-    }
-  }catch(e){}
-}
-
-function startNachrPolling(){
-  // Fast polling (3s) when modal open, slow (15s) when closed
-  setInterval(async function(){
-    var modalOpen=document.getElementById("nachr-modal").style.display==="flex";
-    if(modalOpen){
-      await nachrPollOnce();
-    }
-  },3000);
-  // Background polling every 15s regardless
-  setInterval(async function(){
-    var modalOpen=document.getElementById("nachr-modal").style.display==="flex";
-    if(!modalOpen) await nachrPollOnce();
-  },15000);
-}
-
-// ── Spielesammlung ──
-var sammlungData = {};
-var sammlungShowErweiterungen = false;
-var sammlungPending = null;
-
-function toggleSammlungErweiterungen(){
-  sammlungShowErweiterungen = !sammlungShowErweiterungen;
-  var icon = document.getElementById("erweiterung-icon");
-  var lbl  = document.getElementById("erweiterung-lbl");
-  var tog  = document.getElementById("erweiterung-toggle");
-  if(icon) icon.textContent = sammlungShowErweiterungen ? "✅" : "🚫";
-  if(lbl)  lbl.textContent  = sammlungShowErweiterungen ? "Erweiterungen eingeblendet" : "Erweiterungen ausgeblendet";
-  if(tog)  tog.style.borderColor = sammlungShowErweiterungen ? "var(--green)" : "var(--border)";
-  filterSammlung();
-}
-var sammlungSearchDebounce = null;
-var sammlungAsResults = [], sammlungAsHi = -1;
-
-async function loadAllSammlungen(){
-  try{
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,sammlung",{headers:authHdrs()});
-    if(!r.ok) return;
-    var rows=await r.json();
-    rows.forEach(function(row){
-      if(row.sammlung){
-        // Patch missing isExpansion field on old data
-        row.sammlung.forEach(function(s){ if(s.isExpansion===undefined) s.isExpansion=false; });
-        sammlungData[row.user_name]=row.sammlung;
-      }
-    });
-  }catch(e){}
-}
-
-async function saveMySammlung(){
-  var coll=sammlungData[currentName]||[];
-  try{
-    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,sammlung:coll})});
-  }catch(e){}
-}
-
-
-async function fetchBggCollection(bggUser){
-  var url=SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser);
-  // BGG caches collections - first request triggers cache, subsequent requests return data
-  for(var attempt=0;attempt<8;attempt++){
-    if(attempt>0) await new Promise(function(res){ setTimeout(res,6000); });
-    try{
-      var r=await fetch(url,{headers:authHdrs()});
-      var text=await r.text();
-      // Skip if BGG is still preparing
-      if(text.includes("try again")||text.includes("Your request for")||text.includes("<message>")) continue;
-      var doc=new DOMParser().parseFromString(text,"text/xml");
-      var items=Array.from(doc.querySelectorAll("item[subtype]"));
-      if(!items.length){
-        // Fallback: try without subtype filter
-        items=Array.from(doc.querySelectorAll("item"));
-      }
-      if(items.length>0) return items;
-    }catch(e){ continue; }
-  }
-  throw new Error("BGG nicht erreichbar. Bitte erneut versuchen.");
-}
-
-async function importFromBgg(){
-  var bggUser=bggProfiles[currentName]||(session&&session.user&&session.user.user_metadata&&session.user.user_metadata.bgg_profile)||"";
-  if(!bggUser){ toast("Bitte zuerst BGG-Profil im Profil hinterlegen."); return; }
-  var btn=document.getElementById("bgg-import-btn");
-  var lbl=document.getElementById("bgg-import-btn-lbl");
-  if(btn){ btn.disabled=true; }
-  if(lbl){ lbl.textContent="⏳ Verbinde BGG…"; }
-  // Show progress updates
-  var steps=["⏳ Verbinde BGG…","⏳ Warte auf BGG…","⏳ Lade Sammlung…","⏳ Fast fertig…"];
-  var stepIdx=0;
-  var stepTimer=setInterval(function(){
-    stepIdx=Math.min(stepIdx+1,steps.length-1);
-    if(lbl) lbl.textContent=steps[stepIdx];
-  },15000);
-  try{
-    var items=await fetchBggCollection(bggUser);
-    clearInterval(stepTimer);
-    if(!items.length){
-      // BGG returned empty — could be a cache issue, keep existing data
-      var existing=(sammlungData[currentName]||[]).length;
-      if(existing>0){
-        toast("BGG hat keine neuen Daten geliefert — "+existing+" gespeicherte Spiele bleiben.");
-      } else {
-        toast("Keine Spiele gefunden. Bitte in 1-2 Minuten erneut versuchen.");
-      }
-      if(lbl) lbl.textContent="↻ Sammlung aktualisieren";
-      if(btn){ btn.disabled=false; }
-      return;
-    }
-    var coll=items.map(function(el){
-      var id=el.getAttribute("objectid");
-      var subtype=el.getAttribute("subtype")||"";
-      var isExpansion=subtype==="boardgameexpansion";
-      var nameEl=el.querySelector("name"); var name=nameEl?nameEl.textContent.trim():"Unbekannt";
-      var yearEl=el.querySelector("yearpublished"); var year=yearEl?yearEl.textContent.trim():"";
-      var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
-      var minP=el.querySelector("stats[minplayers]"); var maxP=el.querySelector("stats[maxplayers]");
-      var players=minP&&maxP?minP.getAttribute("minplayers")+"-"+maxP.getAttribute("maxplayers")+" Spieler":"";
-      return {bggId:id,name:name,year:year,image:image,players:players,bggUrl:"https://boardgamegeek.com/boardgame/"+id,isExpansion:isExpansion};
-    });
-    // Deduplicate by bggId (edge function merges two lists which can overlap)
-    var seen={};
-    var collDeduped=coll.filter(function(s){
-      if(!s.bggId||seen[s.bggId]) return false;
-      seen[s.bggId]=true; return true;
-    });
-    sammlungData[currentName]=collDeduped;
-    await saveMySammlung();
-    renderSammlung();
-    var expCount=collDeduped.filter(function(s){ return s.isExpansion; }).length;
-    toast("✓ "+collDeduped.length+" Spiele importiert · "+expCount+" Erweiterungen erkannt");
-    if(lbl) lbl.textContent="↻ Sammlung aktualisieren";
-  }catch(e){
-    clearInterval(stepTimer);
-    toast("Fehler: "+e.message);
-    if(lbl) lbl.textContent=(sammlungData[currentName]||[]).length?"↻ Sammlung aktualisieren":"BGG importieren";
-  }finally{
-    if(btn){ btn.disabled=false; }
-  }
-}
-
-async function importFromBggSilent(){
-  var bggUser=bggProfiles[currentName]||(session&&session.user&&session.user.user_metadata&&session.user.user_metadata.bgg_profile)||"";
-  if(!bggUser) return;
-  try{
-    var items=await fetchBggCollection(bggUser);
-    if(!items.length) return;
-    var coll=items.map(function(el){
-      var id=el.getAttribute("objectid");
-      var nameEl=el.querySelector("name"); var name=nameEl?nameEl.textContent.trim():"";
-      var yearEl=el.querySelector("yearpublished"); var year=yearEl?yearEl.textContent.trim():"";
-      var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
-      return {bggId:id,name:name,year:year,image:image,bggUrl:"https://boardgamegeek.com/boardgame/"+id};
-    });
-    sammlungData[currentName]=coll;
-    await saveMySammlung();
-    var tab=document.getElementById("tab-sammlung");
-    if(tab&&tab.classList.contains("active")) renderSammlung();
-  }catch(e){}
-}
-
-function renderSammlung(filterUser){
-  var grid=document.getElementById("sammlung-grid"); if(!grid) return;
-  var viewUser=filterUser!==undefined?filterUser:(document.getElementById("sammlung-view-user")?document.getElementById("sammlung-view-user").value:"");
-  var q=(document.getElementById("sammlung-search")?document.getElementById("sammlung-search").value:"").toLowerCase();
-
-  // Populate user selector
-  var sel=document.getElementById("sammlung-view-user");
-  if(sel){
-    var users=Object.keys(sammlungData).filter(function(u){ return sammlungData[u]&&sammlungData[u].length; });
-    var curVal=sel.value;
-    var myCount=(sammlungData[currentName]||[]).length;
-    var totalCount=users.reduce(function(s,u){ return s+sammlungData[u].length; },0);
-    sel.innerHTML="<option value='__all__' "+(curVal==='__all__'?"selected":"")+">🌐 Alle Sammlungen ("+totalCount+")</option>"
-      +"<option value='' "+(curVal===''?"selected":"")+">Meine Sammlung ("+myCount+")</option>"
-      +users.filter(function(u){ return u!==currentName; }).map(function(u){
-        return "<option value='"+h(u)+"'"+(u===curVal?" selected":"")+">"+(h(u))+" ("+sammlungData[u].length+")</option>";
-      }).join("");
-  }
-
-  // Update import button label
-  var lbl=document.getElementById("bgg-import-btn-lbl");
-  if(lbl) lbl.textContent=(sammlungData[currentName]||[]).length?"↻ Sammlung aktualisieren":"BGG importieren";
-  var infoBar=document.getElementById("sammlung-bgg-info");
-  var bggNameEl=document.getElementById("sammlung-bgg-name");
-  var countEl=document.getElementById("sammlung-count-lbl");
-  if(infoBar&&(viewUser===''||viewUser===currentName)&&bggProfiles[currentName]){
-    infoBar.style.display="flex";
-    if(bggNameEl) bggNameEl.textContent=bggProfiles[currentName];
-    if(countEl) countEl.textContent=(sammlungData[currentName]||[]).length+" Spiele";
-  } else if(infoBar){ infoBar.style.display="none"; }
-
-  // Build combined list for "Alle Sammlungen"
-  if(viewUser==="__all__"){
-    // Merge all collections, deduplicate by bggId, track owners
-    var merged={};
-    Object.keys(sammlungData).forEach(function(user){
-      (sammlungData[user]||[]).forEach(function(s){
-        var key=s.bggId||s.name;
-        if(!merged[key]){ merged[key]=Object.assign({},s,{owners:[],isExpansion:!!s.isExpansion}); }
-        else if(s.isExpansion) merged[key].isExpansion=true; // if any owner marks it as expansion, it is one
-        if(merged[key].owners.indexOf(user)===-1) merged[key].owners.push(user);
-      });
-    });
-    var coll=Object.values(merged);
-    if(!sammlungShowErweiterungen) coll=coll.filter(function(s){ return !s.isExpansion; });
-    if(q) coll=coll.filter(function(s){ return (s.name||"").toLowerCase().includes(q); });
-    coll.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"de"); });
-    if(!coll.length){
-      grid.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>🎮</div><p>Keine Spiele gefunden.</p></div>";
-      return;
-    }
-    grid.innerHTML=coll.map(function(s){
-      var pr=s.image?proxyImg(s.image):null;
-      var imgHtml=pr
-        ? "<img class='sam-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'><div class='sam-img-ph' style='display:none'>🎮</div>"
-        : "<div class='sam-img-ph'>🎮</div>";
-      var ownerChips=s.owners.map(function(p){
-        return "<span style='display:inline-flex;align-items:center;gap:3px;background:"+nameColor(p)+"22;border:1px solid "+nameColor(p)+"44;border-radius:10px;padding:1px 5px;font-size:.62rem;font-weight:600;color:var(--text-2)'>"
-          +"<div class='av av-sm' style='background:"+nameColor(p)+";width:12px;height:12px;font-size:.4rem'>"+nameInit(p)+"</div>"+h(p)+"</span>";
-      }).join("");
-      return "<div class='sam-card'>"
-        +imgHtml
-        +"<div class='sam-info'>"
-        +"<div class='sam-name' title='"+h(s.name)+"'>"+h(s.name)+"</div>"
-        +"<div class='sam-sub'>"+(s.year||"")+"</div>"
-        +"<div style='display:flex;flex-wrap:wrap;gap:2px;margin-top:4px'>"+ownerChips+"</div>"
-        +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='font-size:.62rem;color:var(--blue);text-decoration:none'>BGG ↗</a>":"")
-        +"</div></div>";
-    }).join("");
-    return;
-  }
-
-  // Single user view
-  var target=viewUser||currentName;
-  var coll=(sammlungData[target]||[]).slice();
-  if(!sammlungShowErweiterungen) coll=coll.filter(function(s){ return !s.isExpansion; });
-  if(q) coll=coll.filter(function(s){ return (s.name||"").toLowerCase().includes(q); });
-  coll.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"de"); });
-  // Update count badge
-  var badge=document.getElementById("sammlung-count-badge");
-  if(badge){
-    var allCnt=(sammlungData[target]||[]).length;
-    var expCnt=(sammlungData[target]||[]).filter(function(s){ return s.isExpansion; }).length;
-    badge.textContent=coll.length+" Spiele"+(expCnt?" · "+expCnt+" Erweiterungen":"");
-  }
-
-  if(!coll.length){
-    var isMe=target===currentName;
-    grid.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>🎮</div><p>"+(isMe?"Noch keine Spiele. BGG importieren oder manuell hinzufügen!":"Keine Spiele in dieser Sammlung.")+"</p></div>";
-    return;
-  }
-  grid.innerHTML=coll.map(function(s,idx){
-    var pr=s.image?proxyImg(s.image):null;
-    var imgHtml=pr
-      ? "<img class='sam-img' src='"+pr+"' alt='"+h(s.name)+"' onerror='this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'><div class='sam-img-ph' style='display:none'>🎮</div>"
-      : "<div class='sam-img-ph'>🎮</div>";
-    var realIdx=(sammlungData[target]||[]).findIndex(function(x){ return (x.bggId&&x.bggId===s.bggId)||x.name===s.name; });
-    var delBtn=target===currentName
-      ? "<button class='sam-del' onclick='removeFromSammlung("+realIdx+")' title='Entfernen'>✕</button>" : "";
-    return "<div class='sam-card'>"
-      +imgHtml+delBtn
-      +"<div class='sam-info'>"
-      +"<div class='sam-name' title='"+h(s.name)+"'>"+h(s.name)+"</div>"
-      +"<div class='sam-sub'>"+(s.year||"")+(s.year&&s.players?" · ":"")+(s.players||"")+"</div>"
-      +(s.bggUrl?"<a href='"+h(s.bggUrl)+"' target='_blank' style='font-size:.65rem;color:var(--blue);text-decoration:none'>BGG ↗</a>":"")
-      +"</div></div>";
-  }).join("");
-}
-
-function filterSammlung(){
-  var viewUser=document.getElementById("sammlung-view-user")?document.getElementById("sammlung-view-user").value:"";
-  renderSammlung(viewUser||currentName);
-}
-
-async function removeFromSammlung(idx){
-  var coll=sammlungData[currentName]||[];
-  coll.splice(idx,1);
-  sammlungData[currentName]=coll;
-  renderSammlung();
-  await saveMySammlung();
-  toast("Spiel entfernt.");
-}
-
-// Add-modal search
-function onSammlungSearchInput(){
-  clearTimeout(sammlungSearchDebounce);
-  var q=document.getElementById("sammlung-search-input").value.trim();
-  if(!q){ document.getElementById("sammlung-as-drop").style.display="none"; return; }
-  sammlungSearchDebounce=setTimeout(function(){ sammlungBggSearch(q); },350);
-}
-function onSammlungSearchKey(e){
-  if(e.keyCode===40){ e.preventDefault(); sammlungAsHi=Math.min(sammlungAsHi+1,sammlungAsResults.length-1); renderSammlungDrop(); }
-  else if(e.keyCode===38){ e.preventDefault(); sammlungAsHi=Math.max(sammlungAsHi-1,0); renderSammlungDrop(); }
-  else if(e.keyCode===13){ e.preventDefault(); if(sammlungAsHi>=0) selectSammlungResult(sammlungAsHi); }
-  else if(e.keyCode===27){ document.getElementById("sammlung-as-drop").style.display="none"; }
-}
-async function sammlungBggSearch(q){
-  var status=document.getElementById("sammlung-search-status"); status.textContent="Suche…";
-  try{
-    var r=await fetch(SB_URL+"/functions/v1/bgg-proxy?action=search&q="+encodeURIComponent(q),{headers:authHdrs()});
-    if(!r.ok) throw new Error(r.status);
-    var xml=await r.text();
-    var doc=new DOMParser().parseFromString(xml,"text/xml");
-    sammlungAsResults=Array.from(doc.querySelectorAll("item")).slice(0,10).map(function(el){
-      var id=el.getAttribute("id");
-      var nameEl=el.querySelector("name[type='primary']")||el.querySelector("name");
-      var name=nameEl?nameEl.getAttribute("value"):"Unbekannt";
-      var yearEl=el.querySelector("yearpublished");
-      return {id:id,name:name,year:yearEl?yearEl.getAttribute("value"):"",bggUrl:"https://boardgamegeek.com/boardgame/"+id};
-    });
-    sammlungAsHi=-1; status.textContent=sammlungAsResults.length?"":"Keine Ergebnisse.";
-    renderSammlungDrop();
-  }catch(e){ status.textContent="Fehler: "+e.message; }
-}
-function renderSammlungDrop(){
-  var drop=document.getElementById("sammlung-as-drop");
-  if(!sammlungAsResults.length){ drop.style.display="none"; return; }
-  drop.innerHTML=sammlungAsResults.map(function(r,i){
-    return "<div class='as-item"+(i===sammlungAsHi?" hi":"")+"' onmousedown='selectSammlungResult("+i+")'>"
-      +"<div class='as-thumb' style='display:flex;align-items:center;justify-content:center;font-size:1.2rem'>🎮</div>"
-      +"<div class='as-item-info'><div class='as-item-name'>"+h(r.name)+"</div>"+(r.year?"<div class='as-item-sub'>"+r.year+"</div>":"")+"</div></div>";
-  }).join("");
-  var inp=document.getElementById("sammlung-search-input");
-  var dropEl=document.getElementById("sammlung-as-drop");
-  var rect=inp.getBoundingClientRect();
-  dropEl.style.top=(rect.bottom+4)+"px"; dropEl.style.left=rect.left+"px"; dropEl.style.width=rect.width+"px";
-  drop.style.display="block";
-}
-function selectSammlungResult(i){
-  var res=sammlungAsResults[i]; if(!res) return;
-  document.getElementById("sammlung-search-input").value=res.name;
-  document.getElementById("sammlung-as-drop").style.display="none";
-  var status=document.getElementById("sammlung-search-status"); status.textContent="Lade Details…";
-  loadBggGameDetails(res.id).then(function(data){
-    sammlungPending=data; status.textContent="";
-    var preview=document.getElementById("sammlung-preview");
-    var img=document.getElementById("ssp-img");
-    if(data.image){ img.src=proxyImg(data.image); img.style.display="block"; } else { img.style.display="none"; }
-    document.getElementById("ssp-name").textContent=data.name;
-    document.getElementById("ssp-sub").textContent=[data.year,data.players].filter(Boolean).join(" · ");
-    preview.style.display="flex";
-  }).catch(function(e){ status.textContent="Fehler: "+e.message; });
-}
-async function confirmAddToSammlung(){
-  var errEl=document.getElementById("sammlung-add-error"); errEl.style.display="none";
-  if(!sammlungPending){ errEl.textContent="Bitte zuerst ein Spiel auswählen."; errEl.style.display="block"; return; }
-  var coll=sammlungData[currentName]||[];
-  if(coll.some(function(s){ return s.bggId&&s.bggId===sammlungPending.bggId; })){
-    errEl.textContent="Spiel bereits in deiner Sammlung."; errEl.style.display="block"; return;
-  }
-  coll.push({bggId:sammlungPending.bggId,name:sammlungPending.name,year:sammlungPending.year,image:sammlungPending.image,players:sammlungPending.players,bggUrl:sammlungPending.bggUrl});
-  sammlungData[currentName]=coll;
-  closeAddSammlungModal();
-  renderSammlung();
-  await saveMySammlung();
-  toast("✓ "+sammlungPending.name+" zur Sammlung hinzugefügt!");
-  sammlungPending=null;
-}
-function openAddSammlungModal(){
-  sammlungPending=null;
-  document.getElementById("sammlung-search-input").value="";
-  document.getElementById("sammlung-search-status").textContent="";
-  document.getElementById("sammlung-as-drop").style.display="none";
-  document.getElementById("sammlung-preview").style.display="none";
-  document.getElementById("sammlung-add-error").style.display="none";
-  document.getElementById("add-sammlung-modal").style.display="flex";
-  setTimeout(function(){ document.getElementById("sammlung-search-input").focus(); },60);
-}
-function closeAddSammlungModal(){
-  document.getElementById("add-sammlung-modal").style.display="none";
-  sammlungPending=null;
-}
-
-// ── Besitzer-Badge in Terminspiel-Karten ──
-function getSammlungOwners(bggId, personen){
-  if(!bggId) return [];
-  return personen.filter(function(p){
-    var coll=sammlungData[p]||[];
-    return coll.some(function(s){ return s.bggId&&String(s.bggId)===String(bggId); });
-  });
-}
-
-// ── Achievements ──
-var ACHIEVEMENTS=[
-  // 🎮 Spielabende
-  {id:"first_attend",cat:"🎮 Spielabende",icon:"🎲",name:"Erster Abend",desc:"Zum ersten Spieleabend zugesagt",check:function(u){ return state.termine.filter(function(t){ return t.personen&&t.personen.includes(u); }).length>=1; }},
-  {id:"attend_5",cat:"🎮 Spielabende",icon:"🎯",name:"Stammgast",desc:"5 Spieleabende dabei",check:function(u){ return state.termine.filter(function(t){ return t.personen&&t.personen.includes(u); }).length>=5; }},
-  {id:"attend_10",cat:"🎮 Spielabende",icon:"⭐",name:"Veteran",desc:"10 Spieleabende dabei",check:function(u){ return state.termine.filter(function(t){ return t.personen&&t.personen.includes(u); }).length>=10; }},
-  {id:"first_host",cat:"🎮 Spielabende",icon:"🏠",name:"Gastgeber",desc:"Ersten Termin erstellt",check:function(u){ return state.termine.filter(function(t){ return t.creator===u; }).length>=1; }},
-  {id:"host_5",cat:"🎮 Spielabende",icon:"🏰",name:"Serienveranstalter",desc:"5 Termine erstellt",check:function(u){ return state.termine.filter(function(t){ return t.creator===u; }).length>=5; }},
-  // 🃏 Spiele
-  {id:"first_suggest",cat:"🃏 Spiele",icon:"💡",name:"Ideengeber",desc:"Erstes Spiel vorgeschlagen",check:function(u){ return state.termine.some(function(t){ return (t.spiele||[]).some(function(s){ return s.vorschlaeger===u; }); }); }},
-  {id:"suggest_5",cat:"🃏 Spiele",icon:"📚",name:"Spielkenner",desc:"5 Spiele vorgeschlagen",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.spiele||[]).forEach(function(s){ if(s.vorschlaeger===u) n++; }); }); return n>=5; }},
-  {id:"suggest_10",cat:"🃏 Spiele",icon:"🧠",name:"Spieleexperte",desc:"10 Spiele vorgeschlagen",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.spiele||[]).forEach(function(s){ if(s.vorschlaeger===u) n++; }); }); return n>=10; }},
-  {id:"sammlung_10",cat:"🃏 Spiele",icon:"🗃️",name:"Sammler",desc:"10 Spiele in der Sammlung",check:function(u){ return (sammlungData[u]||[]).length>=10; }},
-  {id:"sammlung_50",cat:"🃏 Spiele",icon:"📦",name:"Großsammler",desc:"50 Spiele in der Sammlung",check:function(u){ return (sammlungData[u]||[]).length>=50; }},
-  {id:"sammlung_100",cat:"🃏 Spiele",icon:"🏛️",name:"Bibliothek",desc:"100 Spiele in der Sammlung",check:function(u){ return (sammlungData[u]||[]).length>=100; }},
-  // 💬 Soziales
-  {id:"first_chat",cat:"💬 Soziales",icon:"💬",name:"Erstes Wort",desc:"Erste Chat-Nachricht geschrieben",check:function(u){ return state.termine.some(function(t){ return (t.chat||[]).some(function(m){ return m.author===u; }); }); }},
-  {id:"chat_20",cat:"💬 Soziales",icon:"🗣️",name:"Gesprächig",desc:"20 Chat-Nachrichten geschrieben",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.chat||[]).forEach(function(m){ if(m.author===u) n++; }); }); return n>=20; }},
-  {id:"chat_100",cat:"💬 Soziales",icon:"📢",name:"Vielredner",desc:"100 Chat-Nachrichten geschrieben",check:function(u){ var n=0; state.termine.forEach(function(t){ (t.chat||[]).forEach(function(m){ if(m.author===u) n++; }); }); return n>=100; }},
-  // 🛒 Marktplatz
-  {id:"first_inserat",cat:"🛒 Marktplatz",icon:"🏷️",name:"Händler",desc:"Erstes Inserat erstellt",check:function(u){ return mData.some(function(m){ return m.seller===u; }); }},
-  {id:"inserat_5",cat:"🛒 Marktplatz",icon:"🏪",name:"Marktprofi",desc:"5 Inserate erstellt",check:function(u){ return mData.filter(function(m){ return m.seller===u; }).length>=5; }},
-  {id:"first_interesse",cat:"🛒 Marktplatz",icon:"🤝",name:"Käufer",desc:"Interesse an einem Angebot bekundet",check:function(u){ return mData.some(function(m){ return (m.interesse||[]).includes(u); }); }},
-  // 🏆 Meilensteine
-  {id:"all_cats",cat:"🏆 Meilensteine",icon:"🌟",name:"Allrounder",desc:"In allen Kategorien mindestens 1 Achievement",check:function(u){
-    var cats=["🎮 Spielabende","🃏 Spiele","💬 Soziales","🛒 Marktplatz"];
-    return cats.every(function(cat){
-      return ACHIEVEMENTS.filter(function(a){ return a.cat===cat; }).some(function(a){ return a.check(u); });
-    });
-  }},
-  {id:"total_5",cat:"🏆 Meilensteine",icon:"🥉",name:"Aufsteiger",desc:"5 Achievements freigeschaltet",check:function(u){ return ACHIEVEMENTS.filter(function(a){ return a.id!=="total_5"&&a.id!=="total_10"&&a.id!=="total_15"&&a.check(u); }).length>=5; }},
-  {id:"total_10",cat:"🏆 Meilensteine",icon:"🥈",name:"Fortgeschrittener",desc:"10 Achievements freigeschaltet",check:function(u){ return ACHIEVEMENTS.filter(function(a){ return a.id!=="total_10"&&a.id!=="total_15"&&a.check(u); }).length>=10; }},
-  {id:"total_15",cat:"🏆 Meilensteine",icon:"🥇",name:"Meeple-Meister",desc:"15 Achievements freigeschaltet",check:function(u){ return ACHIEVEMENTS.filter(function(a){ return a.id!=="total_15"&&a.check(u); }).length>=15; }},
-];
-
-function renderAchievements(targetUser){
-  var el=document.getElementById("profil-achievements"); if(!el) return;
-  var u=targetUser||currentName;
-  var cats=["🎮 Spielabende","🃏 Spiele","💬 Soziales","🛒 Marktplatz","🏆 Meilensteine"];
-  var unlocked=ACHIEVEMENTS.filter(function(a){ return a.check(u); }).length;
-  var html="<div style='font-size:.78rem;color:var(--text-3);margin-bottom:12px'>"
-    +"<span style='font-weight:700;color:var(--text-2);font-size:.88rem'>"+unlocked+"</span> / "+ACHIEVEMENTS.length+" freigeschaltet"
-    +"<div style='height:6px;background:var(--border);border-radius:3px;margin-top:6px;overflow:hidden'>"
-    +"<div style='height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px;width:"+(Math.round(unlocked/ACHIEVEMENTS.length*100))+"%'></div>"
-    +"</div></div>";
-  cats.forEach(function(cat){
-    var badges=ACHIEVEMENTS.filter(function(a){ return a.cat===cat; });
-    html+="<div class='ach-cat'>"+cat+"</div><div class='ach-grid'>";
-    badges.forEach(function(a){
-      var done=a.check(u);
-      html+="<div class='ach-badge "+(done?"unlocked":"locked")+"' title='"+h(a.desc)+"'>"
-        +"<div class='ach-icon'>"+a.icon+"</div>"
-        +"<div class='ach-name'>"+h(a.name)+"</div>"
-        +"</div>";
-    });
-    html+="</div>";
-  });
-  el.innerHTML=html;
-}
-
-// ── E-Mail Benachrichtigungen ──
-var currentNotifEmail = "";       // loaded from user_meta
-var currentNotifPrefs = {termine:false,markt:false};
-const SB_NOTIF_FN = SB_URL+"/functions/v1/send-notification";
-
-async function loadNotifPrefs(){
-  try{
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(currentName)+"&select=notif_email,notif_all_termine,notif_all_markt",{headers:authHdrs()});
-    if(!r.ok) return;
-    var rows=await r.json();
-    if(!rows.length) return;
-    var row=rows[0];
-    currentNotifEmail=row.notif_email||"";
-    currentNotifPrefs.termine=!!row.notif_all_termine;
-    currentNotifPrefs.markt=!!row.notif_all_markt;
-  }catch(e){}
-}
-
-async function saveNotifEmail(){
-  var val=document.getElementById("profil-notif-email").value.trim();
-  try{
-    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,notif_email:val})});
-    currentNotifEmail=val;
-    var msg=document.getElementById("profil-msg");
-    msg.textContent=val?"✓ Benachrichtigungs-E-Mail gespeichert":"✓ E-Mail entfernt";
-    msg.style.color="var(--green)"; msg.style.display="block";
-    setTimeout(function(){ msg.style.display="none"; },2500);
-    renderTermine(); // update subscribe buttons
-  }catch(e){ toast("Fehler beim Speichern"); }
-}
-
-async function saveNotifPrefs(){
-  try{
-    var termine=document.getElementById("profil-notif-termine").checked;
-    var markt=document.getElementById("profil-notif-markt").checked;
-    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,notif_all_termine:termine,notif_all_markt:markt})});
-    currentNotifPrefs.termine=termine;
-    currentNotifPrefs.markt=markt;
-    var msg=document.getElementById("profil-msg");
-    msg.textContent="✓ Benachrichtigungseinstellungen gespeichert";
-    msg.style.color="var(--green)"; msg.style.display="block";
-    setTimeout(function(){ msg.style.display="none"; },2500);
-  }catch(e){ toast("Fehler beim Speichern"); }
-}
-
-async function toggleTerminSubscribe(tid){
-  var t=getT(tid); if(!t||!currentNotifEmail) return;
-  if(!t.subscribers) t.subscribers=[];
-  var idx=t.subscribers.findIndex(function(s){ return s.name===currentName; });
-  if(idx>-1){
-    t.subscribers.splice(idx,1);
-    toast("🔕 Abonnement beendet");
-  } else {
-    t.subscribers.push({name:currentName,email:currentNotifEmail});
-    toast("🔔 Abonniert! Du wirst bei Änderungen benachrichtigt.");
-  }
-  renderTermine();
-  saveState();
-}
-
-// ── Notification Email Sending ──
-function buildNotifEmail(subject, bodyHtml){
-  return "<!DOCTYPE html><html><head><meta charset='UTF-8'><style>body{font-family:sans-serif;background:#f4f6fb;margin:0;padding:0}.wrap{max-width:580px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#3b6ef5,#6a9af8);padding:24px;text-align:center;color:#fff}.header h1{margin:0;font-size:1.4rem}.logo{font-size:2rem;margin-bottom:8px}.body{padding:24px}.section{background:#f8f9fd;border-radius:8px;padding:14px 16px;margin-bottom:14px;border-left:4px solid #3b6ef5}.section h3{margin:0 0 6px;font-size:.95rem;color:#111827}.section p{margin:0;font-size:.85rem;color:#374151;line-height:1.5}.chip{display:inline-block;background:#eef2fe;color:#3b6ef5;border-radius:20px;padding:2px 10px;font-size:.78rem;font-weight:600;margin:2px}.footer{padding:16px 24px;text-align:center;font-size:.75rem;color:#9ca3af;border-top:1px solid #e4e8f0}</style></head><body><div style='padding:20px'><div class='wrap'><div class='header'><div class='logo'>🎲</div><h1>Die Meeples</h1><div style='font-size:.85rem;opacity:.85'>Spieleabend Planer</div></div><div class='body'>"+bodyHtml+"</div><div class='footer'>Du erhältst diese E-Mail weil du Benachrichtigungen aktiviert hast. <br>Du kannst sie in deinem Profil deaktivieren.</div></div></div></body></html>";
-}
-
-async function sendNotifToSubscribers(t, eventType, extraInfo){
-  if(!t.subscribers||!t.subscribers.length) return;
-  var dt=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
-  var bodyHtml="<div class='section'><h3>📅 "+h(t.title)+"</h3>"
-    +(t.date?"<p>🗓 <strong>"+dt+"</strong></p>":"")
-    +(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")
-    +"<p>👥 "+t.personen.length+" Teilnehmer &nbsp;•&nbsp; 🎮 "+t.spiele.length+" Spiele</p>"
-    +"</div>"
-    +"<div class='section'><h3>"+eventType+"</h3><p>"+extraInfo+"</p></div>";
-  var emailHtml=buildNotifEmail("Neuigkeit: "+t.title, bodyHtml);
-  var emails=t.subscribers.filter(function(s){ return s.name!==currentName&&s.email; });
-  if(!emails.length) return;
-  try{
-    await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails.map(function(s){ return s.email; }),subject:"🎲 "+t.title+" – "+eventType,html:emailHtml})});
-  }catch(e){}
-}
-
-async function sendGlobalNotif(type, subject, bodyHtml){
-  // Gather all users with global pref enabled for this type
-  try{
-    var field=type==="termine"?"notif_all_termine":"notif_all_markt";
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?"+field+"=eq.true&select=user_name,notif_email",{headers:authHdrs()});
-    if(!r.ok) return;
-    var rows=await r.json();
-    var emails=rows.filter(function(row){ return row.notif_email&&row.user_name!==currentName; }).map(function(row){ return row.notif_email; });
-    if(!emails.length) return;
-    var emailHtml=buildNotifEmail(subject,bodyHtml);
-    await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails,subject:"🎲 "+subject,html:emailHtml})});
-  }catch(e){}
-}
-
 // ── QR Codes ──
 function openQrModal(tid){
   qrTid=tid;
@@ -4038,24 +2165,14 @@ async function saveQr(){
   var t=getT(qrTid); if(!t) return;
   if(!t.qrcodes) t.qrcodes=[];
   t.qrcodes.push({url:url,label:label||"BG Stats Link",author:currentName,ts:new Date().toISOString()});
-  closeQrModal();
-  // Update QR list directly in DOM without full card rerender
-  var qrListEl=document.getElementById("qr-list-"+qrTid);
-  if(qrListEl) qrListEl.innerHTML=buildQrList(t);
-  toast("QR Code hinzugef\u00fcgt \u2713");
-  saveState();
+  closeQrModal(); rerenderCard(qrTid); toast("QR Code hinzugef\u00fcgt \u2713"); saveState();
 }
 async function removeQr(tid,idx){
   var t=getT(tid); if(!t||!t.qrcodes) return;
   t.qrcodes.splice(idx,1);
-  var qrListEl=document.getElementById("qr-list-"+tid);
-  if(qrListEl) qrListEl.innerHTML=buildQrList(t);
-  toast("QR Code entfernt."); saveState();
+  rerenderCard(tid); toast("QR Code entfernt."); saveState();
 }
 
 </script>
-<!-- FAB Mobile -->
-<button id="fab-new-termin" style="display:none" onclick="openNewTerminModal()" aria-label="Neuer Termin">＋</button>
-
 </body>
 </html>
