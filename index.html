@@ -3596,6 +3596,7 @@ function renderSammlung(filterUser){
   // Update import button label
   var lbl=document.getElementById("bgg-import-btn-lbl");
   if(lbl) lbl.textContent=(sammlungData[currentName]||[]).length?"↻ Sammlung aktualisieren":"BGG importieren";
+  var infoBar=document.getElementById("sammlung-bgg-info");
   var bggNameEl=document.getElementById("sammlung-bgg-name");
   var countEl=document.getElementById("sammlung-count-lbl");
   if(infoBar&&(viewUser===''||viewUser===currentName)&&bggProfiles[currentName]){
