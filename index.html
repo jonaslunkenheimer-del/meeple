@@ -3576,7 +3576,8 @@ async function importFromBgg(){
     sammlungData[currentName]=coll;
     await saveMySammlung();
     renderSammlung();
-    toast("✓ "+coll.length+" Spiele importiert!");
+    var expCount=coll.filter(function(s){ return s.isExpansion; }).length;
+    toast("✓ "+coll.length+" Spiele importiert · "+expCount+" Erweiterungen erkannt");
     if(lbl) lbl.textContent="↻ Sammlung aktualisieren";
   }catch(e){
     clearInterval(stepTimer);
