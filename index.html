@@ -2930,7 +2930,7 @@ async function renderMarkt(reload){
       +(isSeller&&interessenten.length?"<div style='font-size:.75rem;color:var(--blue);margin-bottom:8px;background:#eff6ff;padding:6px 10px;border-radius:6px'>&#128587; Interesse von: "+interessenten.map(h).join(", ")+"</div>":"")
       +"<div style='display:flex;gap:6px;flex-wrap:wrap;margin-top:8px'>"
       +interestBtn
-      +(m.bgg?"<a href='"+h(m.bgg)+"' target='_blank' class='btn btn-outline btn-sm'>BGG</a>":"")
+      +(m.bgg?"<a href='"+h(m.bgg)+"' target='_blank' class='btn btn-outline btn-sm' title='BoardGameGeek' style='padding:6px 8px'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:16px;height:16px;border-radius:3px;display:block' onerror='this.outerHTML=\"BGG\"'></a>":"")
       +"<button class='btn btn-ghost btn-sm' onclick='openMarktChat("+m.id+")'>&#128172; Chat</button>"
       +(!m.sold&&isSeller?"<button class='btn btn-sm' style='background:var(--green-lt);color:var(--green);border-color:var(--green-bd)' onclick='markSold("+m.id+")'>&#10003; Verkauft</button>":"")
       +(!m.sold&&(isSeller||isAdmin)?"<button class='btn btn-outline btn-sm' onclick='openEditInseratModal("+m.id+")'>&#9999;&#65039; Bearbeiten</button>":"")
