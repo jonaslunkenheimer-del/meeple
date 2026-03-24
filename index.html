@@ -614,11 +614,18 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           </div>
         </div>
         <!-- Search/filter -->
-        <div style="display:flex;gap:8px;margin-bottom:14px">
+        <div style="display:flex;gap:8px;margin-bottom:10px">
           <input class="input-field" id="sammlung-search" placeholder="Sammlung durchsuchen …" oninput="filterSammlung()" style="flex:1">
           <select class="input-field" id="sammlung-view-user" onchange="filterSammlung()" style="max-width:180px">
             <option value="__all__">🌐 Alle Sammlungen</option>
           </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <div onclick="toggleSammlungErweiterungen()" style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer;user-select:none;transition:all .15s" id="erweiterung-toggle">
+            <span id="erweiterung-icon">🚫</span>
+            <span id="erweiterung-lbl" style="font-weight:600;color:var(--text-2)">Erweiterungen ausgeblendet</span>
+          </div>
+          <span id="sammlung-count-badge" style="font-size:.75rem;color:var(--text-3)"></span>
         </div>
         <div id="sammlung-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
       </div>
@@ -3467,8 +3474,20 @@ function startNachrPolling(){
 }
 
 // ── Spielesammlung ──
-var sammlungData = {};    // { userName: [{bggId, name, year, players, image, bggUrl}] }
-var sammlungPending = null; // pending spiel to add
+var sammlungData = {};
+var sammlungShowErweiterungen = false;
+var sammlungPending = null;
+
+function toggleSammlungErweiterungen(){
+  sammlungShowErweiterungen = !sammlungShowErweiterungen;
+  var icon = document.getElementById("erweiterung-icon");
+  var lbl  = document.getElementById("erweiterung-lbl");
+  var tog  = document.getElementById("erweiterung-toggle");
+  if(icon) icon.textContent = sammlungShowErweiterungen ? "✅" : "🚫";
+  if(lbl)  lbl.textContent  = sammlungShowErweiterungen ? "Erweiterungen eingeblendet" : "Erweiterungen ausgeblendet";
+  if(tog)  tog.style.borderColor = sammlungShowErweiterungen ? "var(--green)" : "var(--border)";
+  filterSammlung();
+}
 var sammlungSearchDebounce = null;
 var sammlungAsResults = [], sammlungAsHi = -1;
 
@@ -3545,12 +3564,14 @@ async function importFromBgg(){
     }
     var coll=items.map(function(el){
       var id=el.getAttribute("objectid");
+      var subtype=el.getAttribute("subtype")||"";
+      var isExpansion=subtype==="boardgameexpansion";
       var nameEl=el.querySelector("name"); var name=nameEl?nameEl.textContent.trim():"Unbekannt";
       var yearEl=el.querySelector("yearpublished"); var year=yearEl?yearEl.textContent.trim():"";
       var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
       var minP=el.querySelector("stats[minplayers]"); var maxP=el.querySelector("stats[maxplayers]");
       var players=minP&&maxP?minP.getAttribute("minplayers")+"-"+maxP.getAttribute("maxplayers")+" Spieler":"";
-      return {bggId:id,name:name,year:year,image:image,players:players,bggUrl:"https://boardgamegeek.com/boardgame/"+id};
+      return {bggId:id,name:name,year:year,image:image,players:players,bggUrl:"https://boardgamegeek.com/boardgame/"+id,isExpansion:isExpansion};
     });
     sammlungData[currentName]=coll;
     await saveMySammlung();
@@ -3629,8 +3650,9 @@ function renderSammlung(filterUser){
       });
     });
     var coll=Object.values(merged);
-    if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
-    coll.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
+    if(!sammlungShowErweiterungen) coll=coll.filter(function(s){ return !s.isExpansion; });
+    if(q) coll=coll.filter(function(s){ return (s.name||"").toLowerCase().includes(q); });
+    coll.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"de"); });
     if(!coll.length){
       grid.innerHTML="<div class='empty' style='grid-column:1/-1'><div class='empty-icon'>🎮</div><p>Keine Spiele gefunden.</p></div>";
       return;
@@ -3659,8 +3681,16 @@ function renderSammlung(filterUser){
   // Single user view
   var target=viewUser||currentName;
   var coll=(sammlungData[target]||[]).slice();
-  if(q) coll=coll.filter(function(s){ return s.name.toLowerCase().includes(q); });
-  coll.sort(function(a,b){ return a.name.localeCompare(b.name,"de"); });
+  if(!sammlungShowErweiterungen) coll=coll.filter(function(s){ return !s.isExpansion; });
+  if(q) coll=coll.filter(function(s){ return (s.name||"").toLowerCase().includes(q); });
+  coll.sort(function(a,b){ return (a.name||"").localeCompare((b.name||""),"de"); });
+  // Update count badge
+  var badge=document.getElementById("sammlung-count-badge");
+  if(badge){
+    var allCnt=(sammlungData[target]||[]).length;
+    var expCnt=(sammlungData[target]||[]).filter(function(s){ return s.isExpansion; }).length;
+    badge.textContent=coll.length+" Spiele"+(expCnt?" · "+expCnt+" Erweiterungen":"");
+  }
 
   if(!coll.length){
     var isMe=target===currentName;
