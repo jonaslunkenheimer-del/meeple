@@ -3556,33 +3556,21 @@ async function saveMySammlung(){
 
 
 async function fetchBggCollection(bggUser){
-  var base=SB_URL+"/functions/v1/bgg-proxy";
-  var urlGames=base+"?action=collection&username="+encodeURIComponent(bggUser)+"&subtype=boardgame";
-  var urlExp=base+"?action=collection&username="+encodeURIComponent(bggUser)+"&subtype=boardgameexpansion";
-
-  async function fetchList(url){
-    for(var i=0;i<12;i++){
-      if(i>0) await new Promise(function(res){ setTimeout(res,6000); });
-      try{
-        var r=await fetch(url,{headers:authHdrs()});
-        var text=await r.text();
-        if(text.includes("try again")||text.includes("Your request for this collection")) continue;
-        var doc=new DOMParser().parseFromString(text,"text/xml");
-        var items=Array.from(doc.querySelectorAll("item"));
-        if(items.length>0) return items;
-        var msg=doc.querySelector("message");
-        if(msg) continue;
-      }catch(e){ continue; }
-    }
-    return [];
+  var url=SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser);
+  for(var i=0;i<8;i++){
+    if(i>0) await new Promise(function(res){ setTimeout(res,6000); });
+    try{
+      var r=await fetch(url,{headers:authHdrs()});
+      var text=await r.text();
+      if(text.includes("try again")||text.includes("Your request for this collection")) continue;
+      var doc=new DOMParser().parseFromString(text,"text/xml");
+      var items=Array.from(doc.querySelectorAll("item"));
+      if(items.length>0) return items;
+      var msg=doc.querySelector("message");
+      if(msg) continue;
+    }catch(e){ continue; }
   }
-
-  var [games,expansions]=await Promise.all([fetchList(urlGames),fetchList(urlExp)]);
-  // Tag expansion items explicitly since subtype attribute may not survive Edge Function
-  expansions.forEach(function(el){ el._isExpansion=true; });
-  var all=games.concat(expansions);
-  if(!all.length) throw new Error("BGG nicht erreichbar. Bitte in ein paar Minuten erneut versuchen.");
-  return all;
+  throw new Error("BGG gerade nicht erreichbar.");
 }
 
 async function importFromBgg(){
