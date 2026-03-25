@@ -3686,9 +3686,9 @@ function renderSammlung(filterUser){
     var myCount=(sammlungData[currentName]||[]).length;
     var totalCount=users.reduce(function(s,u){ return s+sammlungData[u].length; },0);
     sel.innerHTML="<option value='__all__' "+(curVal==='__all__'?"selected":"")+">🌐 Alle Sammlungen ("+totalCount+")</option>"
-      +"<option value='' "+(curVal===''?"selected":"")+">Meine Sammlung ("+myCount+")</option>"
+      +"<option value='' "+(curVal===''?"selected":"")+">Meine Sammlung</option>"
       +users.filter(function(u){ return u!==currentName; }).map(function(u){
-        return "<option value='"+h(u)+"'"+(u===curVal?" selected":"")+">"+(h(u))+" ("+sammlungData[u].length+")</option>";
+        return "<option value='"+h(u)+"'"+(u===curVal?" selected":"")+">"+(h(u))+"</option>";
       }).join("");
   }
 
