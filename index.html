@@ -3532,24 +3532,37 @@ async function saveMySammlung(){
 
 
 async function fetchBggCollection(bggUser){
-  var url=SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser);
-  for(var attempt=0;attempt<10;attempt++){
-    if(attempt>0) await new Promise(function(res){ setTimeout(res,attempt<3?5000:8000); });
-    try{
-      var r=await fetch(url,{headers:authHdrs()});
-      var text=await r.text();
-      // Only skip if BGG explicitly says "try again" (not just any <message> tag)
-      if(text.includes("try again")||text.includes("Your request for this collection")) continue;
-      var doc=new DOMParser().parseFromString(text,"text/xml");
-      // Check for error message without items
-      var msgEl=doc.querySelector("message");
-      var items=Array.from(doc.querySelectorAll("item[subtype]"));
-      if(!items.length) items=Array.from(doc.querySelectorAll("item"));
-      if(items.length>0) return items;
-      if(msgEl&&items.length===0) continue; // BGG message with no items = not ready
-    }catch(e){ continue; }
+  // Call BGG API directly from browser — BGG allows CORS on their XML API
+  var baseUrl="https://boardgamegeek.com/xmlapi2/collection?username="+encodeURIComponent(bggUser)+"&own=1&stats=1";
+  
+  async function fetchList(url){
+    for(var i=0;i<8;i++){
+      if(i>0) await new Promise(function(res){ setTimeout(res,5000); });
+      try{
+        var r=await fetch(url);
+        if(r.status===202){ continue; } // BGG preparing, retry
+        if(!r.ok) continue;
+        var text=await r.text();
+        if(text.includes("try again")||text.includes("Your request for this collection")) continue;
+        var doc=new DOMParser().parseFromString(text,"text/xml");
+        var msgEl=doc.querySelector("message");
+        var items=Array.from(doc.querySelectorAll("item"));
+        if(items.length>0) return items;
+        if(msgEl) continue;
+        return items;
+      }catch(e){ continue; }
+    }
+    return [];
   }
-  throw new Error("BGG nicht erreichbar. Bitte in ein paar Minuten erneut versuchen.");
+  
+  // Fetch boardgames and expansions in parallel
+  var results=await Promise.all([
+    fetchList(baseUrl+"&subtype=boardgame"),
+    fetchList(baseUrl+"&subtype=boardgameexpansion")
+  ]);
+  var allItems=results[0].concat(results[1]);
+  if(allItems.length===0) throw new Error("BGG nicht erreichbar. Bitte in ein paar Minuten erneut versuchen.");
+  return allItems;
 }
 
 async function importFromBgg(){
