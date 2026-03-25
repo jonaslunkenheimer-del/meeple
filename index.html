@@ -3557,11 +3557,11 @@ async function saveMySammlung(){
 
 async function fetchBggCollection(bggUser){
   var url=SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser);
-  for(var i=0;i<8;i++){
-    if(i>0) await new Promise(function(res){ setTimeout(res,6000); });
+  for(var i=0;i<10;i++){
+    if(i>0) await new Promise(function(res){ setTimeout(res,4000); });
     try{
       var r=await fetch(url,{headers:authHdrs()});
-      if(!r.ok){ continue; }
+      if(!r.ok) continue;
       var text=await r.text();
       if(text.includes("try again")||text.includes("Your request for this collection")) continue;
       var doc=new DOMParser().parseFromString(text,"text/xml");
