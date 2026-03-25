@@ -3556,14 +3556,22 @@ async function saveMySammlung(){
 
 
 async function fetchBggCollection(bggUser){
-  var url=SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser);
+  var bggUrl="https://boardgamegeek.com/xmlapi2/collection?username="+encodeURIComponent(bggUser)+"&own=1&stats=1";
+  // Try multiple proxy approaches
+  var proxies=[
+    function(){ return fetch(SB_URL+"/functions/v1/bgg-proxy?action=collection&username="+encodeURIComponent(bggUser),{headers:authHdrs()}); },
+    function(){ return fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(bggUrl)); },
+    function(){ return fetch("https://corsproxy.io/?"+encodeURIComponent(bggUrl)); },
+  ];
   for(var i=0;i<10;i++){
     if(i>0) await new Promise(function(res){ setTimeout(res,4000); });
+    var proxyFn=proxies[i%proxies.length];
     try{
-      var r=await fetch(url,{headers:authHdrs()});
+      var r=await proxyFn();
       if(!r.ok) continue;
       var text=await r.text();
       if(text.includes("try again")||text.includes("Your request for this collection")) continue;
+      if(text.includes("error")||text.length<100) continue;
       var doc=new DOMParser().parseFromString(text,"text/xml");
       var items=Array.from(doc.querySelectorAll("item"));
       if(items.length>0) return items;
