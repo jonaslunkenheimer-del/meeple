@@ -1815,13 +1815,37 @@ async function loadAdminUsers(){
   try{
     var r=await fetch(SB_URL+"/auth/v1/admin/users",{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
     var d=await r.json(); var users=d.users||[];
+    // Also load sammlung counts
+    var sammlungR=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,sammlung",{headers:authHdrs()});
+    var sammlungRows=sammlungR.ok?await sammlungR.json():[];
+    var sammlungMap={};
+    sammlungRows.forEach(function(row){ if(row.sammlung) sammlungMap[row.user_name]=(row.sammlung||[]).length; });
     list.innerHTML=users.map(function(u){
       var name=(u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de","");
+      var count=sammlungMap[name]||0;
+      var delBtn=count>0
+        ? "<button onclick='adminDeleteSammlung(\""+h(name)+"\")' style='background:#fef2f2;border:1px solid #fca5a5;color:var(--red);border-radius:7px;padding:3px 8px;font-size:.72rem;cursor:pointer;font-weight:600' title='Sammlung löschen'>🗑 "+count+" Spiele</button>"
+        : "<span style='font-size:.72rem;color:var(--text-3)'>Keine Sammlung</span>";
       return "<div style='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)'>"
         +"<div class='av av-sm' style='background:"+nameColor(name)+"'>"+nameInit(name)+"</div>"
-        +"<div style='flex:1;font-size:.85rem'><strong>"+h(name)+"</strong><br><span style='font-size:.72rem;color:var(--text-3)'>"+h(u.email)+"</span></div></div>";
+        +"<div style='flex:1;font-size:.85rem'><strong>"+h(name)+"</strong><br><span style='font-size:.72rem;color:var(--text-3)'>"+h(u.email)+"</span></div>"
+        +delBtn+"</div>";
     }).join("");
   }catch(e){ list.innerHTML="<div style='color:var(--red);font-size:.82rem'>Fehler: "+h(e.message)+"</div>"; }
+}
+
+async function adminDeleteSammlung(userName){
+  showConfirm("Sammlung löschen?","Die komplette Spielesammlung von \""+userName+"\" wird gelöscht.",async function(){
+    try{
+      await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:userName,sammlung:[]})});
+      delete sammlungData[userName];
+      toast("Sammlung von "+userName+" gelöscht ✓");
+      loadAdminUsers();
+      // Re-render sammlung if open
+      var tab=document.getElementById("tab-sammlung");
+      if(tab&&tab.classList.contains("active")) renderSammlung();
+    }catch(e){ toast("Fehler: "+e.message); }
+  });
 }
 async function adminCreateUser(){
   var vn=document.getElementById("admin-new-vorname").value.trim();
@@ -3615,8 +3639,14 @@ async function importFromBgg(){
     if(lbl) lbl.textContent="↻ Sammlung aktualisieren";
   }catch(e){
     clearInterval(stepTimer);
-    toast("Fehler: "+e.message);
-    if(lbl) lbl.textContent=(sammlungData[currentName]||[]).length?"↻ Sammlung aktualisieren":"BGG importieren";
+    var existing=(sammlungData[currentName]||[]).length;
+    if(existing>0){
+      // Keep existing data, just show info
+      toast("BGG gerade nicht erreichbar — "+existing+" gespeicherte Spiele bleiben erhalten.");
+    } else {
+      toast("BGG gerade nicht erreichbar. Bitte später erneut versuchen.");
+    }
+    if(lbl) lbl.textContent=existing?"↻ Sammlung aktualisieren":"BGG importieren";
   }finally{
     if(btn){ btn.disabled=false; }
   }
