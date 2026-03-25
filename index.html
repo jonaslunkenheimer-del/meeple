@@ -3554,6 +3554,8 @@ async function fetchBggCollection(bggUser){
   }
 
   var [games,expansions]=await Promise.all([fetchList(urlGames),fetchList(urlExp)]);
+  // Tag expansion items explicitly since subtype attribute may not survive Edge Function
+  expansions.forEach(function(el){ el._isExpansion=true; });
   var all=games.concat(expansions);
   if(!all.length) throw new Error("BGG nicht erreichbar. Bitte in ein paar Minuten erneut versuchen.");
   return all;
@@ -3591,7 +3593,7 @@ async function importFromBgg(){
     var coll=items.map(function(el){
       var id=el.getAttribute("objectid");
       var subtype=el.getAttribute("subtype")||"";
-      var isExpansion=subtype==="boardgameexpansion";
+      var isExpansion=el._isExpansion===true||subtype==="boardgameexpansion";
       var nameEl=el.querySelector("name"); var name=nameEl?nameEl.textContent.trim():"Unbekannt";
       var yearEl=el.querySelector("yearpublished"); var year=yearEl?yearEl.textContent.trim():"";
       var imgEl=el.querySelector("thumbnail"); var image=imgEl?imgEl.textContent.trim():"";
