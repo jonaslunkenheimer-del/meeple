@@ -800,6 +800,24 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div id="service-key-box" style="display:none"><input id="service-key-input" type="hidden"><div id="service-key-status"></div></div>
     <div id="admin-user-list"></div>
     <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-weight:700;margin-bottom:10px">📢 Ankündigungen</div>
+      <div id="admin-announcements-list" style="margin-bottom:12px"></div>
+      <div class="form-field" style="margin-bottom:8px">
+        <label>Titel</label>
+        <input class="input-field" id="admin-ann-title" placeholder="z.B. Wichtige Info">
+      </div>
+      <div class="form-field" style="margin-bottom:8px">
+        <label>Text</label>
+        <textarea class="input-field" id="admin-ann-text" rows="3" placeholder="Deine Nachricht an alle…" style="resize:vertical;font-family:inherit"></textarea>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <label style="font-size:.82rem;font-weight:500;color:var(--text-2);display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="admin-ann-pinned" style="accent-color:var(--blue)"> 📌 Angepinnt (bleibt bis manuell gelöscht)
+        </label>
+      </div>
+      <button class="btn btn-blue btn-sm" onclick="adminSaveAnnouncement()">📢 Ankündigung senden</button>
+    </div>
+    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
       <div style="font-weight:700;margin-bottom:10px">🎲 BGG API Token</div>
       <div class="form-field" style="margin-bottom:8px">
         <input class="input-field" id="admin-bgg-token" type="password" placeholder="e3f8c3ff-…" autocomplete="off" style="font-family:'DM Mono',monospace;font-size:.82rem">
@@ -1388,6 +1406,12 @@ async function showWhatsnew(){
   var last=await getAndUpdateLogin();
   var since=last||new Date(0);
 
+  // 0. Admin-Ankündigungen (angepinnte immer, andere nur wenn neu seit letztem Login)
+  var announcements=await loadAnnouncements();
+  var shownAnns=announcements.filter(function(a){
+    return a.pinned||new Date(a.ts)>since;
+  });
+
   // 1. Neue Termine (nicht vom User selbst, sichtbar für User)
   var nt=state.termine.filter(function(t){
     if(!t.ts||new Date(t.ts)<=since||t.creator===currentName) return false;
@@ -1421,7 +1445,7 @@ async function showWhatsnew(){
   // 3. Neue Marktplatz-Angebote
   var nm=mData.filter(function(m){ return m.ts&&new Date(m.ts)>since&&m.seller!==currentName; });
 
-  if(!nt.length&&!activity.length&&!nm.length) return;
+  if(!nt.length&&!activity.length&&!nm.length&&!shownAnns.length) return;
 
   function sectionHeader(label){
     return "<div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>"+label+"</div>";
@@ -1434,6 +1458,21 @@ async function showWhatsnew(){
   }
 
   var html="";
+
+  // Ankündigungen ganz oben
+  if(shownAnns.length){
+    html+="<div style='margin-bottom:18px'>";
+    shownAnns.forEach(function(a){
+      html+="<div style='background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px'>"
+        +"<div style='display:flex;align-items:center;gap:6px;margin-bottom:4px'>"
+        +(a.pinned?"<span style='font-size:.8rem'>📌</span>":"<span style='font-size:.8rem'>📢</span>")
+        +"<span style='font-weight:700;font-size:.88rem;color:#92400e'>"+h(a.title)+"</span>"
+        +"</div>"
+        +"<div style='font-size:.82rem;color:#78350f;line-height:1.5'>"+h(a.text).replace(/\n/g,"<br>")+"</div>"
+        +"</div>";
+    });
+    html+="</div>";
+  }
 
   if(nt.length){
     html+="<div style='margin-bottom:18px'>"+sectionHeader("Neue Termine ("+nt.length+")");
@@ -1493,12 +1532,61 @@ async function showWhatsnew(){
   document.getElementById("whatsnew-body").innerHTML=html;
   document.getElementById("whatsnew-modal").style.display="flex";
   _whatsnewHtml=html;
-  _whatsnewCount=nt.length+activity.length+nm.length;
+  _whatsnewCount=nt.length+activity.length+nm.length+shownAnns.length;
   setNotifBadge(_whatsnewCount);
 }
 function closeWhatsnew(){ document.getElementById("whatsnew-modal").style.display="none"; setNotifBadge(0); }
 
-// ── Supabase ──
+// ── Announcements ──
+async function loadAnnouncements(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/"+SB_CONFIG+"?key=eq.announcements&select=value",{headers:authHdrs()});
+    if(!r.ok) return [];
+    var rows=await r.json();
+    return rows.length?JSON.parse(rows[0].value||"[]"):[];
+  }catch(e){ return []; }
+}
+async function saveAnnouncements(list){
+  await fetch(SB_URL+"/rest/v1/"+SB_CONFIG,{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({key:"announcements",value:JSON.stringify(list)})});
+}
+async function adminLoadAnnouncementsList(){
+  var el=document.getElementById("admin-announcements-list"); if(!el) return;
+  var list=await loadAnnouncements();
+  if(!list.length){ el.innerHTML="<div style='font-size:.82rem;color:var(--text-3)'>Keine aktiven Ankündigungen.</div>"; return; }
+  el.innerHTML=list.map(function(a,i){
+    return "<div style='display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px'>"
+      +"<div style='flex:1;min-width:0'>"
+      +(a.pinned?"<span style='font-size:.65rem;background:#fef3c7;color:#d97706;border-radius:4px;padding:1px 5px;margin-right:4px'>📌 Angepinnt</span>":"")
+      +"<span style='font-weight:700;font-size:.82rem'>"+h(a.title)+"</span>"
+      +"<div style='font-size:.75rem;color:var(--text-2);margin-top:2px'>"+h(a.text)+"</div>"
+      +"<div style='font-size:.68rem;color:var(--text-3);margin-top:2px'>"+new Date(a.ts).toLocaleDateString("de-DE")+"</div>"
+      +"</div>"
+      +"<button onclick='adminDeleteAnnouncement("+i+")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.85rem;flex-shrink:0' title='Löschen'>🗑</button>"
+      +"</div>";
+  }).join("");
+}
+async function adminSaveAnnouncement(){
+  var title=document.getElementById("admin-ann-title").value.trim();
+  var text=document.getElementById("admin-ann-text").value.trim();
+  if(!title||!text){ toast("Titel und Text erforderlich."); return; }
+  var pinned=document.getElementById("admin-ann-pinned").checked;
+  var list=await loadAnnouncements();
+  list.unshift({id:Date.now(),title:title,text:text,pinned:pinned,ts:new Date().toISOString()});
+  await saveAnnouncements(list);
+  document.getElementById("admin-ann-title").value="";
+  document.getElementById("admin-ann-text").value="";
+  document.getElementById("admin-ann-pinned").checked=false;
+  toast("Ankündigung gespeichert ✓");
+  adminLoadAnnouncementsList();
+}
+async function adminDeleteAnnouncement(idx){
+  var list=await loadAnnouncements();
+  list.splice(idx,1);
+  await saveAnnouncements(list);
+  toast("Ankündigung gelöscht.");
+  adminLoadAnnouncementsList();
+}
+
 async function loadState(){
   var r=await fetch(SB_URL+"/rest/v1/"+SB_TABLE+"?id=eq.1&select=data",{headers:authHdrs()});
   if(!r.ok) throw new Error("loadState "+r.status);
@@ -1807,6 +1895,7 @@ async function savePassword(){
 function openAdminModal(){
   document.getElementById("admin-modal").style.display="flex";
   loadAdminUsers();
+  adminLoadAnnouncementsList();
   // Show current token status
   var status=document.getElementById("admin-bgg-status");
   if(status) status.textContent=bggTok?"✓ Token aktiv ("+bggTok.slice(0,8)+"…)":"Noch kein Token gespeichert.";
