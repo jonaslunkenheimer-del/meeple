@@ -2911,7 +2911,9 @@ function renderZusagen(){
   list.innerHTML=mine.map(function(t){
     var dt=t.date?new Date(t.date):null;
     var past=dt&&dt<now;
-    var diff=dt?Math.ceil((dt-now)/(1000*60*60*24)):null;
+    var todayMidnight=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    var eventMidnight=dt?new Date(dt.getFullYear(),dt.getMonth(),dt.getDate()):null;
+    var diff=eventMidnight?Math.round((eventMidnight-todayMidnight)/(1000*60*60*24)):null;
     var badge="";
     if(diff===0) badge="<span style='background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#128293; Heute!</span>";
     else if(diff===1) badge="<span style='background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700'>&#9200; Morgen!</span>";
