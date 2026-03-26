@@ -915,9 +915,23 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div style="background:#f0fdf4;border:1px solid var(--green-bd);border-radius:var(--radius-sm);padding:12px 14px">
           <div style="font-weight:600;font-size:.83rem;margin-bottom:4px">📲 Push-Benachrichtigungen</div>
           <div style="font-size:.7rem;color:var(--text-3);margin-bottom:10px">Direkte Benachrichtigungen auf dein Gerät — auch wenn die App nicht geöffnet ist. Benötigt die installierte PWA.</div>
+          <!-- Install guide buttons -->
+          <div style="display:flex;gap:6px;margin-bottom:10px">
+            <button onclick="showInstallGuide('ios')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#000;color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              iOS installieren
+            </button>
+            <button onclick="showInstallGuide('android')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#3ddc84;color:#000;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24C14.93 8.31 13.5 8 12 8s-2.93.31-4.47.91L5.65 5.67c-.19-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25S6.31 12.75 7 12.75s1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
+              Android installieren
+            </button>
+          </div>
           <div id="push-status" style="font-size:.75rem;margin-bottom:8px"></div>
           <button class="btn btn-outline btn-sm" style="width:100%;border-color:var(--green);color:var(--green)" id="push-toggle-btn" onclick="togglePushSubscription()">🔔 Push aktivieren</button>
         </div>
+
+        <!-- Install Guide Modal (inline) -->
+        <div id="install-guide-box" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:var(--radius-sm);padding:14px"></div>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
         <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
@@ -4076,6 +4090,35 @@ function renderAchievements(targetUser){
 
 // ── Push Notifications ──
 const VAPID_PUBLIC = "BLQYSSqATZ7twGCSN2PWTdhI4L8Zo4awicbkRDCjwzAfUz12iYLE0od7tR2Vw2uX13aIfRe7qQlQLyVIxUYgbTU";
+
+function showInstallGuide(os){
+  var box=document.getElementById("install-guide-box");
+  if(!box) return;
+  if(box.dataset.os===os&&box.style.display!=="none"){ box.style.display="none"; box.dataset.os=""; return; }
+  box.dataset.os=os;
+  box.style.display="block";
+  if(os==="ios"){
+    box.innerHTML="<div style='font-weight:700;font-size:.83rem;margin-bottom:10px'>\uD83C\uDF4E iOS \u2013 Als App installieren</div>"
+      +"<div style='font-size:.78rem;color:var(--text-2);line-height:1.7'>"
+      +"<div style='margin-bottom:6px'>1\uFE0F\u20E3 \u00d6ffne <strong>meepleplaner.de</strong> in <strong>Safari</strong></div>"
+      +"<div style='margin-bottom:6px'>2\uFE0F\u20E3 Tippe auf das <strong>Teilen-Symbol</strong> \u2B06\uFE0F unten in der Mitte</div>"
+      +"<div style='margin-bottom:6px'>3\uFE0F\u20E3 Scrolle runter und w\u00e4hle <strong>Zum Home-Bildschirm</strong></div>"
+      +"<div style='margin-bottom:6px'>4\uFE0F\u20E3 Tippe oben rechts auf <strong>Hinzuf\u00fcgen</strong></div>"
+      +"<div style='margin-bottom:10px'>5\uFE0F\u20E3 \u00d6ffne die App vom Home-Bildschirm und aktiviere hier Push</div>"
+      +"<div style='background:#fff;border:1px solid #fde68a;border-radius:6px;padding:8px;font-size:.72rem;color:#92400e'>\u26a0\uFE0F Push-Notifications auf iOS funktionieren nur wenn die App vom Home-Bildschirm ge\u00f6ffnet wird. Ben\u00f6tigt iOS 16.4+</div>"
+      +"</div>";
+  } else {
+    box.innerHTML="<div style='font-weight:700;font-size:.83rem;margin-bottom:10px'>\uD83E\uDD16 Android \u2013 Als App installieren</div>"
+      +"<div style='font-size:.78rem;color:var(--text-2);line-height:1.7'>"
+      +"<div style='margin-bottom:6px'>1\uFE0F\u20E3 \u00d6ffne <strong>meepleplaner.de</strong> in <strong>Chrome</strong></div>"
+      +"<div style='margin-bottom:6px'>2\uFE0F\u20E3 Tippe auf das <strong>Men\u00fc</strong> (3 Punkte oben rechts)</div>"
+      +"<div style='margin-bottom:6px'>3\uFE0F\u20E3 W\u00e4hle <strong>App installieren</strong> oder <strong>Zum Startbildschirm hinzuf\u00fcgen</strong></div>"
+      +"<div style='margin-bottom:10px'>4\uFE0F\u20E3 \u00d6ffne die App und aktiviere hier Push-Benachrichtigungen</div>"
+      +"<div style='background:#fff;border:1px solid #fde68a;border-radius:6px;padding:8px;font-size:.72rem;color:#92400e'>\uD83D\uDCA1 Chrome zeigt oft automatisch ein App installieren Banner unten an der Seite an.</div>"
+      +"</div>";
+  }
+}
+
 
 function urlBase64ToUint8Array(base64String){
   var padding="=".repeat((4-base64String.length%4)%4);
