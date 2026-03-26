@@ -520,7 +520,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="name-error" id="name-error"></div>
       <label style="display:flex;align-items:center;gap:8px;margin:10px 0 4px;cursor:pointer;font-size:.82rem;color:var(--text-2);font-weight:500;user-select:none">
         <input type="checkbox" id="login-remember" style="width:16px;height:16px;accent-color:var(--blue);cursor:pointer">
-        Angemeldet bleiben <span style="color:var(--text-3);font-size:.75rem">(24 Std.)</span>
+        Angemeldet bleiben <span style="color:var(--text-3);font-size:.75rem">(dauerhaft)</span>
       </label>
       <button type="submit" class="btn-name" id="login-btn">Einloggen →</button>
     </form>
@@ -916,16 +916,30 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <div style="font-weight:600;font-size:.83rem;margin-bottom:4px">📲 Push-Benachrichtigungen</div>
           <div style="font-size:.7rem;color:var(--text-3);margin-bottom:10px">Direkte Benachrichtigungen auf dein Gerät — auch wenn die App nicht geöffnet ist. Benötigt die installierte PWA.</div>
           <!-- Install guide buttons -->
-          <div style="display:flex;gap:6px;margin-bottom:10px">
-            <button onclick="showInstallGuide('ios')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#000;color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">
+          <div style="display:flex;gap:6px;margin-bottom:10px" id="install-btns">
+            <button id="install-ios-btn" onclick="showInstallGuide('ios')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#000;color:#fff;border:2px solid transparent;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
               iOS installieren
             </button>
-            <button onclick="showInstallGuide('android')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#3ddc84;color:#000;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">
+            <button id="install-android-btn" onclick="showInstallGuide('android')" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#3ddc84;color:#000;border:2px solid transparent;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="black"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24C14.93 8.31 13.5 8 12 8s-2.93.31-4.47.91L5.65 5.67c-.19-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25c-.69 0-1.25-.56-1.25-1.25S6.31 12.75 7 12.75s1.25.56 1.25 1.25-.56 1.25-1.25 1.25zm10 0c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25z"/></svg>
               Android installieren
             </button>
           </div>
+          <script>
+          (function(){
+            var ua=navigator.userAgent;
+            var isIos=/iphone|ipad|ipod/i.test(ua);
+            var isAndroid=/android/i.test(ua);
+            var iosBtn=document.getElementById("install-ios-btn");
+            var andBtn=document.getElementById("install-android-btn");
+            if(isIos&&iosBtn){ iosBtn.style.border="2px solid #fff"; iosBtn.style.boxShadow="0 0 0 2px #3b6ef5"; }
+            if(isAndroid&&andBtn){ andBtn.style.border="2px solid #000"; andBtn.style.boxShadow="0 0 0 2px #3b6ef5"; }
+            // Auto-open the right guide
+            if(isIos) showInstallGuide && setTimeout(function(){ showInstallGuide('ios'); },100);
+            if(isAndroid) showInstallGuide && setTimeout(function(){ showInstallGuide('android'); },100);
+          })();
+          </script>
           <div id="push-status" style="font-size:.75rem;margin-bottom:8px"></div>
           <button class="btn btn-outline btn-sm" style="width:100%;border-color:var(--green);color:var(--green)" id="push-toggle-btn" onclick="togglePushSubscription()">🔔 Push aktivieren</button>
         </div>
@@ -1264,7 +1278,7 @@ function setAv(el,name){ if(!el) return; el.style.background=nameColor(name); el
 // ── Login ──
 // ── Session Persistence ──
 var SESSION_KEY="meeples_session";
-var SESSION_TTL=24*60*60*1000; // 24h in ms
+var SESSION_TTL=365*24*60*60*1000; // 1 Jahr (dauerhaft)
 
 function saveSession(sess, name){
   try{
