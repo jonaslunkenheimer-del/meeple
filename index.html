@@ -4048,7 +4048,7 @@ async function sendGlobalNotif(type, subject, bodyHtml){
     toast("Notif emails: "+emails.length);
     if(!emails.length) return;
     var emailHtml=buildNotifEmail(subject,bodyHtml);
-    var res=await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails,subject:"🎲 "+subject,html:emailHtml})});
+    var res=await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({to:emails,subject:"🎲 "+subject,html:emailHtml})});
     var d=await res.json();
     toast("Notif result: "+JSON.stringify(d).slice(0,60));
   }catch(e){ toast("Notif Fehler: "+e.message); }
