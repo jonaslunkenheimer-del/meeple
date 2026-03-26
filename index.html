@@ -2439,7 +2439,7 @@ function buildTerminCard(t, open){
         var url=t.mapsUrl||("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(t.ort));
         return "<a href='"+h(url)+"' target='_blank' class='btn btn-outline btn-sm' style='text-decoration:none;color:#0369a1;border-color:#bae6fd;background:#f0f9ff'>🗺 Maps</a>";
       })():"")
-    +(currentNotifEmail?(function(){
+    +(currentNotifEmail||window._hasPushSub?(function(){
         var subs=t.subscribers||[];
         var isSubscribed=subs.some(function(s){ return s.name===currentName; });
         return "<button class='btn btn-sm' onclick='toggleTerminSubscribe("+t.id+")' style='background:"+(isSubscribed?"#f0fdf4":"var(--surface2)")+";color:"+(isSubscribed?"var(--green)":"var(--text-2)")+";border-color:"+(isSubscribed?"var(--green-bd)":"var(--border)")+";'>"+(isSubscribed?"🔔 Abonniert":"🔔 Abonnieren")+"</button>";
@@ -4112,14 +4112,16 @@ async function checkPushStatus(){
       btn.textContent="🔕 Push deaktivieren";
       btn.style.borderColor="var(--red)";
       btn.style.color="var(--red)";
+      window._hasPushSub=true;
     } else {
       status.textContent="Push-Notifications sind nicht aktiviert.";
       status.style.color="var(--text-3)";
       btn.textContent="🔔 Push aktivieren";
       btn.style.borderColor="var(--green)";
       btn.style.color="var(--green)";
+      window._hasPushSub=false;
     }
-  }catch(e){ status.textContent=""; }
+  }catch(e){ status.textContent=""; window._hasPushSub=false; }
 }
 
 async function togglePushSubscription(){
@@ -4131,6 +4133,7 @@ async function togglePushSubscription(){
       // Unsubscribe
       await sub.unsubscribe();
       await savePushSub(null);
+      window._hasPushSub=false;
       toast("Push deaktiviert.");
       checkPushStatus();
     } else {
@@ -4142,6 +4145,7 @@ async function togglePushSubscription(){
         applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC)
       });
       await savePushSub(newSub);
+      window._hasPushSub=true;
       toast("🔔 Push-Notifications aktiviert!");
       checkPushStatus();
     }
@@ -4218,17 +4222,18 @@ async function saveNotifPrefs(){
 }
 
 async function toggleTerminSubscribe(tid){
-  var t=getT(tid); if(!t||!currentNotifEmail) return;
+  var t=getT(tid); if(!t) return;
+  if(!currentNotifEmail&&!window._hasPushSub){ toast("Bitte zuerst E-Mail oder Push-Benachrichtigungen im Profil aktivieren."); return; }
   if(!t.subscribers) t.subscribers=[];
   var idx=t.subscribers.findIndex(function(s){ return s.name===currentName; });
   if(idx>-1){
     t.subscribers.splice(idx,1);
     toast("🔕 Abonnement beendet");
   } else {
-    t.subscribers.push({name:currentName,email:currentNotifEmail});
+    t.subscribers.push({name:currentName,email:currentNotifEmail||""});
     toast("🔔 Abonniert! Du wirst bei Änderungen benachrichtigt.");
   }
-  renderTermine();
+  rerenderCard(tid);
   saveState();
 }
 
@@ -4247,10 +4252,34 @@ async function sendNotifToSubscribers(t, eventType, extraInfo){
     +"</div>"
     +"<div class='section'><h3>"+eventType+"</h3><p>"+extraInfo+"</p></div>";
   var emailHtml=buildNotifEmail("Neuigkeit: "+t.title, bodyHtml);
-  var emails=t.subscribers.filter(function(s){ return s.name!==currentName&&s.email; });
-  if(!emails.length) return;
+  var subscribers=t.subscribers.filter(function(s){ return s.name!==currentName; });
+  if(!subscribers.length) return;
+
+  // E-Mail senden
+  var emailRecips=subscribers.filter(function(s){ return s.email; });
+  if(emailRecips.length){
+    try{
+      await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({to:emailRecips.map(function(s){ return s.email; }),subject:"🎲 "+t.title+" – "+eventType,html:emailHtml})});
+    }catch(e){}
+  }
+
+  // Push senden an alle Abonnenten
   try{
-    await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails.map(function(s){ return s.email; }),subject:"🎲 "+t.title+" – "+eventType,html:emailHtml})});
+    var names=subscribers.map(function(s){ return s.name; });
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,push_subscription",{headers:authHdrs()});
+    if(r.ok){
+      var rows=await r.json();
+      var pushSubs=rows.filter(function(row){ return names.includes(row.user_name)&&row.push_subscription; })
+                       .map(function(row){ try{ return JSON.parse(row.push_subscription); }catch(e){ return null; } })
+                       .filter(Boolean);
+      if(pushSubs.length){
+        await fetch(SB_URL+"/functions/v1/send-push",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},
+          body:JSON.stringify({subscriptions:pushSubs,title:"🎲 "+t.title,body:eventType+": "+extraInfo.replace(/<[^>]*>/g,"").slice(0,80),url:"/"})
+        });
+      }
+    }
   }catch(e){}
 }
 
