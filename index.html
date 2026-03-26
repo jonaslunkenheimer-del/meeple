@@ -4038,17 +4038,20 @@ async function sendNotifToSubscribers(t, eventType, extraInfo){
 }
 
 async function sendGlobalNotif(type, subject, bodyHtml){
-  // Gather all users with global pref enabled for this type
   try{
     var field=type==="termine"?"notif_all_termine":"notif_all_markt";
     var r=await fetch(SB_URL+"/rest/v1/user_meta?"+field+"=eq.true&select=user_name,notif_email",{headers:authHdrs()});
-    if(!r.ok) return;
+    if(!r.ok){ toast("Notif DB Fehler: "+r.status); return; }
     var rows=await r.json();
+    toast("Notif rows: "+rows.length+" currentName:"+currentName);
     var emails=rows.filter(function(row){ return row.notif_email&&row.user_name!==currentName; }).map(function(row){ return row.notif_email; });
+    toast("Notif emails: "+emails.length);
     if(!emails.length) return;
     var emailHtml=buildNotifEmail(subject,bodyHtml);
-    await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails,subject:"🎲 "+subject,html:emailHtml})});
-  }catch(e){}
+    var res=await fetch(SB_NOTIF_FN,{method:"POST",headers:authHdrs(),body:JSON.stringify({to:emails,subject:"🎲 "+subject,html:emailHtml})});
+    var d=await res.json();
+    toast("Notif result: "+JSON.stringify(d).slice(0,60));
+  }catch(e){ toast("Notif Fehler: "+e.message); }
 }
 
 // ── QR Codes ──
