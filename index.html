@@ -865,11 +865,39 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0;position:relative">
       <button onclick="closeProfileModal()" style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center" title="Schließen">✕</button>
       <button onclick="switchUser()" style="position:absolute;top:10px;left:10px;height:28px;padding:0 10px;border-radius:14px;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.72rem;font-weight:600;display:flex;align-items:center;gap:4px" title="Abmelden">⏻ Abmelden</button>
-      <div class="av av-lg" id="profil-av" style="margin:0 auto 8px"></div>
+      <div id="profil-av" class="av av-lg" style="margin:0 auto 8px;cursor:pointer;position:relative;overflow:visible" onclick="document.getElementById('avatar-upload-input').click()" title="Profilbild ändern">
+        <input type="file" id="avatar-upload-input" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)">
+        <div style="position:absolute;bottom:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;box-shadow:0 1px 4px rgba(0,0,0,.2)">📷</div>
+      </div>
       <div style="font-size:1.05rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
     </div>
     <!-- Scrollable body -->
     <div style="padding:20px 24px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch">
+      <!-- Avatar section -->
+      <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">
+        <label style="font-size:.75rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px">Profilbild</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <button class="btn btn-outline btn-sm" style="flex:1" onclick="document.getElementById('avatar-upload-input').click()">📁 Bild hochladen</button>
+          <button class="btn btn-outline btn-sm" style="flex:1" onclick="showAvatarUrlInput()">🔗 Bild-URL</button>
+          <button class="btn btn-ghost btn-sm" onclick="removeAvatar()" title="Bild entfernen">🗑</button>
+        </div>
+        <div id="avatar-url-wrap" style="display:none;margin-bottom:8px">
+          <div style="display:flex;gap:6px">
+            <input class="input-field" id="avatar-url-input" placeholder="https://…" style="flex:1;font-size:.82rem">
+            <button class="btn btn-blue btn-sm" onclick="loadAvatarFromUrl()">Laden</button>
+          </div>
+        </div>
+        <!-- Cropper -->
+        <div id="avatar-crop-wrap" style="display:none;background:#000;border-radius:12px;overflow:hidden;position:relative;touch-action:none;margin-bottom:8px">
+          <canvas id="avatar-crop-canvas" style="display:block;width:100%;cursor:move"></canvas>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:160px;height:160px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none"></div>
+        </div>
+        <div id="avatar-crop-btns" style="display:none;display:flex;gap:6px">
+          <input type="range" id="avatar-zoom" min="1" max="3" step="0.01" value="1" style="flex:1;accent-color:var(--blue)" oninput="drawCrop()">
+          <button class="btn btn-blue btn-sm" onclick="confirmAvatarCrop()">✓ Speichern</button>
+          <button class="btn btn-ghost btn-sm" onclick="cancelAvatarCrop()">✕</button>
+        </div>
+      </div>
       <div class="form-field" style="margin-bottom:12px"><label>Anzeigename ändern</label><input class="input-field" id="profil-displayname" placeholder="Dein Name"></div>
       <button class="btn btn-outline btn-sm" style="width:100%;margin-bottom:16px" onclick="saveDisplayName()">✓ Name speichern</button>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
@@ -1297,7 +1325,30 @@ function authHdrs(x){ var tok=(session&&session.access_token)||SB_ANON; return O
 var COLORS=["#e74c3c","#3498db","#2ecc71","#9b59b6","#f39c12","#1abc9c","#e67e22","#34495e","#e91e63","#00bcd4"];
 function nameColor(n){ if(state.userColors&&state.userColors[n]) return state.userColors[n]; var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%COLORS.length; return COLORS[Math.abs(h)]; }
 function nameInit(n){ return n.split(" ").map(function(w){ return w[0]||""; }).join("").toUpperCase().slice(0,2)||"?"; }
-function setAv(el,name){ if(!el) return; el.style.background=nameColor(name); el.textContent=nameInit(name); }
+var userAvatars={}; // name -> dataURL or URL
+function setAv(el,name){
+  if(!el) return;
+  var avatar=userAvatars[name];
+  if(avatar){
+    el.style.background="transparent";
+    el.textContent="";
+    el.style.backgroundImage="url('"+avatar+"')";
+    el.style.backgroundSize="cover";
+    el.style.backgroundPosition="center";
+  } else {
+    el.style.background=nameColor(name);
+    el.style.backgroundImage="";
+    el.textContent=nameInit(name);
+  }
+}
+async function loadUserAvatars(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,avatar_url",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    rows.forEach(function(row){ if(row.avatar_url) userAvatars[row.user_name]=row.avatar_url; });
+  }catch(e){}
+}
 
 // ── Login ──
 // ── Session Persistence ──
@@ -1393,6 +1444,7 @@ async function startApp(name){
   try{ await loadState(); }catch(e){}
   await loadBggToken();
   await loadBggProfiles();
+  await loadUserAvatars();
   await loadNotifPrefs();
   await initPushOnStart(); // check + refresh push subscription silently
   await loadAllSammlungen(); // must be after loadBggProfiles so bggProfiles is populated for auto-sync
@@ -4168,7 +4220,112 @@ function renderAchievements(targetUser){
   el.innerHTML=html;
 }
 
-// ── Push Notifications ──
+// ── Avatar Cropper ──
+var _cropImg=null, _cropX=0, _cropY=0, _cropZoom=1, _cropDragging=false, _cropLastX=0, _cropLastY=0;
+
+function showAvatarUrlInput(){
+  var w=document.getElementById("avatar-url-wrap");
+  if(w) w.style.display=w.style.display==="none"?"block":"none";
+}
+
+function loadAvatarFromUrl(){
+  var url=document.getElementById("avatar-url-input").value.trim();
+  if(!url){ toast("Bitte URL eingeben."); return; }
+  var img=new Image(); img.crossOrigin="anonymous";
+  img.onload=function(){ startCrop(img); };
+  img.onerror=function(){ toast("Bild konnte nicht geladen werden."); };
+  img.src="https://images.weserv.nl/?url="+encodeURIComponent(url)+"&w=800";
+}
+
+function onAvatarFileSelected(e){
+  var file=e.target.files&&e.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){ startCrop(img); };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value="";
+}
+
+function startCrop(img){
+  _cropImg=img; _cropZoom=1;
+  var canvas=document.getElementById("avatar-crop-canvas");
+  var wrap=document.getElementById("avatar-crop-wrap");
+  var btns=document.getElementById("avatar-crop-btns");
+  var urlWrap=document.getElementById("avatar-url-wrap");
+  if(urlWrap) urlWrap.style.display="none";
+  // Set canvas size
+  var W=300, H=300;
+  canvas.width=W; canvas.height=H;
+  // Center image
+  _cropX=0; _cropY=0;
+  var zoom=document.getElementById("avatar-zoom");
+  if(zoom) zoom.value=1;
+  wrap.style.display="block";
+  btns.style.display="flex";
+  drawCrop();
+  // Touch/mouse events
+  canvas.onmousedown=function(e){ _cropDragging=true; _cropLastX=e.clientX; _cropLastY=e.clientY; };
+  canvas.onmousemove=function(e){ if(!_cropDragging) return; _cropX+=e.clientX-_cropLastX; _cropY+=e.clientY-_cropLastY; _cropLastX=e.clientX; _cropLastY=e.clientY; drawCrop(); };
+  canvas.onmouseup=canvas.onmouseleave=function(){ _cropDragging=false; };
+  canvas.ontouchstart=function(e){ e.preventDefault(); _cropDragging=true; _cropLastX=e.touches[0].clientX; _cropLastY=e.touches[0].clientY; };
+  canvas.ontouchmove=function(e){ e.preventDefault(); if(!_cropDragging) return; _cropX+=e.touches[0].clientX-_cropLastX; _cropY+=e.touches[0].clientY-_cropLastY; _cropLastX=e.touches[0].clientX; _cropLastY=e.touches[0].clientY; drawCrop(); };
+  canvas.ontouchend=function(){ _cropDragging=false; };
+}
+
+function drawCrop(){
+  var canvas=document.getElementById("avatar-crop-canvas"); if(!canvas||!_cropImg) return;
+  var zoom=parseFloat(document.getElementById("avatar-zoom").value)||1;
+  _cropZoom=zoom;
+  var W=canvas.width, H=canvas.height;
+  var ctx=canvas.getContext("2d");
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
+  var iw=_cropImg.width*zoom, ih=_cropImg.height*zoom;
+  ctx.drawImage(_cropImg, W/2+_cropX-iw/2, H/2+_cropY-ih/2, iw, ih);
+}
+
+function confirmAvatarCrop(){
+  var canvas=document.getElementById("avatar-crop-canvas"); if(!canvas) return;
+  // Extract 160x160 circle from center
+  var out=document.createElement("canvas"); out.width=160; out.height=160;
+  var ctx=out.getContext("2d");
+  ctx.beginPath(); ctx.arc(80,80,80,0,Math.PI*2); ctx.clip();
+  var W=canvas.width, H=canvas.height;
+  ctx.drawImage(canvas, (W-160)/2, (H-160)/2, 160, 160, 0, 0, 160, 160);
+  var dataUrl=out.toDataURL("image/jpeg",0.85);
+  userAvatars[currentName]=dataUrl;
+  // Update all avatars on screen
+  document.querySelectorAll(".av[id='profil-av'],.av[id='hdr-av']").forEach(function(el){ setAv(el,currentName); });
+  setAv(document.getElementById("profil-av"),currentName);
+  setAv(document.getElementById("hdr-av"),currentName);
+  // Save to DB
+  fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,avatar_url:dataUrl})});
+  cancelAvatarCrop();
+  renderTermine();
+  toast("✓ Profilbild gespeichert!");
+}
+
+function cancelAvatarCrop(){
+  var wrap=document.getElementById("avatar-crop-wrap");
+  var btns=document.getElementById("avatar-crop-btns");
+  if(wrap) wrap.style.display="none";
+  if(btns) btns.style.display="none";
+  _cropImg=null;
+}
+
+async function removeAvatar(){
+  delete userAvatars[currentName];
+  setAv(document.getElementById("profil-av"),currentName);
+  setAv(document.getElementById("hdr-av"),currentName);
+  await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,avatar_url:null})});
+  renderTermine();
+  toast("Profilbild entfernt.");
+}
+
+
 const VAPID_PUBLIC = "BLQYSSqATZ7twGCSN2PWTdhI4L8Zo4awicbkRDCjwzAfUz12iYLE0od7tR2Vw2uX13aIfRe7qQlQLyVIxUYgbTU";
 
 function showInstallGuide(os){
