@@ -2313,8 +2313,11 @@ function buildTerminCard(t, open){
   if(t.date) chips+="<span class='chip'>&#128197; "+fmtDate(t.date)+"</span>";
   else chips+="<span class='chip' style='color:#0369a1;background:#f0f9ff;border-color:#bae6fd'>&#128197; Datum noch offen</span>";
   if(t.ort){
-    var mapsTarget=t.mapsUrl||("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(t.ort));
-    chips+="<a href='"+h(mapsTarget)+"' target='_blank' onclick='event.stopPropagation()' style='text-decoration:none'><span class='chip' style='color:#0369a1;background:#f0f9ff;border-color:#bae6fd;cursor:pointer' title='In Google Maps öffnen'>&#128205; "+h(t.ort)+" <span style='font-size:.65rem;opacity:.7'>🗺</span></span></a>";
+    if(t.mapsUrl){
+      chips+="<a href='"+h(t.mapsUrl)+"' target='_blank' onclick='event.stopPropagation()' style='text-decoration:none'><span class='chip' style='color:#0369a1;background:#f0f9ff;border-color:#bae6fd;cursor:pointer' title='In Google Maps öffnen'>&#128205; "+h(t.ort)+" <span style='font-size:.65rem;opacity:.7'>🗺</span></span></a>";
+    } else {
+      chips+="<span class='chip'>&#128205; "+h(t.ort)+"</span>";
+    }
   }
   chips+="<span class='chip chip-green'>&#128101; "+t.personen.length+(t.limitOn&&t.limitVal?" / "+t.limitVal:"")+" dabei</span>";
   chips+="<span class='chip'>&#127918; "+t.spiele.length+" Spiele</span>";
@@ -2464,9 +2467,8 @@ function buildTerminCard(t, open){
     +"<div class='termin-body'>"
     +"<div style='display:flex;justify-content:flex-end;gap:8px;padding:14px 0 0;margin-bottom:16px;flex-wrap:wrap'>"
     +"<button class='btn btn-outline btn-sm' onclick='exportIcal("+t.id+")'>&#128197; Exportieren</button>"
-    +(t.ort?(function(){
-        var url=t.mapsUrl||("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(t.ort));
-        return "<a href='"+h(url)+"' target='_blank' class='btn btn-outline btn-sm' style='text-decoration:none;color:#0369a1;border-color:#bae6fd;background:#f0f9ff'>🗺 Maps</a>";
+    +(t.mapsUrl?(function(){
+        return "<a href='"+h(t.mapsUrl)+"' target='_blank' class='btn btn-outline btn-sm' style='text-decoration:none;color:#0369a1;border-color:#bae6fd;background:#f0f9ff'>🗺 Maps</a>";
       })():"")
     +(currentNotifEmail||window._hasPushSub?(function(){
         var subs=t.subscribers||[];
