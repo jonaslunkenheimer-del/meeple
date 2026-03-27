@@ -1960,7 +1960,6 @@ async function loadAdminUsers(){
   try{
     var r=await fetch(SB_URL+"/auth/v1/admin/users",{headers:{"apikey":sk,"Authorization":"Bearer "+sk}});
     var d=await r.json(); var users=d.users||[];
-    // Also load sammlung counts
     var sammlungR=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,sammlung",{headers:authHdrs()});
     var sammlungRows=sammlungR.ok?await sammlungR.json():[];
     var sammlungMap={};
@@ -1969,14 +1968,54 @@ async function loadAdminUsers(){
       var name=(u.user_metadata&&u.user_metadata.display_name)||u.email.replace("@meeple.de","");
       var count=sammlungMap[name]||0;
       var delBtn=count>0
-        ? "<button onclick='adminDeleteSammlung(\""+h(name)+"\")' style='background:#fef2f2;border:1px solid #fca5a5;color:var(--red);border-radius:7px;padding:3px 8px;font-size:.72rem;cursor:pointer;font-weight:600' title='Sammlung löschen'>🗑 "+count+" Spiele</button>"
-        : "<span style='font-size:.72rem;color:var(--text-3)'>Keine Sammlung</span>";
-      return "<div style='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)'>"
+        ? "<button onclick='adminDeleteSammlung(\""+h(name)+"\")' style='background:#fef2f2;border:1px solid #fca5a5;color:var(--red);border-radius:7px;padding:3px 8px;font-size:.72rem;cursor:pointer;font-weight:600' title='Sammlung löschen'>🗑 "+count+"</button>"
+        : "";
+      var editBtn="<button onclick='adminEditUser(\""+h(u.id)+"\",\""+h(name)+"\",\""+h(u.email)+"\")' style='background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:3px 8px;font-size:.72rem;cursor:pointer;font-weight:600'>✏️</button>";
+      return "<div style='display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)'>"
         +"<div class='av av-sm' style='background:"+nameColor(name)+"'>"+nameInit(name)+"</div>"
-        +"<div style='flex:1;font-size:.85rem'><strong>"+h(name)+"</strong><br><span style='font-size:.72rem;color:var(--text-3)'>"+h(u.email)+"</span></div>"
-        +delBtn+"</div>";
+        +"<div style='flex:1;font-size:.85rem;min-width:0'><strong>"+h(name)+"</strong><br><span style='font-size:.72rem;color:var(--text-3)'>"+h(u.email)+"</span></div>"
+        +"<div style='display:flex;gap:4px;flex-shrink:0'>"+editBtn+delBtn+"</div>"
+        +"</div>"
+        +"<div id='admin-edit-"+h(u.id)+"' style='display:none'></div>";
     }).join("");
   }catch(e){ list.innerHTML="<div style='color:var(--red);font-size:.82rem'>Fehler: "+h(e.message)+"</div>"; }
+}
+
+function adminEditUser(uid, name, email){
+  var box=document.getElementById("admin-edit-"+uid);
+  if(!box) return;
+  if(box.style.display!=="none"){ box.style.display="none"; return; }
+  box.style.display="block";
+  box.innerHTML="<div style='background:#f8f9fd;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px'>"
+    +"<div class='form-grid' style='gap:8px;margin-bottom:8px'>"
+    +"<div class='form-field'><label>Display Name</label><input class='input-field' id='ae-name-"+uid+"' value='"+h(name)+"' style='font-size:.82rem'></div>"
+    +"<div class='form-field'><label>E-Mail</label><input class='input-field' id='ae-email-"+uid+"' value='"+h(email)+"' style='font-size:.82rem'></div>"
+    +"</div>"
+    +"<div style='display:flex;gap:6px'>"
+    +"<button class='btn btn-blue btn-sm' onclick='adminSaveUser(\""+uid+"\")'>✓ Speichern</button>"
+    +"<button class='btn btn-ghost btn-sm' onclick='document.getElementById(\"admin-edit-"+uid+"\").style.display=\"none\"'>Abbrechen</button>"
+    +"</div>"
+    +"</div>";
+}
+
+async function adminSaveUser(uid){
+  var sk=getSK(); if(!sk){ toast("Kein Service Key."); return; }
+  var nameEl=document.getElementById("ae-name-"+uid);
+  var emailEl=document.getElementById("ae-email-"+uid);
+  if(!nameEl||!emailEl) return;
+  var newName=nameEl.value.trim();
+  var newEmail=emailEl.value.trim();
+  if(!newName||!newEmail){ toast("Name und E-Mail erforderlich."); return; }
+  try{
+    var r=await fetch(SB_URL+"/auth/v1/admin/users/"+uid,{
+      method:"PUT",
+      headers:{"apikey":sk,"Authorization":"Bearer "+sk,"Content-Type":"application/json"},
+      body:JSON.stringify({email:newEmail,user_metadata:{display_name:newName}})
+    });
+    if(!r.ok){ var err=await r.json(); throw new Error(err.message||"Fehler"); }
+    toast("✓ User aktualisiert");
+    loadAdminUsers();
+  }catch(e){ toast("Fehler: "+e.message); }
 }
 
 async function adminDeleteSammlung(userName){
