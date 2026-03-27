@@ -865,8 +865,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0;position:relative">
       <button onclick="closeProfileModal()" style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center" title="Schließen">✕</button>
       <button onclick="switchUser()" style="position:absolute;top:10px;left:10px;height:28px;padding:0 10px;border-radius:14px;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.72rem;font-weight:600;display:flex;align-items:center;gap:4px" title="Abmelden">⏻ Abmelden</button>
-      <div id="profil-av" class="av av-lg" style="margin:0 auto 8px;cursor:pointer;position:relative;overflow:visible" onclick="document.getElementById('avatar-upload-input').click()" title="Profilbild ändern">
-        <input type="file" id="avatar-upload-input" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)">
+      <div id="profil-av" class="av av-lg" style="margin:0 auto 8px;position:relative;overflow:visible">
         <div style="position:absolute;bottom:-4px;right:-4px;width:20px;height:20px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;box-shadow:0 1px 4px rgba(0,0,0,.2)">📷</div>
       </div>
       <div style="font-size:1.05rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
@@ -878,6 +877,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <label style="font-size:.75rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px">Profilbild</label>
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <button class="btn btn-outline btn-sm" style="flex:1" onclick="document.getElementById('avatar-upload-input').click()">📁 Bild hochladen</button>
+          <input type="file" id="avatar-upload-input" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)">
           <button class="btn btn-outline btn-sm" style="flex:1" onclick="showAvatarUrlInput()">🔗 Bild-URL</button>
           <button class="btn btn-ghost btn-sm" onclick="removeAvatar()" title="Bild entfernen">🗑</button>
         </div>
@@ -893,7 +893,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:160px;height:160px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.5);pointer-events:none"></div>
         </div>
         <div id="avatar-crop-btns" style="display:none;display:flex;gap:6px">
-          <input type="range" id="avatar-zoom" min="1" max="3" step="0.01" value="1" style="flex:1;accent-color:var(--blue)" oninput="drawCrop()">
+          <input type="range" id="avatar-zoom" min="0.2" max="3" step="0.01" value="1" style="flex:1;accent-color:var(--blue)" oninput="drawCrop()">
           <button class="btn btn-blue btn-sm" onclick="confirmAvatarCrop()">✓ Speichern</button>
           <button class="btn btn-ghost btn-sm" onclick="cancelAvatarCrop()">✕</button>
         </div>
@@ -4250,19 +4250,20 @@ function onAvatarFileSelected(e){
 }
 
 function startCrop(img){
-  _cropImg=img; _cropZoom=1;
+  _cropImg=img;
   var canvas=document.getElementById("avatar-crop-canvas");
   var wrap=document.getElementById("avatar-crop-wrap");
   var btns=document.getElementById("avatar-crop-btns");
   var urlWrap=document.getElementById("avatar-url-wrap");
   if(urlWrap) urlWrap.style.display="none";
-  // Set canvas size
   var W=300, H=300;
   canvas.width=W; canvas.height=H;
-  // Center image
   _cropX=0; _cropY=0;
+  // Auto-fit: scale so image fills the circle (160px)
+  var fitZoom=Math.min(W/img.width, H/img.height);
+  _cropZoom=fitZoom;
   var zoom=document.getElementById("avatar-zoom");
-  if(zoom) zoom.value=1;
+  if(zoom){ zoom.min=Math.max(0.1,fitZoom*0.3); zoom.max=3; zoom.value=fitZoom; }
   wrap.style.display="block";
   btns.style.display="flex";
   drawCrop();
