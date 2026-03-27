@@ -1331,22 +1331,36 @@ function setAv(el,name){
   var avatar=userAvatars[name];
   if(avatar){
     el.style.background="transparent";
-    el.textContent="";
     el.style.backgroundImage="url('"+avatar+"')";
     el.style.backgroundSize="cover";
     el.style.backgroundPosition="center";
+    el.style.color="transparent";
+    el.textContent="";
   } else {
     el.style.background=nameColor(name);
-    el.style.backgroundImage="";
+    el.style.backgroundImage="none";
+    el.style.color="#fff";
     el.textContent=nameInit(name);
   }
 }
+function avHtml(name, sizeClass){
+  sizeClass=sizeClass||"av-md";
+  var avatar=userAvatars[name];
+  if(avatar){
+    return "<div class='av "+sizeClass+"' style='background:transparent;background-image:url(\""+avatar+"\");background-size:cover;background-position:center;color:transparent'></div>";
+  }
+  return "<div class='av "+sizeClass+"' style='background:"+nameColor(name||"?")+"'>"+nameInit(name||"?")+"</div>";
+}
+
 async function loadUserAvatars(){
   try{
     var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,avatar_url",{headers:authHdrs()});
     if(!r.ok) return;
     var rows=await r.json();
     rows.forEach(function(row){ if(row.avatar_url) userAvatars[row.user_name]=row.avatar_url; });
+    // Refresh header avatar
+    setAv(document.getElementById("hdr-av"),currentName);
+    setAv(document.getElementById("profil-av"),currentName);
   }catch(e){}
 }
 
@@ -1606,7 +1620,7 @@ async function showWhatsnew(){
       var d=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short"}):"Kein Datum";
       html+=itemRow(
         "closeWhatsnew();jumpToTermin("+t.id+")",
-        "<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>",
+        avHtml(t.creator||"?","av-md"),
         h(t.title),
         "von "+h(t.creator||"?")+" &middot; "+d
       );
@@ -2573,7 +2587,7 @@ function buildTerminCard(t, open){
   return "<div class='termin-item"+(open?" open":"")+(suchActive?" mitspieler-suche":"")+"' id='termin-"+t.id+"'>"
     +(suchActive?"<div class='suche-banner'>&#128269; Mitspieler gesucht &mdash; noch "+freePlätze+" "+(freePlätze!==1?"Plätze":"Platz")+" frei!</div>":"")
     +"<div class='termin-header' onclick='toggleTermin("+t.id+")'>"
-    +"<div class='av av-md' style='background:"+nameColor(t.creator||"?")+"'>"+nameInit(t.creator||"?")+"</div>"
+    +avHtml(t.creator||"?","av-md")
     +"<div class='termin-summary'>"
     +"<div class='termin-title-row'><span class='termin-title'>"+h(t.title)+"</span></div>"
     +"<div style='font-size:.72rem;color:var(--text-3);margin-bottom:3px'>erstellt von <strong style='color:var(--text-2)'>"+h(t.creator||"?")+"</strong></div>"
