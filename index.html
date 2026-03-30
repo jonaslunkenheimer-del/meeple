@@ -1508,7 +1508,8 @@ async function reopenWhatsnew(){
 async function refreshWhatsnew(){
   await loadState();
   await renderMarkt(false);
-  await showWhatsnew();
+  var hadNews=await showWhatsnew();
+  if(!hadNews) toast("Keine neuen Neuigkeiten vorhanden.");
 }
 
 function startWhatsnewPolling(){
@@ -1629,7 +1630,7 @@ async function showWhatsnew(){
   // 3. Neue Marktplatz-Angebote
   var nm=mData.filter(function(m){ return m.ts&&new Date(m.ts)>since&&m.seller!==currentName; });
 
-  if(!nt.length&&!activity.length&&!nm.length&&!shownAnns.length) return;
+  if(!nt.length&&!activity.length&&!nm.length&&!shownAnns.length) return false;
 
   function sectionHeader(label){
     return "<div style='font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px'>"+label+"</div>";
@@ -1720,6 +1721,7 @@ async function showWhatsnew(){
   _whatsnewHtml=html;
   _whatsnewCount=nt.length+activity.length+nm.length+shownAnns.length;
   setNotifBadge(_whatsnewCount);
+  return true;
 }
 function closeWhatsnew(){ document.getElementById("whatsnew-modal").style.display="none"; setNotifBadge(0); }
 
