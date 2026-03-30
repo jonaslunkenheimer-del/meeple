@@ -1603,25 +1603,27 @@ async function showWhatsnew(){
     return true;
   });
 
-  // 2. Aktivitäten in Terminen wo User dabei ist (seit letztem Login)
+  // 2. Aktivitäten in Terminen wo User dabei ist ODER abonniert hat
   var activity=[]; // {tid, type, label, detail, author, ts}
   state.termine.forEach(function(t){
-    if(!t.personen||!t.personen.includes(currentName)) return;
+    var isMember=t.personen&&t.personen.includes(currentName);
+    var isSubscribed=t.subscribers&&t.subscribers.some(function(s){ return s.name===currentName; });
+    if(!isMember&&!isSubscribed) return;
+    if(t.privat&&!isMember&&!isAdmin) return;
     // Neue Chat-Nachrichten
     (t.chat||[]).forEach(function(m){
       if(m.author!==currentName&&m.ts&&new Date(m.ts)>since){
         activity.push({tid:t.id,title:t.title,type:"chat",icon:"💬",label:"Chat-Nachricht",detail:h(m.author)+": \""+h(m.text.slice(0,60))+(m.text.length>60?"…":"")+"\"",author:m.author,ts:new Date(m.ts)});
       }
     });
-    // Neue Spiele
-    (t.spiele||[]).forEach(function(s){
-      if(s.vorschlaeger&&s.vorschlaeger!==currentName&&s.ts&&new Date(s.ts)>since){
-        activity.push({tid:t.id,title:t.title,type:"spiel",icon:"🎮",label:"Spiel vorgeschlagen",detail:h(s.vorschlaeger)+" schlug <strong>"+h(s.name)+"</strong> vor",author:s.vorschlaeger,ts:new Date(s.ts)});
-      }
-    });
-    // Neue Teilnehmer
-    // We can't reliably know when someone joined without a join timestamp,
-    // but we can check if personen changed — skip for now as there's no ts on personen
+    // Neue Spiele (nur wenn dabei)
+    if(isMember){
+      (t.spiele||[]).forEach(function(s){
+        if(s.vorschlaeger&&s.vorschlaeger!==currentName&&s.ts&&new Date(s.ts)>since){
+          activity.push({tid:t.id,title:t.title,type:"spiel",icon:"🎮",label:"Spiel vorgeschlagen",detail:h(s.vorschlaeger)+" schlug <strong>"+h(s.name)+"</strong> vor",author:s.vorschlaeger,ts:new Date(s.ts)});
+        }
+      });
+    }
   });
   // Sort activity newest first, deduplicate by tid+type within same minute
   activity.sort(function(a,b){ return b.ts-a.ts; });
@@ -2699,13 +2701,28 @@ function buildTerminCard(t, open){
     +"</div></div>";
 }
 
+function fmtDateStamp(ts){
+  var d=new Date(ts);
+  var today=new Date(); var yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
+  if(d.toDateString()===today.toDateString()) return "Heute";
+  if(d.toDateString()===yesterday.toDateString()) return "Gestern";
+  return d.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+}
+
 function buildChatMsgs(t){
   if(!t.chat||!t.chat.length) return "<div class='chat-empty'>Noch keine Nachrichten - fang an!</div>";
+  var lastDate="";
   return t.chat.map(function(m){
     var mine=m.author===currentName;
     var nameDiv=!mine?"<div class='bubble-name'>"+h(m.author)+"</div>":"";
-    return "<div class='msg-row"+(mine?" mine":"")+"'>"
-      +"<div class='av av-sm' style='background:"+nameColor(m.author)+";display:"+(mine?"none":"flex")+";align-items:center;justify-content:center'>"+nameInit(m.author)+"</div>"
+    var msgDate=new Date(m.ts).toDateString();
+    var dateStamp="";
+    if(msgDate!==lastDate){
+      lastDate=msgDate;
+      dateStamp="<div style='text-align:center;margin:8px 0'><span style='font-size:.65rem;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-weight:600'>"+fmtDateStamp(m.ts)+"</span></div>";
+    }
+    return dateStamp+"<div class='msg-row"+(mine?" mine":"")+"'>"
+      +avHtml(m.author,"av-sm").replace("class='av","class='av' style='display:"+(mine?"none":"flex")+";align-items:center;justify-content:center' class='av")
       +"<div class='bubble'>"+nameDiv+h(m.text)+"<div class='bubble-time'>"+fmtTime(m.ts)+"</div></div>"
       +"</div>";
   }).join("");
@@ -3539,9 +3556,16 @@ function renderMarktChatBox(){
   var m=mData.find(function(x){ return x.id===mChatId; }); if(!m) return;
   var box=document.getElementById("markt-chat-box");
   if(!m.chat||!m.chat.length){ box.innerHTML="<div class='chat-empty'>Noch keine Nachrichten.</div>"; return; }
+  var lastDate="";
   box.innerHTML=m.chat.map(function(msg){
     var mine=msg.author===currentName;
-    return "<div class='msg-row"+(mine?" mine":"")+"'>"
+    var msgDate=new Date(msg.ts).toDateString();
+    var dateStamp="";
+    if(msgDate!==lastDate){
+      lastDate=msgDate;
+      dateStamp="<div style='text-align:center;margin:8px 0'><span style='font-size:.65rem;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-weight:600'>"+fmtDateStamp(msg.ts)+"</span></div>";
+    }
+    return dateStamp+"<div class='msg-row"+(mine?" mine":"")+"'>"
       +"<div class='av av-sm' style='background:"+nameColor(msg.author)+";display:"+(mine?"none":"flex")+";align-items:center;justify-content:center'>"+nameInit(msg.author)+"</div>"
       +"<div class='bubble'>"+(!mine?"<div class='bubble-name'>"+h(msg.author)+"</div>":"")+h(msg.text)+"<div class='bubble-time'>"+fmtTime(msg.ts)+"</div></div>"
       +"</div>";
@@ -3743,19 +3767,21 @@ function renderKonvChat(partner,subject){
     return byThread||byPair;
   }).sort(function(a,b){ return new Date(a.ts)-new Date(b.ts); });
   if(!thread.length){ box.innerHTML="<div class='chat-empty'>Noch keine Nachrichten.</div>"; return; }
+  var lastDate="";
   box.innerHTML=thread.map(function(m){
     var mine=m.from===currentName;
-    var dt=new Date(m.ts);
-    var now=new Date();
-    var timeStr=dt.toDateString()===now.toDateString()
-      ? dt.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})
-      : dt.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
-    return "<div class='msg-row"+(mine?" mine":"")+"'>"
+    var msgDate=new Date(m.ts).toDateString();
+    var dateStamp="";
+    if(msgDate!==lastDate){
+      lastDate=msgDate;
+      dateStamp="<div style='text-align:center;margin:8px 0'><span style='font-size:.65rem;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-weight:600'>"+fmtDateStamp(m.ts)+"</span></div>";
+    }
+    return dateStamp+"<div class='msg-row"+(mine?" mine":"")+"'>"
       +"<div class='av av-sm' style='background:"+nameColor(m.from)+";display:"+(mine?"none":"flex")+";align-items:center;justify-content:center'>"+nameInit(m.from)+"</div>"
       +"<div class='bubble'>"
       +(!mine?"<div class='bubble-name'>"+h(m.from)+"</div>":"")
       +"<div style='white-space:pre-wrap;word-break:break-word'>"+h(m.body)+"</div>"
-      +"<div class='bubble-time'>"+timeStr+"</div>"
+      +"<div class='bubble-time'>"+fmtTime(m.ts)+"</div>"
       +"</div></div>";
   }).join("");
   box.scrollTop=box.scrollHeight;
