@@ -1504,7 +1504,7 @@ async function switchUser(){
 var bggProfiles={}; // name -> bgg_username
 var _whatsnewHtml=""; // cached for re-open
 var _whatsnewCount=0;
-var _lastWhatsnewCheck=new Date(); // track when we last checked
+var _lastWhatsnewCheck=null; // null = use last login time
 
 async function reopenWhatsnew(){
   // Always refresh when bell is clicked
@@ -1586,9 +1586,12 @@ async function getAndUpdateLogin(){
 
 async function showWhatsnew(){
   var last=await getAndUpdateLogin();
-  // Use the more recent of: last login OR last whatsnew check
-  var since=_lastWhatsnewCheck>new Date(last||0)?_lastWhatsnewCheck:(last||new Date(0));
-  _lastWhatsnewCheck=new Date(); // update check time
+  // First call (login): use last login from DB
+  // Subsequent calls (manual bell): use time of last check
+  var since=(_lastWhatsnewCheck&&_lastWhatsnewCheck>new Date(last||0))
+    ? _lastWhatsnewCheck
+    : (last||new Date(0));
+  _lastWhatsnewCheck=new Date(); // update for next manual check
 
   // 0. Admin-Ankündigungen (angepinnte immer, andere nur wenn neu seit letztem Login)
   var announcements=await loadAnnouncements();
