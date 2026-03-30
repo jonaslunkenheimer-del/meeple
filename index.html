@@ -2811,6 +2811,13 @@ async function addSelf(tid){
   var t=getT(tid); if(!t||!currentName) return;
   if(t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal){ toast("Der Termin ist leider voll."); return; }
   if(!t.personen.includes(currentName)) t.personen.push(currentName);
+  // Auto-subscribe if user has email or push enabled
+  if(currentNotifEmail||window._hasPushSub){
+    if(!t.subscribers) t.subscribers=[];
+    if(!t.subscribers.some(function(s){ return s.name===currentName; })){
+      t.subscribers.push({name:currentName,email:currentNotifEmail||""});
+    }
+  }
   updateJoinBtn(tid);
   rerenderCard(tid); await saveState();
 }
@@ -2879,8 +2886,62 @@ async function loadMemberPicker(tid){
 }
 async function addPersonDirect(tid,name){
   var t=getT(tid); if(!t) return;
-  if(!t.personen.includes(name)) t.personen.push(name);
+  if(!t.personen.includes(name)){
+    t.personen.push(name);
+    // Notify the added person via E-Mail + Push
+    sendInviteNotification(t, name);
+    // Auto-subscribe if they have notifications enabled
+    autoSubscribeUser(t, name);
+  }
   userCache=null; rerenderCard(tid); saveState();
+}
+
+async function autoSubscribeUser(t, name){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(name)+"&select=notif_email,push_subscription",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    if(!rows.length) return;
+    var row=rows[0];
+    if(row.notif_email||row.push_subscription){
+      if(!t.subscribers) t.subscribers=[];
+      if(!t.subscribers.some(function(s){ return s.name===name; })){
+        t.subscribers.push({name:name,email:row.notif_email||""});
+      }
+    }
+  }catch(e){}
+}
+
+async function sendInviteNotification(t, invitedName){
+  try{
+    var dt=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
+    // E-Mail
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(invitedName)+"&select=notif_email,push_subscription",{headers:authHdrs()});
+    if(r.ok){
+      var rows=await r.json();
+      if(rows.length){
+        var row=rows[0];
+        // E-Mail
+        if(row.notif_email){
+          var bodyHtml="<div class='section'><h3>📅 "+h(t.title)+"</h3>"
+            +(t.date?"<p>🗓 <strong>"+dt+"</strong></p>":"")
+            +(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")
+            +"<p><strong>"+h(currentName)+"</strong> hat dich zum Termin eingeladen.</p></div>";
+          await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},
+            body:JSON.stringify({to:[row.notif_email],subject:"🎲 Du wurdest zu \""+t.title+"\" eingeladen",html:buildNotifEmail("Einladung: "+t.title,bodyHtml)})});
+        }
+        // Push
+        if(row.push_subscription){
+          try{
+            var sub=JSON.parse(row.push_subscription);
+            await fetch(SB_URL+"/functions/v1/send-push",{method:"POST",
+              headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},
+              body:JSON.stringify({subscriptions:[sub],title:"🎲 Einladung: "+t.title,body:h(currentName)+" hat dich eingeladen"+(t.date?" · "+dt:""),url:"/"})});
+          }catch(e){}
+        }
+      }
+    }
+  }catch(e){}
 }
 
 // ── Spiele ──
