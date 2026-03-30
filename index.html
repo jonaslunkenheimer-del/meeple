@@ -4270,13 +4270,15 @@ function renderAchievements(targetUser){
     +"<span style='font-weight:700;color:var(--text-2);font-size:.88rem'>"+unlocked+"</span> / "+ACHIEVEMENTS.length+" freigeschaltet"
     +"<div style='height:6px;background:var(--border);border-radius:3px;margin-top:6px;overflow:hidden'>"
     +"<div style='height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px;width:"+(Math.round(unlocked/ACHIEVEMENTS.length*100))+"%'></div>"
-    +"</div></div>";
+    +"</div></div>"
+    +"<div id='ach-popup' style='display:none;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;box-shadow:var(--shadow)'></div>";
   cats.forEach(function(cat){
     var badges=ACHIEVEMENTS.filter(function(a){ return a.cat===cat; });
     html+="<div class='ach-cat'>"+cat+"</div><div class='ach-grid'>";
     badges.forEach(function(a){
       var done=a.check(u);
-      html+="<div class='ach-badge "+(done?"unlocked":"locked")+"' title='"+h(a.desc)+"'>"
+      var idx=ACHIEVEMENTS.indexOf(a);
+      html+="<div class='ach-badge "+(done?"unlocked":"locked")+"' onclick='showAchievementInfo("+idx+")' style='cursor:pointer'>"
         +"<div class='ach-icon'>"+a.icon+"</div>"
         +"<div class='ach-name'>"+h(a.name)+"</div>"
         +"</div>";
@@ -4284,6 +4286,22 @@ function renderAchievements(targetUser){
     html+="</div>";
   });
   el.innerHTML=html;
+}
+
+function showAchievementInfo(idx){
+  var a=ACHIEVEMENTS[idx]; if(!a) return;
+  var popup=document.getElementById("ach-popup"); if(!popup) return;
+  var done=a.check(currentName);
+  // Toggle if same badge clicked
+  if(popup.dataset.idx===String(idx)&&popup.style.display!=="none"){ popup.style.display="none"; popup.dataset.idx=""; return; }
+  popup.dataset.idx=String(idx);
+  popup.innerHTML="<div style='font-size:2rem;margin-bottom:6px'>"+a.icon+"</div>"
+    +"<div style='font-weight:700;font-size:.92rem;margin-bottom:4px'>"+h(a.name)+"</div>"
+    +"<div style='font-size:.78rem;color:var(--text-2);margin-bottom:8px'>"+h(a.desc)+"</div>"
+    +"<div style='display:inline-block;padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:700;background:"+(done?"var(--green-lt)":"var(--surface2)")+";color:"+(done?"var(--green)":"var(--text-3)")+";border:1px solid "+(done?"var(--green-bd)":"var(--border)")+"'>"
+    +(done?"✓ Freigeschaltet":"🔒 Noch nicht erreicht")+"</div>";
+  popup.style.display="block";
+  popup.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 
 // ── Avatar Cropper ──
