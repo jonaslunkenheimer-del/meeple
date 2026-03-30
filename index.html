@@ -2259,10 +2259,12 @@ async function createTermin(){
   };
   state.termine.unshift(t);
   closeNewTerminModal(); renderTermine(); toast("Termin erstellt! \uD83C\uDF89"); await saveState();
-  // Global notifications
-  var dtStr=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
-  sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3>"+(t.date?"<p>🗓 <strong>"+dtStr+"</strong></p>":"")+(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")+"<p>Erstellt von <strong>"+h(t.creator)+"</strong></p></div>");
-  sendPushNotifications("📅 Neuer Termin: "+t.title, (t.date?dtStr+" · ":"")+h(t.creator), "/");
+  // Global notifications — nur für öffentliche Termine
+  if(!t.privat){
+    var dtStr=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
+    sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3>"+(t.date?"<p>🗓 <strong>"+dtStr+"</strong></p>":"")+(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")+"<p>Erstellt von <strong>"+h(t.creator)+"</strong></p></div>");
+    sendPushNotifications("📅 Neuer Termin: "+t.title, (t.date?dtStr+" · ":"")+h(t.creator), "/");
+  }
 }
 async function deleteTermin(tid){
   var t=getT(tid); if(!t) return;
@@ -2324,7 +2326,7 @@ async function saveEdit(){
   toast("Gespeichert \u2713");
   await saveState();
   var tRef=getT(savedEditTid);
-  if(tRef) sendNotifToSubscribers(tRef,"✏️ Termin wurde geändert","<span class='chip'>"+h(currentName)+"</span> hat den Termin aktualisiert.");
+  if(tRef&&!tRef.privat) sendNotifToSubscribers(tRef,"✏️ Termin wurde geändert","<span class='chip'>"+h(currentName)+"</span> hat den Termin aktualisiert.");
 }
 
 // ── Termine: Render ──
@@ -3033,7 +3035,7 @@ async function confirmAddSpiel(){
   toast("Spiel hinzugef\u00fcgt \u2713");
   await saveState();
   var tRef=getT(savedTid);
-  if(tRef) sendNotifToSubscribers(tRef,"🎮 Neues Spiel vorgeschlagen","<span class='chip'>"+h(currentName)+"</span> schlug <strong>"+h(spiel.name)+"</strong> vor.");
+  if(tRef&&!tRef.privat) sendNotifToSubscribers(tRef,"🎮 Neues Spiel vorgeschlagen","<span class='chip'>"+h(currentName)+"</span> schlug <strong>"+h(spiel.name)+"</strong> vor.");
 }
 async function deleteSpielByIndex(tid,idx){
   tid=parseInt(tid); idx=parseInt(idx);
@@ -3096,7 +3098,7 @@ async function sendChat(tid){
   var cb=document.getElementById("cb-"+tid);
   if(cb){ cb.innerHTML=buildChatMsgs(t); cb.scrollTop=cb.scrollHeight; }
   saveState();
-  sendNotifToSubscribers(t,"💬 Neue Chat-Nachricht","<span class='chip'>"+h(currentName)+"</span> schrieb: <em>"+h(text.slice(0,200))+"</em>");
+  if(!t.privat) sendNotifToSubscribers(t,"💬 Neue Chat-Nachricht","<span class='chip'>"+h(currentName)+"</span> schrieb: <em>"+h(text.slice(0,200))+"</em>");
 }
 
 // ── Date Poll ──
