@@ -2852,7 +2852,7 @@ async function loadMemberPicker(tid){
     try{
       // Try with display_name first, fall back to just user_name if column missing
       // Only load users who have logged in (last_login set = real active account)
-      var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,last_login&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+      var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name&order=user_name&last_login=not.is.null",{headers:authHdrs()});
       if(!r.ok) r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name&order=user_name",{headers:authHdrs()});
       if(!r.ok) throw new Error("HTTP "+r.status);
       var rows=await r.json();
