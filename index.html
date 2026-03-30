@@ -575,7 +575,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   <div class="main">
     <!-- TERMINE TAB -->
     <div id="tab-termine" class="tab-content active">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
         <div>
           <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spieleabende</div>
           <div style="font-size:.78rem;color:var(--text-3)">Alle geplanten Treffen auf einen Blick</div>
@@ -583,6 +583,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button id="btn-new-termin-inline" onclick="openNewTerminModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
           <span style="font-size:1.1rem">＋</span> Neuer Termin
         </button>
+      </div>
+      <!-- Filter chips -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px" id="termine-filter-row">
+        <button class="termine-filter-btn" id="filter-suche" onclick="toggleTerminFilter('suche')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s">🔍 Mitspieler gesucht</button>
+        <button class="termine-filter-btn" id="filter-privat" onclick="toggleTerminFilter('privat')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s">🔒 Private Termine</button>
+        <button class="termine-filter-btn" id="filter-zugesagt" onclick="toggleTerminFilter('zugesagt')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s">✅ Zugesagt</button>
       </div>
       <div id="termine-list"></div>
     </div>
@@ -2381,12 +2387,31 @@ function rerenderCard(tid){
     if(cb) cb.scrollTop=cb.scrollHeight;
   }
 }
+
+var activeTerminFilters={suche:false,privat:false,zugesagt:false};
+
+function toggleTerminFilter(key){
+  activeTerminFilters[key]=!activeTerminFilters[key];
+  var btn=document.getElementById("filter-"+key);
+  if(btn){
+    var on=activeTerminFilters[key];
+    btn.style.background=on?"var(--blue)":"var(--surface)";
+    btn.style.color=on?"#fff":"var(--text-2)";
+    btn.style.borderColor=on?"var(--blue)":"var(--border)";
+  }
+  renderTermine();
+}
+
 function renderTermine(){
   var list=document.getElementById("termine-list"); if(!list) return;
   var vis=state.termine.filter(function(t){
-    if(!t.privat) return true;
-    if(isAdmin) return true;
-    return t.personen&&t.personen.includes(currentName);
+    if(!t.privat&&!isAdmin&&t.privat) return false;
+    if(t.privat&&!isAdmin&&!t.personen.includes(currentName)) return false;
+    // Filters
+    if(activeTerminFilters.suche&&!t.mitspielerGesucht) return false;
+    if(activeTerminFilters.privat&&!t.privat) return false;
+    if(activeTerminFilters.zugesagt&&!t.personen.includes(currentName)) return false;
+    return true;
   });
   vis.sort(function(a,b){
     var da=a.date?new Date(a.date):new Date(8640000000000000);
@@ -2394,7 +2419,8 @@ function renderTermine(){
     return da-db;
   });
   if(!vis.length){
-    list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Termine.</p></div>";
+    var hasFilter=activeTerminFilters.suche||activeTerminFilters.privat||activeTerminFilters.zugesagt;
+    list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>"+(hasFilter?"Keine Termine für diesen Filter.":"Noch keine Termine.")+"</p></div>";
     return;
   }
   // Remember which cards are currently open before rebuilding
