@@ -1513,14 +1513,7 @@ async function refreshWhatsnew(){
 }
 
 function startWhatsnewPolling(){
-  // Check every 90 minutes for new notifications
-  setInterval(async function(){
-    try{
-      await loadState();
-      await renderMarkt(false);
-      await showWhatsnewSilent();
-    }catch(e){}
-  }, 90*60*1000);
+  // Neuigkeiten werden nur beim Login und manuellem Klick geprüft
 }
 
 // Silent check — only updates badge, shows modal if new items found
