@@ -4960,19 +4960,21 @@ async function renderBgstats(){
     if(!myReceived.length){
       receivedList.innerHTML="<div class='empty' style='padding:20px 0'><div class='empty-icon'>📭</div><p>Keine QR Codes für dich.</p></div>";
     } else {
-      receivedList.innerHTML=myReceived.map(function(q){
+      window._bgstatsQrUrls=[];
+      receivedList.innerHTML=myReceived.map(function(q,idx){
         var qrSmall="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data="+encodeURIComponent(q.url);
         var qrLarge="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(q.url);
+        window._bgstatsQrUrls[idx]=qrLarge;
         return "<div style='background:var(--surface);border:1.5px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px'>"
           +"<div style='display:flex;align-items:center;gap:14px;margin-bottom:12px'>"
-          +"<img src='"+qrSmall+"' style='width:80px;height:80px;border-radius:8px;flex-shrink:0;background:#fff;border:1px solid var(--border);cursor:zoom-in' onclick='openLightbox(\""+qrLarge+"\")'>"
+          +"<img src='"+qrSmall+"' style='width:80px;height:80px;border-radius:8px;flex-shrink:0;background:#fff;border:1px solid var(--border);cursor:zoom-in' onclick='openLightbox(window._bgstatsQrUrls["+idx+"])'>"
           +"<div style='flex:1;min-width:0'>"
           +"<div style='font-weight:700;font-size:.92rem;margin-bottom:3px'>"+h(q.title)+"</div>"
           +"<div style='font-size:.75rem;color:var(--text-3);margin-bottom:6px'>von <strong>"+h(q.author)+"</strong> &middot; "+new Date(q.ts).toLocaleDateString("de-DE")+"</div>"
           +"<a href='"+h(q.url)+"' target='_blank' style='font-size:.72rem;color:var(--blue);text-decoration:none;word-break:break-all'>"+h(q.url)+"</a>"
           +"</div></div>"
           +"<div style='display:flex;gap:8px'>"
-          +"<button onclick='openLightbox(\""+qrLarge+"\")' style='flex:1;background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>🔍 QR Code vergrößern</button>"
+          +"<button onclick='openLightbox(window._bgstatsQrUrls["+idx+"])' style='flex:1;background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>🔍 QR Code vergrößern</button>"
           +"<button onclick='markBgstatsScanned(\""+q.id+"\")' style='flex:1;background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd);border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>✓ Gescannt</button>"
           +"</div>"
           +"</div>";
