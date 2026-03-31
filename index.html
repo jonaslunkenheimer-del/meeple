@@ -1239,6 +1239,13 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   </div>
 </div>
 
+<!-- BG STATS QR OVERLAY -->
+<div id="bgstats-qr-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px" onclick="document.getElementById('bgstats-qr-overlay').style.display='none'">
+  <img id="bgstats-qr-large" src="" style="max-width:min(80vw,400px);max-height:min(80vw,400px);border-radius:12px;background:#fff;padding:12px;box-shadow:0 8px 40px rgba(0,0,0,.5)" alt="QR Code">
+  <div id="bgstats-qr-overlay-title" style="color:#fff;font-weight:700;font-size:1rem;text-align:center"></div>
+  <div style="color:rgba(255,255,255,.6);font-size:.78rem">Tippen zum Schließen</div>
+</div>
+
 <!-- BG STATS CREATE MODAL -->
 <div id="bgstats-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeBgstatsModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:500px;animation:up .2s ease;overflow:hidden">
@@ -4961,10 +4968,12 @@ async function renderBgstats(){
       receivedList.innerHTML="<div class='empty' style='padding:20px 0'><div class='empty-icon'>📭</div><p>Keine QR Codes für dich.</p></div>";
     } else {
       window._bgstatsQrUrls=[];
+      window._bgstatsQrTitles=[];
       receivedList.innerHTML=myReceived.map(function(q,idx){
         var qrSmall="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data="+encodeURIComponent(q.url);
         var qrLarge="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(q.url);
         window._bgstatsQrUrls[idx]=qrLarge;
+        window._bgstatsQrTitles[idx]=q.title;
         return "<div style='background:var(--surface);border:1.5px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px'>"
           +"<div style='display:flex;align-items:center;gap:14px;margin-bottom:12px'>"
           +"<img src='"+qrSmall+"' data-qridx='"+idx+"' class='bgstats-qr-img' style='width:80px;height:80px;border-radius:8px;flex-shrink:0;background:#fff;border:1px solid var(--border);cursor:zoom-in'>"
@@ -4981,7 +4990,14 @@ async function renderBgstats(){
       }).join("");
       // Attach events directly after render
       receivedList.querySelectorAll(".bgstats-qr-img,.bgstats-qr-btn").forEach(function(el){
-        el.addEventListener("click",function(){ openLightbox(window._bgstatsQrUrls[parseInt(this.dataset.qridx)]); });
+        el.addEventListener("click",function(){
+          var idx=parseInt(this.dataset.qridx);
+          var url=window._bgstatsQrUrls[idx];
+          var title=window._bgstatsQrTitles[idx]||"";
+          document.getElementById("bgstats-qr-large").src=url;
+          document.getElementById("bgstats-qr-overlay-title").textContent=title;
+          document.getElementById("bgstats-qr-overlay").style.display="flex";
+        });
       });
       receivedList.querySelectorAll(".bgstats-scan-btn").forEach(function(el){
         el.addEventListener("click",function(){ markBgstatsScanned(this.dataset.qrid); });
