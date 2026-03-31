@@ -2413,7 +2413,11 @@ function renderTermine(){
     if(!t.privat&&!isAdmin&&t.privat) return false;
     if(t.privat&&!isAdmin&&!t.personen.includes(currentName)) return false;
     // Filters
-    if(activeTerminFilters.suche&&!t.mitspielerGesucht) return false;
+    if(activeTerminFilters.suche){
+      if(!t.mitspielerGesucht) return false;
+      // Auch nur anzeigen wenn noch freie Plätze vorhanden
+      if(t.limitOn&&t.limitVal>0&&t.personen.length>=t.limitVal) return false;
+    }
     if(activeTerminFilters.privat&&!t.privat) return false;
     if(activeTerminFilters.zugesagt&&!t.personen.includes(currentName)) return false;
     return true;
