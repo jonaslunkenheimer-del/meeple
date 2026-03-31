@@ -40,7 +40,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 .btn-name{width:100%;margin-top:16px;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:filter .15s}
 .btn-name:hover{filter:brightness(1.08)}
 /* HEADER */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap;position:sticky;top:0;z-index:100;min-width:0}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:100;min-width:0}
 .brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .brand-icon{font-size:1.5rem}
 .brand-name{font-size:1rem;font-weight:800}
@@ -535,7 +535,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div class="brand-icon">🎲</div>
       <div><div class="brand-name">Die Meeples</div><div class="brand-sub">Spieleabend Planer</div></div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0;flex-shrink:1">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;min-width:0;flex:1;justify-content:flex-end">
       <!-- Desktop Tabs -->
       <div class="tab-bar" id="desktop-tab-bar">
         <button class="tab active" id="tab-btn-termine" onclick="showTab('termine',this)">Termine</button>
@@ -568,8 +568,10 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div class="av av-md" id="hdr-av"></div>
         <span style="font-size:.88rem;font-weight:600" id="hdr-name"></span>
       </div>
-      <button id="hdr-admin-btn" onclick="openAdminModal()" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-2)">👑 Admin</button>
-      <button id="hdr-adminmode-btn" onclick="toggleAdminMode()" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text-3)" title="Admin-Modus umschalten">👁 User-Ansicht</button>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button id="hdr-adminmode-btn" onclick="toggleAdminMode()" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--text-3)" title="Admin-Modus umschalten">👁</button>
+        <button id="hdr-admin-btn" onclick="openAdminModal()" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:.76rem;font-weight:600;cursor:pointer;color:var(--text-2)">👑</button>
+      </div>
     </div>
   </header>
 
@@ -1328,7 +1330,8 @@ function toggleAdminMode(){
     btn.style.background=adminMode?"#fef3c7":"var(--surface2)";
     btn.style.borderColor=adminMode?"#fde68a":"var(--border)";
     btn.style.color=adminMode?"#d97706":"var(--text-3)";
-    btn.textContent=adminMode?"👑 Admin-Modus":"👁 Admin-Modus";
+    btn.textContent=adminMode?"👑":"👁";
+    btn.title=adminMode?"Admin-Modus aktiv — klicken für User-Ansicht":"User-Ansicht — klicken für Admin-Modus";
   }
   if(adminBtn) adminBtn.style.display=adminMode?"":"none";
   renderTermine();
