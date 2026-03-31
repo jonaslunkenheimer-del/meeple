@@ -4983,13 +4983,12 @@ async function renderBgstats(){
           +"<a href='"+h(q.url)+"' target='_blank' style='font-size:.72rem;color:var(--blue);text-decoration:none;word-break:break-all'>"+h(q.url)+"</a>"
           +"</div></div>"
           +"<div style='display:flex;gap:8px'>"
-          +"<button data-qridx='"+idx+"' class='bgstats-qr-btn' style='flex:1;background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>🔍 QR Code vergrößern</button>"
-          +"<button data-qrid='"+q.id+"' class='bgstats-scan-btn' style='flex:1;background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd);border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>✓ Gescannt</button>"
+          +"<button data-qrid='"+q.id+"' class='bgstats-scan-btn' style='width:100%;background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd);border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>✓ Gescannt</button>"
           +"</div>"
           +"</div>";
       }).join("");
       // Attach events directly after render
-      receivedList.querySelectorAll(".bgstats-qr-img,.bgstats-qr-btn").forEach(function(el){
+      receivedList.querySelectorAll(".bgstats-qr-img").forEach(function(el){
         el.addEventListener("click",function(){
           var idx=parseInt(this.dataset.qridx);
           var url=window._bgstatsQrUrls[idx];
