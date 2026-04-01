@@ -838,6 +838,20 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   </div>
 </div>
 
+<!-- MAIL DETAIL MODAL -->
+<div id="mail-detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:980;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)document.getElementById('mail-detail-modal').style.display='none'">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;animation:up .18s ease;overflow:hidden">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0">
+      <div>
+        <div id="mail-detail-subject" style="font-weight:700;font-size:.95rem;margin-bottom:3px"></div>
+        <div id="mail-detail-meta" style="font-size:.72rem;color:var(--text-3)"></div>
+      </div>
+      <button onclick="document.getElementById('mail-detail-modal').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:1.1rem;flex-shrink:0;margin-left:10px">✕</button>
+    </div>
+    <div id="mail-detail-body" style="flex:1;overflow-y:auto;padding:16px;font-size:.85rem;line-height:1.6"></div>
+  </div>
+</div>
+
 <!-- BGG TOKEN MODAL -->
 
 <!-- ADMIN MODAL -->
@@ -890,6 +904,17 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       </div>
       <div id="admin-create-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:8px"></div>
       <button class="btn btn-blue btn-sm" onclick="adminCreateUser()">+ User anlegen</button>
+    </div>
+    <!-- MAIL INBOX -->
+    <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-weight:700">📬 Gesendete Mails</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="loadMailLog()">🔄 Aktualisieren</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="clearMailLog()">🗑 Leeren</button>
+        </div>
+      </div>
+      <div id="admin-mail-list" style="max-height:320px;overflow-y:auto"></div>
     </div>
   </div>
 </div>
@@ -2214,6 +2239,7 @@ function openAdminModal(){
   document.getElementById("admin-modal").style.display="flex";
   loadAdminUsers();
   adminLoadAnnouncementsList();
+  loadMailLog();
   // Show current token status
   var status=document.getElementById("admin-bgg-status");
   if(status) status.textContent=bggTok?"✓ Token aktiv ("+bggTok.slice(0,8)+"…)":"Noch kein Token gespeichert.";
@@ -3074,8 +3100,7 @@ async function sendInviteNotification(t, invitedName){
             +(t.date?"<p>🗓 <strong>"+dt+"</strong></p>":"")
             +(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")
             +"<p><strong>"+h(currentName)+"</strong> hat dich zum Termin eingeladen.</p></div>";
-          await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},
-            body:JSON.stringify({to:[row.notif_email],subject:"🎲 Du wurdest zu \""+t.title+"\" eingeladen",html:buildNotifEmail("Einladung: "+t.title,bodyHtml)})});
+          await sendMail([row.notif_email],"🎲 Du wurdest zu \""+t.title+"\" eingeladen",buildNotifEmail("Einladung: "+t.title,bodyHtml));
         }
         // Push
         if(row.push_subscription){
@@ -4793,10 +4818,71 @@ async function sendPushNotifications(title, body, url){
   }catch(e){}
 }
 
+// ── Mail Log ──
+async function logMail(to, subject, bodyHtml){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/app_config?key=eq.mail_log&select=value",{headers:authHdrs()});
+    var log=[];
+    if(r.ok){ var rows=await r.json(); if(rows.length) log=JSON.parse(rows[0].value||"[]"); }
+    log.unshift({id:"m"+Date.now(),to:Array.isArray(to)?to:[to],subject:subject,body:bodyHtml,ts:new Date().toISOString(),from:"noreply@meepleplaner.de"});
+    if(log.length>100) log=log.slice(0,100); // keep last 100
+    await fetch(SB_URL+"/rest/v1/app_config",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({key:"mail_log",value:JSON.stringify(log)})});
+  }catch(e){}
+}
+
+async function loadMailLog(){
+  var el=document.getElementById("admin-mail-list"); if(!el) return;
+  el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:8px'>Lade…</div>";
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/app_config?key=eq.mail_log&select=value",{headers:authHdrs()});
+    var log=[];
+    if(r.ok){ var rows=await r.json(); if(rows.length) log=JSON.parse(rows[0].value||"[]"); }
+    if(!log.length){ el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:8px'>Keine Mails vorhanden.</div>"; return; }
+    window._mailLog=log;
+    el.innerHTML=log.map(function(m,i){
+      var dt=new Date(m.ts).toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"});
+      var toStr=(m.to||[]).join(", ");
+      return "<div onclick='openMailDetail("+i+")' style='padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:background .1s' onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background=''\">"
+        +"<div style='display:flex;justify-content:space-between;align-items:flex-start;gap:8px'>"
+        +"<div style='font-weight:600;font-size:.82rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>"+h(m.subject)+"</div>"
+        +"<div style='font-size:.68rem;color:var(--text-3);flex-shrink:0'>"+dt+"</div>"
+        +"</div>"
+        +"<div style='font-size:.72rem;color:var(--text-3);margin-top:2px'>→ "+h(toStr)+"</div>"
+        +"</div>";
+    }).join("");
+  }catch(e){ el.innerHTML="<div style='font-size:.78rem;color:var(--red);padding:8px'>Fehler beim Laden.</div>"; }
+}
+
+function openMailDetail(idx){
+  var m=window._mailLog&&window._mailLog[idx]; if(!m) return;
+  var dt=new Date(m.ts).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  document.getElementById("mail-detail-subject").textContent=m.subject;
+  document.getElementById("mail-detail-meta").textContent="Von: "+m.from+" → An: "+(m.to||[]).join(", ")+" · "+dt;
+  // Render HTML safely in iframe-like div
+  var bodyEl=document.getElementById("mail-detail-body");
+  bodyEl.innerHTML=m.body||"(kein Inhalt)";
+  document.getElementById("mail-detail-modal").style.display="flex";
+}
+
+async function clearMailLog(){
+  if(!confirm("Alle gesendeten Mails löschen?")) return;
+  await fetch(SB_URL+"/rest/v1/app_config",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({key:"mail_log",value:"[]"})});
+  loadMailLog();
+  toast("Mail-Log geleert.");
+}
+
 // ── E-Mail Benachrichtigungen ──
 var currentNotifEmail = "";
 var currentNotifPrefs = {termine:false,markt:false,bgstats:false};
 const SB_NOTIF_FN = SB_URL+"/functions/v1/send-notification";
+
+async function sendMail(to, subject, bodyHtml){
+  var toArr=Array.isArray(to)?to:[to];
+  try{
+    await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({to:toArr,subject:subject,html:bodyHtml})});
+  }catch(e){}
+  logMail(toArr, subject, bodyHtml); // log async, don't await
+}
 
 async function loadNotifPrefs(){
   try{
@@ -4881,7 +4967,7 @@ async function sendNotifToSubscribers(t, eventType, extraInfo){
   var emailRecips=subscribers.filter(function(s){ return s.email; });
   if(emailRecips.length){
     try{
-      await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({to:emailRecips.map(function(s){ return s.email; }),subject:"🎲 "+t.title+" – "+eventType,html:emailHtml})});
+      await sendMail(emailRecips.map(function(s){ return s.email; }),"🎲 "+t.title+" – "+eventType,emailHtml);
     }catch(e){}
   }
 
@@ -4914,7 +5000,7 @@ async function sendGlobalNotif(type, subject, bodyHtml){
     var emails=rows.filter(function(row){ return row.notif_email&&row.user_name!==currentName; }).map(function(row){ return row.notif_email; });
     if(!emails.length) return;
     var emailHtml=buildNotifEmail(subject,bodyHtml);
-    await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({to:emails,subject:"🎲 "+subject,html:emailHtml})});
+    await sendMail(emails,"🎲 "+subject,emailHtml);
   }catch(e){}
 }
 
@@ -5070,7 +5156,7 @@ async function sendBgstatsNotification(title, recipients){
     });
     if(emails.length){
       var bodyHtml="<div class='section'><h3>📊 "+h(title)+"</h3><p><strong>"+h(currentName)+"</strong> hat einen BG Stats QR Code mit dir geteilt.</p></div>";
-      await fetch(SB_NOTIF_FN,{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({to:emails,subject:"📊 BG Stats geteilt: "+title,html:buildNotifEmail("BG Stats: "+title,bodyHtml)})});
+      await sendMail(emails,"📊 BG Stats geteilt: "+title,buildNotifEmail("BG Stats: "+title,bodyHtml));
     }
     if(pushSubs.length){
       await fetch(SB_URL+"/functions/v1/send-push",{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({subscriptions:pushSubs,title:"📊 BG Stats geteilt",body:h(currentName)+" hat \""+title+"\" mit dir geteilt",url:"/"})});
