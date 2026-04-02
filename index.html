@@ -2411,11 +2411,13 @@ async function adminResetPw(uid, name){
 }
 
 // ── Confirm ──
-function showConfirm(title,msg,onOk){
+function showConfirm(title,msg,onOk,okLabel,okStyle){
   document.getElementById("confirm-title").textContent=title;
   document.getElementById("confirm-msg").textContent=msg;
   var old=document.getElementById("confirm-ok");
   var neo=old.cloneNode(true); old.parentNode.replaceChild(neo,old);
+  neo.textContent=okLabel||"🗑 Löschen";
+  neo.style.cssText=(okStyle||"background:var(--red);color:#fff;border-color:var(--red)")+"";
   neo.onclick=function(){ closeConfirm(); onOk(); };
   document.getElementById("confirm-modal").style.display="flex";
 }
@@ -5149,10 +5151,23 @@ async function renderCommunity(){
 function createTerminFromGame(gameJson){
   try{
     var g=JSON.parse(gameJson);
-    // Find all users who have this game in their hotlist
     var interested=Object.keys(communityHotlists).filter(function(u){
       return (communityHotlists[u]||[]).some(function(x){ return x.bggId&&x.bggId===g.bggId||x.name===g.name; });
     });
+    var others=interested.filter(function(u){ return u!==currentName; });
+    var msg="Möchtest du einen Termin für \""+g.name+"\" erstellen?"
+      +(others.length?"\n\nFolgende Mitglieder haben dieses Spiel ebenfalls in ihrer Hotlist und werden automatisch eingeladen:\n• "+others.join("\n• "):"");
+    showConfirm(
+      "📅 Termin erstellen",
+      msg,
+      function(){ doCreateTerminFromGame(g, interested); },
+      "📅 Termin erstellen",
+      "background:var(--blue);color:#fff;border-color:var(--blue)"
+    );
+  }catch(e){ toast("Fehler."); }
+}
+
+function doCreateTerminFromGame(g, interested){
     var t={
       id:state.nextId++,
       title:g.name,
@@ -5181,12 +5196,10 @@ function createTerminFromGame(gameJson){
     toast("📅 Termin erstellt! "+interested.length+" Mitspieler eingeladen 🎉");
     saveState();
     if(!t.privat){
-      var dtStr="Datum noch offen";
-      sendMail&&sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3><p>Erstellt von <strong>"+h(currentName)+"</strong></p></div>");
+      sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3><p>Erstellt von <strong>"+h(currentName)+"</strong></p></div>");
       sendPushNotifications("📅 Neuer Termin: "+t.title,h(currentName)+" möchte "+h(g.name)+" spielen","/");
     }
     showTab("termine",document.getElementById("tab-btn-termine"));
-  }catch(e){ toast("Fehler beim Erstellen."); }
 }
 
 function filterCommunity(){
