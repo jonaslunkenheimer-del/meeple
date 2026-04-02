@@ -5056,11 +5056,10 @@ async function renderCommunity(){
       return "<div style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px'>"
         +"<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px'>"
         +avHtml(u,"av-md")
-        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.95rem'>"+h(u)+"</div>"
-        +"<div style='display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap'>"
-        +"<span style='font-size:.72rem;color:var(--text-3)'>🔥 "+games.length+" / 5 Spiele</span>"
-        +(bgg?"<a href='https://boardgamegeek.com/user/"+encodeURIComponent(bgg)+"' target='_blank' style='display:inline-flex;align-items:center;gap:3px;font-size:.72rem;color:var(--blue);text-decoration:none;font-weight:600'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:11px;height:11px;border-radius:2px' onerror='this.style.display=\"none\"'> "+h(bgg)+"</a>":"")
-        +"</div></div>"
+        +"<div style='flex:1;min-width:0'><div style='display:flex;align-items:center;gap:6px'><span style='font-weight:700;font-size:.95rem'>"+h(u)+"</span>"
+        +(bgg?"<a href='https://boardgamegeek.com/user/"+encodeURIComponent(bgg)+"' target='_blank' title='BGG: "+h(bgg)+"' onclick='event.stopPropagation()' style='display:inline-flex;align-items:center'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:14px;height:14px;border-radius:3px' onerror='this.style.display=\"none\"'></a>":"")
+        +"</div>"
+        +"<div style='font-size:.72rem;color:var(--text-3);margin-top:2px'>🔥 "+games.length+" / 5 Spiele</div></div>"
         +(u===currentName?"<button onclick='openHotlistModal()' style='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--text-2);flex-shrink:0'>✏️ Bearbeiten</button>":"")
         +"</div>"
         +gamesHtml+"</div>";
