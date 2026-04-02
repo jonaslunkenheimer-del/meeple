@@ -3558,7 +3558,13 @@ function calNext(){ calMonth++; if(calMonth>11){ calMonth=0; calYear++; } render
 function renderZusagen(){
   var list=document.getElementById("zusagen-list"); if(!list) return;
   var mine=state.termine.filter(function(t){ return t.personen&&t.personen.includes(currentName); });
-  mine.sort(function(a,b){ return new Date(a.date||0)-new Date(b.date||0); });
+  mine.sort(function(a,b){
+    // Termine ohne Datum ganz nach unten
+    if(!a.date&&!b.date) return 0;
+    if(!a.date) return 1;
+    if(!b.date) return -1;
+    return new Date(a.date)-new Date(b.date);
+  });
   if(!mine.length){ list.innerHTML="<div class='empty'><div class='empty-icon'>&#128197;</div><p>Noch keine Zusagen.</p></div>"; return; }
   var now=new Date();
   list.innerHTML=mine.map(function(t){
