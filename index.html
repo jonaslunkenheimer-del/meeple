@@ -386,8 +386,8 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
   /* ── Main ── */
   .main{padding:0 0 80px}
-  #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt,#tab-sammlung,#tab-bgstats{padding:12px 12px 0}
-  #tab-zusagen > div:first-child,#tab-markt > div:first-child,#tab-sammlung > div:first-child,#tab-bgstats > div:first-child{padding:0;max-width:none}
+  #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt,#tab-sammlung,#tab-bgstats,#tab-community{padding:12px 12px 0}
+  #tab-zusagen > div:first-child,#tab-markt > div:first-child,#tab-sammlung > div:first-child,#tab-bgstats > div:first-child,#tab-community > div:first-child{padding:0;max-width:none}
   .tab-content.active{padding:0}
 
   /* ── Cards & sections ── */
@@ -543,6 +543,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button class="tab" id="tab-btn-zusagen" onclick="showTab('zusagen',this)">Meine Zusagen</button>
         <button class="tab" id="tab-btn-sammlung" onclick="showTab('sammlung',this)">Sammlung</button>
         <button class="tab" id="tab-btn-bgstats" onclick="showTab('bgstats',this)">BG Stats</button>
+        <button class="tab" id="tab-btn-community" onclick="showTab('community',this)" style="display:none">Community</button>
         <button class="tab" id="tab-btn-markt" onclick="showTab('markt',this)" style="display:none">Marktplatz</button>
       </div>
       <!-- Mobile Dropdown -->
@@ -557,6 +558,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="showTabMobile('zusagen')">Meine Zusagen</button>
           <button onclick="showTabMobile('sammlung')">Sammlung</button>
           <button onclick="showTabMobile('bgstats')">BG Stats</button>
+          <button id="tab-dd-community" onclick="showTabMobile('community')" style="display:none">Community</button>
           <button id="tab-dd-markt" onclick="showTabMobile('markt')" style="display:none">Marktplatz</button>
         </div>
       </div>
@@ -669,6 +671,22 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <span id="sammlung-count-badge" style="font-size:.75rem;color:var(--text-3)"></span>
         </div>
         <div id="sammlung-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- COMMUNITY TAB -->
+    <div id="tab-community" class="tab-content">
+      <div style="max-width:860px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">🏘️ Community</div>
+            <div style="font-size:.78rem;color:var(--text-3)">Übersicht aller Mitglieder und ihre Hotlists</div>
+          </div>
+          <button onclick="openHotlistModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35)">
+            🔥 Meine Hotlist
+          </button>
+        </div>
+        <div id="community-list"></div>
       </div>
     </div>
 
@@ -1240,6 +1258,32 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   </div>
 </div>
 
+<!-- HOTLIST MODAL -->
+<div id="hotlist-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeHotlistModal()">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;animation:up .2s ease">
+    <div style="background:linear-gradient(135deg,#f59e0b,#fbbf24);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1">
+      <div style="font-size:1rem;font-weight:800;color:#fff">🔥 Meine Hotlist</div>
+      <button onclick="closeHotlistModal()" style="background:rgba(255,255,255,.25);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:20px 24px">
+      <div style="font-size:.82rem;color:var(--text-2);margin-bottom:16px">Deine Top 5 Spiele auf die du gerade am meisten Lust hast. Andere Mitglieder können sehen was du spielen möchtest.</div>
+      <div id="hotlist-slots"></div>
+      <div id="hotlist-search-wrap" style="display:none;margin-top:12px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:.78rem;font-weight:600;color:var(--text-2);margin-bottom:8px">Spiel suchen (BGG)</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="input-field" id="hotlist-search-input" placeholder="Spielname …" oninput="onHotlistSearch()" autocomplete="off" style="flex:1">
+          <button class="btn btn-ghost btn-sm" onclick="closeHotlistSearch()">✕</button>
+        </div>
+        <div id="hotlist-search-results" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn btn-ghost" onclick="closeHotlistModal()" style="flex:1">Schließen</button>
+        <button class="btn btn-blue" onclick="saveHotlist()" style="flex:2">🔥 Hotlist speichern</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- BG STATS QR OVERLAY -->
 <div id="bgstats-qr-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px" onclick="document.getElementById('bgstats-qr-overlay').style.display='none'">
   <img id="bgstats-qr-large" src="" style="max-width:min(80vw,400px);max-height:min(80vw,400px);border-radius:12px;background:#fff;padding:12px;box-shadow:0 8px 40px rgba(0,0,0,.5)" alt="QR Code">
@@ -1409,6 +1453,10 @@ function toggleAdminMode(){
     btn.title=adminMode?"Admin-Modus aktiv — klicken für User-Ansicht":"User-Ansicht — klicken für Admin-Modus";
   }
   if(adminBtn) adminBtn.style.display=adminMode?"":"none";
+  var commBtn=document.getElementById("tab-btn-community");
+  var commDd=document.getElementById("tab-dd-community");
+  if(commBtn) commBtn.style.display=adminMode?"":"none";
+  if(commDd) commDd.style.display=adminMode?"":"none";
   renderTermine();
   toast(adminMode?"👑 Admin-Modus aktiv":"👁 User-Ansicht aktiv");
 }
@@ -2015,7 +2063,7 @@ function startPolling(){
 }
 
 // ── Tabs ──
-var TAB_LABELS={termine:"Termine",kalender:"Kalender",zusagen:"Meine Zusagen",nachrichten:"✉️ Nachrichten",sammlung:"Sammlung",markt:"Marktplatz"};
+var TAB_LABELS={termine:"Termine",kalender:"Kalender",zusagen:"Meine Zusagen",nachrichten:"✉️ Nachrichten",sammlung:"Sammlung",markt:"Marktplatz",bgstats:"BG Stats",community:"Community"};
 
 function showTab(name,btn){
   document.querySelectorAll(".tab-content").forEach(function(el){ el.classList.remove("active"); });
@@ -2028,6 +2076,7 @@ function showTab(name,btn){
   if(name==="nachrichten") renderNachrichten();
   if(name==="sammlung") renderSammlung();
   if(name==="bgstats") renderBgstats();
+  if(name==="community") renderCommunity();
   // FAB nur im Termine-Tab sichtbar
   var fab=document.getElementById("fab-new-termin");
   if(fab) fab.classList.toggle("fab-active", name==="termine");
@@ -4940,6 +4989,212 @@ async function sendGlobalNotif(type, subject, bodyHtml){
     var emailHtml=buildNotifEmail(subject,bodyHtml);
     await sendMail(emails,"🎲 "+subject,emailHtml);
   }catch(e){}
+}
+
+// ── Community Tab ──
+var communityHotlists = {}; // {userName: [{id, name, image, bggId, bggUrl}]}
+var myHotlist = [null,null,null,null,null]; // 5 slots
+var hotlistEditSlot = -1;
+var hotlistSearchDebounce = null;
+
+async function loadCommunityHotlists(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/app_config?key=eq.community_hotlists&select=value",{headers:authHdrs()});
+    if(r.ok){ var rows=await r.json(); if(rows.length) communityHotlists=JSON.parse(rows[0].value||"{}"); }
+  }catch(e){ communityHotlists={}; }
+  myHotlist=(communityHotlists[currentName]||[null,null,null,null,null]).slice(0,5);
+  while(myHotlist.length<5) myHotlist.push(null);
+}
+
+async function saveCommunityHotlists(){
+  communityHotlists[currentName]=myHotlist.filter(Boolean);
+  await fetch(SB_URL+"/rest/v1/app_config",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({key:"community_hotlists",value:JSON.stringify(communityHotlists)})});
+}
+
+async function renderCommunity(){
+  await loadCommunityHotlists();
+  // Load all users
+  var list=document.getElementById("community-list"); if(!list) return;
+  list.innerHTML="<div style='font-size:.78rem;color:var(--text-3)'>Lade…</div>";
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+    var rows=r.ok?await r.json():[];
+    var users=rows.map(function(row){ return (row.display_name&&row.display_name.trim())||row.user_name; });
+    if(!users.length){ list.innerHTML="<div class='empty'><div class='empty-icon'>👥</div><p>Keine Mitglieder gefunden.</p></div>"; return; }
+    list.innerHTML=users.map(function(u){
+      var games=communityHotlists[u]||[];
+      var gamesHtml=games.length
+        ? games.map(function(g){
+            var img=g.image?proxyImg(g.image):null;
+            return "<div style='display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px'>"
+              +(img?"<img src='"+img+"' style='width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;background:var(--border)' onerror='this.style.display=\"none\"'>":"<div style='width:36px;height:36px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0'>🎲</div>")
+              +"<div style='flex:1;min-width:0'>"
+              +"<div style='font-weight:600;font-size:.83rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>"+h(g.name)+"</div>"
+              +(g.bggUrl?"<a href='"+h(g.bggUrl)+"' target='_blank' style='font-size:.68rem;color:var(--blue);text-decoration:none'>BoardGameGeek</a>":"")
+              +"</div>"
+              +"<button onclick='createTerminFromGame("+JSON.stringify(JSON.stringify(g)).slice(1,-1)+")' title='Termin erstellen' style='flex-shrink:0;background:#eff6ff;border:1px solid #bfdbfe;color:var(--blue);border-radius:7px;padding:4px 8px;font-size:.72rem;cursor:pointer;font-weight:600'>📅</button>"
+              +"</div>";
+          }).join("")
+        : "<div style='font-size:.78rem;color:var(--text-3);padding:8px 0'>Noch keine Hotlist eingetragen.</div>";
+      return "<div style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px'>"
+        +"<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px'>"
+        +avHtml(u,"av-md")
+        +"<div style='flex:1'><div style='font-weight:700;font-size:.95rem'>"+h(u)+"</div>"
+        +"<div style='font-size:.72rem;color:var(--text-3)'>🔥 "+games.length+" / 5 Spiele</div></div>"
+        +(u===currentName?"<button onclick='openHotlistModal()' style='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--text-2)'>✏️ Bearbeiten</button>":"")
+        +"</div>"
+        +gamesHtml+"</div>";
+    }).join("");
+  }catch(e){ list.innerHTML="<div style='color:var(--red);font-size:.82rem'>Fehler beim Laden.</div>"; }
+}
+
+// Create termin from hotlist game
+function createTerminFromGame(gameJson){
+  try{
+    var g=JSON.parse(gameJson);
+    // Find all users who have this game in their hotlist
+    var interested=Object.keys(communityHotlists).filter(function(u){
+      return (communityHotlists[u]||[]).some(function(x){ return x.bggId&&x.bggId===g.bggId||x.name===g.name; });
+    });
+    var t={
+      id:state.nextId++,
+      title:g.name,
+      date:"", ort:"",
+      creator:currentName,
+      offen:true, privat:false,
+      limitOn:false, limitVal:0,
+      voteOn:false, diceOn:false,
+      mitspielerGesucht:false,
+      personen:[currentName],
+      spiele:[Object.assign({id:"b"+Date.now(),votes:{}},g,{vorschlaeger:currentName})],
+      chat:[], qrcodes:[],
+      subscribers:(currentNotifEmail||window._hasPushSub)?[{name:currentName,email:currentNotifEmail||""}]:[],
+      ts:new Date().toISOString()
+    };
+    // Add other interested users
+    interested.forEach(function(u){
+      if(u!==currentName&&!t.personen.includes(u)){
+        t.personen.push(u);
+        autoSubscribeUser(t,u);
+        sendInviteNotification(t,u);
+      }
+    });
+    state.termine.unshift(t);
+    renderTermine();
+    toast("📅 Termin erstellt! "+interested.length+" Mitspieler eingeladen 🎉");
+    saveState();
+    if(!t.privat){
+      var dtStr="Datum noch offen";
+      sendMail&&sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3><p>Erstellt von <strong>"+h(currentName)+"</strong></p></div>");
+      sendPushNotifications("📅 Neuer Termin: "+t.title,h(currentName)+" möchte "+h(g.name)+" spielen","/");
+    }
+    showTab("termine",document.getElementById("tab-btn-termine"));
+  }catch(e){ toast("Fehler beim Erstellen."); }
+}
+
+// Hotlist Modal
+async function openHotlistModal(){
+  await loadCommunityHotlists();
+  renderHotlistSlots();
+  closeHotlistSearch();
+  document.getElementById("hotlist-modal").style.display="flex";
+}
+
+function closeHotlistModal(){
+  document.getElementById("hotlist-modal").style.display="none";
+  closeHotlistSearch();
+}
+
+function renderHotlistSlots(){
+  var el=document.getElementById("hotlist-slots"); if(!el) return;
+  el.innerHTML=myHotlist.map(function(g,i){
+    if(g){
+      var img=g.image?proxyImg(g.image):null;
+      return "<div style='display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px'>"
+        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:16px;flex-shrink:0'>"+(i+1)+"</div>"
+        +(img?"<img src='"+img+"' style='width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>":"<div style='width:40px;height:40px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>🎲</div>")
+        +"<div style='flex:1;min-width:0'><div style='font-weight:600;font-size:.88rem'>"+h(g.name)+"</div>"
+        +(g.year?"<div style='font-size:.72rem;color:var(--text-3)'>"+g.year+"</div>":"")
+        +"</div>"
+        +"<button onclick='removeHotlistSlot("+i+")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem' title='Entfernen'>✕</button>"
+        +"</div>";
+    } else {
+      return "<div onclick='openHotlistSearch("+i+")' style='display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;transition:border-color .15s' onmouseover=\"this.style.borderColor='var(--blue)'\" onmouseout=\"this.style.borderColor='var(--border)'\">"
+        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:16px;flex-shrink:0'>"+(i+1)+"</div>"
+        +"<div style='width:40px;height:40px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>＋</div>"
+        +"<div style='font-size:.82rem;color:var(--text-3)'>Spiel hinzufügen …</div>"
+        +"</div>";
+    }
+  }).join("");
+}
+
+function removeHotlistSlot(i){
+  myHotlist[i]=null;
+  renderHotlistSlots();
+}
+
+function openHotlistSearch(slotIdx){
+  hotlistEditSlot=slotIdx;
+  document.getElementById("hotlist-search-wrap").style.display="block";
+  document.getElementById("hotlist-search-input").value="";
+  document.getElementById("hotlist-search-results").innerHTML="";
+  setTimeout(function(){ document.getElementById("hotlist-search-input").focus(); },50);
+}
+
+function closeHotlistSearch(){
+  document.getElementById("hotlist-search-wrap").style.display="none";
+  hotlistEditSlot=-1;
+}
+
+function onHotlistSearch(){
+  clearTimeout(hotlistSearchDebounce);
+  var q=document.getElementById("hotlist-search-input").value.trim();
+  if(!q){ document.getElementById("hotlist-search-results").innerHTML=""; return; }
+  hotlistSearchDebounce=setTimeout(function(){ doHotlistSearch(q); },350);
+}
+
+async function doHotlistSearch(q){
+  var el=document.getElementById("hotlist-search-results");
+  el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Suche…</div>";
+  try{
+    var r=await fetch(SB_URL+"/functions/v1/bgg-proxy?action=search&q="+encodeURIComponent(q),{headers:authHdrs()});
+    var xml=await r.text();
+    var doc=new DOMParser().parseFromString(xml,"text/xml");
+    var items=Array.from(doc.querySelectorAll("item")).slice(0,8);
+    if(!items.length){ el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Keine Ergebnisse.</div>"; return; }
+    el.innerHTML=items.map(function(item,i){
+      var id=item.getAttribute("id");
+      var nameEl=item.querySelector("name[type='primary']")||item.querySelector("name");
+      var name=nameEl?nameEl.getAttribute("value"):"Unbekannt";
+      var yearEl=item.querySelector("yearpublished");
+      var year=yearEl?yearEl.getAttribute("value"):"";
+      return "<div onclick='selectHotlistGame(\""+id+"\",\""+h(name).replace(/"/g,"&quot;")+"\",\""+year+"\")' style='display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .1s' onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background=''\">"
+        +"<div style='width:32px;height:32px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0'>🎲</div>"
+        +"<div><div style='font-weight:600;font-size:.82rem'>"+h(name)+"</div>"
+        +(year?"<div style='font-size:.7rem;color:var(--text-3)'>"+year+"</div>":"")
+        +"</div></div>";
+    }).join("");
+  }catch(e){ el.innerHTML="<div style='font-size:.78rem;color:var(--red);padding:6px'>Fehler bei der Suche.</div>"; }
+}
+
+async function selectHotlistGame(bggId, name, year){
+  var el=document.getElementById("hotlist-search-results");
+  el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Lade Details…</div>";
+  try{
+    var data=await loadBggGameDetails(bggId);
+    myHotlist[hotlistEditSlot]=data;
+  }catch(e){
+    myHotlist[hotlistEditSlot]={id:"h"+Date.now(),name:name,year:year,bggId:bggId,bggUrl:"https://boardgamegeek.com/boardgame/"+bggId};
+  }
+  closeHotlistSearch();
+  renderHotlistSlots();
+}
+
+async function saveHotlist(){
+  await saveCommunityHotlists();
+  closeHotlistModal();
+  toast("🔥 Hotlist gespeichert!");
+  if(document.getElementById("tab-community").classList.contains("active")) renderCommunity();
 }
 
 // ── BG Stats Tab ──
