@@ -1269,12 +1269,25 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <div style="font-size:.82rem;color:var(--text-2);margin-bottom:16px">Deine Top 5 Spiele auf die du gerade am meisten Lust hast. Andere Mitglieder können sehen was du spielen möchtest.</div>
       <div id="hotlist-slots"></div>
       <div id="hotlist-search-wrap" style="display:none;margin-top:12px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
-        <div style="font-size:.78rem;font-weight:600;color:var(--text-2);margin-bottom:8px">Spiel suchen (BGG)</div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <input class="input-field" id="hotlist-search-input" placeholder="Spielname …" oninput="onHotlistSearch()" autocomplete="off" style="flex:1">
-          <button class="btn btn-ghost btn-sm" onclick="closeHotlistSearch()">✕</button>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button id="hotlist-tab-search" onclick="setHotlistSearchTab('search')" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--blue);background:var(--blue);color:#fff;font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer">🔍 Suche</button>
+          <button id="hotlist-tab-link" onclick="setHotlistSearchTab('link')" style="flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-2);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer">🔗 BGG Link</button>
         </div>
-        <div id="hotlist-search-results" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+        <div id="hotlist-panel-search">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input class="input-field" id="hotlist-search-input" placeholder="Spielname …" oninput="onHotlistSearch()" autocomplete="off" style="flex:1">
+            <button class="btn btn-ghost btn-sm" onclick="closeHotlistSearch()">✕</button>
+          </div>
+          <div id="hotlist-search-results" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"></div>
+        </div>
+        <div id="hotlist-panel-link" style="display:none">
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input class="input-field" id="hotlist-link-input" placeholder="https://boardgamegeek.com/boardgame/…" autocomplete="off" style="flex:1">
+            <button class="btn btn-ghost btn-sm" onclick="closeHotlistSearch()">✕</button>
+          </div>
+          <button class="btn btn-blue btn-sm" style="width:100%" onclick="loadHotlistFromLink()">Laden</button>
+          <div id="hotlist-link-status" style="font-size:.78rem;color:var(--text-3);margin-top:6px"></div>
+        </div>
       </div>
       <div style="display:flex;gap:10px;margin-top:16px">
         <button class="btn btn-ghost" onclick="closeHotlistModal()" style="flex:1">Schließen</button>
@@ -5017,11 +5030,15 @@ async function renderCommunity(){
   var list=document.getElementById("community-list"); if(!list) return;
   list.innerHTML="<div style='font-size:.78rem;color:var(--text-3)'>Lade…</div>";
   try{
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile&order=user_name&last_login=not.is.null",{headers:authHdrs()});
     var rows=r.ok?await r.json():[];
-    var users=rows.map(function(row){ return (row.display_name&&row.display_name.trim())||row.user_name; });
+    var userMap={};
+    rows.forEach(function(row){ userMap[(row.display_name&&row.display_name.trim())||row.user_name]=row; });
+    var users=Object.keys(userMap);
     if(!users.length){ list.innerHTML="<div class='empty'><div class='empty-icon'>👥</div><p>Keine Mitglieder gefunden.</p></div>"; return; }
     list.innerHTML=users.map(function(u){
+      var row=userMap[u]||{};
+      var bgg=row.bgg_profile||"";
       var games=communityHotlists[u]||[];
       var gamesHtml=games.length
         ? games.map(function(g){
@@ -5039,9 +5056,12 @@ async function renderCommunity(){
       return "<div style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px'>"
         +"<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px'>"
         +avHtml(u,"av-md")
-        +"<div style='flex:1'><div style='font-weight:700;font-size:.95rem'>"+h(u)+"</div>"
-        +"<div style='font-size:.72rem;color:var(--text-3)'>🔥 "+games.length+" / 5 Spiele</div></div>"
-        +(u===currentName?"<button onclick='openHotlistModal()' style='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--text-2)'>✏️ Bearbeiten</button>":"")
+        +"<div style='flex:1;min-width:0'><div style='font-weight:700;font-size:.95rem'>"+h(u)+"</div>"
+        +"<div style='display:flex;align-items:center;gap:8px;margin-top:2px;flex-wrap:wrap'>"
+        +"<span style='font-size:.72rem;color:var(--text-3)'>🔥 "+games.length+" / 5 Spiele</span>"
+        +(bgg?"<a href='https://boardgamegeek.com/user/"+encodeURIComponent(bgg)+"' target='_blank' style='display:inline-flex;align-items:center;gap:3px;font-size:.72rem;color:var(--blue);text-decoration:none;font-weight:600'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:11px;height:11px;border-radius:2px' onerror='this.style.display=\"none\"'> "+h(bgg)+"</a>":"")
+        +"</div></div>"
+        +(u===currentName?"<button onclick='openHotlistModal()' style='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--text-2);flex-shrink:0'>✏️ Bearbeiten</button>":"")
         +"</div>"
         +gamesHtml+"</div>";
     }).join("");
@@ -5144,6 +5164,34 @@ function openHotlistSearch(slotIdx){
 function closeHotlistSearch(){
   document.getElementById("hotlist-search-wrap").style.display="none";
   hotlistEditSlot=-1;
+}
+
+function setHotlistSearchTab(tab){
+  document.getElementById("hotlist-panel-search").style.display=tab==="search"?"block":"none";
+  document.getElementById("hotlist-panel-link").style.display=tab==="link"?"block":"none";
+  var s=document.getElementById("hotlist-tab-search");
+  var l=document.getElementById("hotlist-tab-link");
+  s.style.background=tab==="search"?"var(--blue)":"transparent";
+  s.style.color=tab==="search"?"#fff":"var(--text-2)";
+  s.style.borderColor=tab==="search"?"var(--blue)":"var(--border)";
+  l.style.background=tab==="link"?"var(--blue)":"transparent";
+  l.style.color=tab==="link"?"#fff":"var(--text-2)";
+  l.style.borderColor=tab==="link"?"var(--blue)":"var(--border)";
+  if(tab==="link") setTimeout(function(){ document.getElementById("hotlist-link-input").focus(); },50);
+}
+
+async function loadHotlistFromLink(){
+  var url=document.getElementById("hotlist-link-input").value.trim();
+  var status=document.getElementById("hotlist-link-status");
+  var m=url.match(/boardgame(?:geek\.com\/boardgame)?\/([0-9]+)/);
+  if(!m){ status.style.color="var(--red)"; status.textContent="Ungültige BGG URL."; return; }
+  status.style.color="var(--text-3)"; status.textContent="Lade…";
+  try{
+    var data=await loadBggGameDetails(m[1]);
+    myHotlist[hotlistEditSlot]=data;
+    closeHotlistSearch();
+    renderHotlistSlots();
+  }catch(e){ status.style.color="var(--red)"; status.textContent="Fehler: "+e.message; }
 }
 
 function onHotlistSearch(){
