@@ -677,7 +677,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
     <!-- COMMUNITY TAB -->
     <div id="tab-community" class="tab-content">
       <div style="max-width:860px;margin:0 auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
           <div>
             <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">🏘️ Community</div>
             <div style="font-size:.78rem;color:var(--text-3)">Übersicht aller Mitglieder und ihre Hotlists</div>
@@ -685,6 +685,11 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="openHotlistModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35)">
             🔥 Meine Hotlist
           </button>
+        </div>
+        <div style="position:relative;margin-bottom:16px">
+          <input class="input-field" id="community-search" placeholder="👤 User oder 🎲 Spiel suchen …" oninput="filterCommunity()" autocomplete="off" style="padding-left:36px">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:.9rem;pointer-events:none">🔍</span>
+          <button id="community-search-clear" onclick="clearCommunitySearch()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem">✕</button>
         </div>
         <div id="community-list"></div>
       </div>
@@ -5025,6 +5030,10 @@ async function saveCommunityHotlists(){
 }
 
 async function renderCommunity(){
+  var searchEl=document.getElementById("community-search");
+  if(searchEl) searchEl.value="";
+  var clearBtn=document.getElementById("community-search-clear");
+  if(clearBtn) clearBtn.style.display="none";
   await loadCommunityHotlists();
   // Load all users
   var list=document.getElementById("community-list"); if(!list) return;
@@ -5053,7 +5062,7 @@ async function renderCommunity(){
               +"</div>";
           }).join("")
         : "<div style='font-size:.78rem;color:var(--text-3);padding:8px 0'>Noch keine Hotlist eingetragen.</div>";
-      return "<div style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px'>"
+      return "<div class='community-card' data-user='"+h(u.toLowerCase())+"' data-games='"+h(games.map(function(g){ return g.name; }).join(" ").toLowerCase())+"' style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:12px'>"
         +"<div style='display:flex;align-items:center;gap:10px;margin-bottom:12px'>"
         +avHtml(u,"av-md")
         +"<div style='flex:1;min-width:0'><div style='display:flex;align-items:center;gap:6px'><span style='font-weight:700;font-size:.95rem'>"+h(u)+"</span>"
@@ -5111,7 +5120,36 @@ function createTerminFromGame(gameJson){
   }catch(e){ toast("Fehler beim Erstellen."); }
 }
 
-// Hotlist Modal
+function filterCommunity(){
+  var q=document.getElementById("community-search").value.toLowerCase().trim();
+  var clearBtn=document.getElementById("community-search-clear");
+  if(clearBtn) clearBtn.style.display=q?"":"none";
+  document.querySelectorAll(".community-card").forEach(function(card){
+    if(!q){ card.style.display=""; return; }
+    var user=card.dataset.user||"";
+    var games=card.dataset.games||"";
+    card.style.display=(user.includes(q)||games.includes(q))?"":"none";
+  });
+  // Show empty state if all hidden
+  var visible=document.querySelectorAll(".community-card:not([style*='none'])").length;
+  var existing=document.getElementById("community-search-empty");
+  if(!visible&&q){
+    if(!existing){
+      var el=document.createElement("div");
+      el.id="community-search-empty";
+      el.className="empty";
+      el.style.padding="30px 0";
+      el.innerHTML="<div class='empty-icon'>🔍</div><p>Keine Treffer für \""+h(q)+"\"</p>";
+      document.getElementById("community-list").appendChild(el);
+    }
+  } else if(existing){ existing.remove(); }
+}
+
+function clearCommunitySearch(){
+  var inp=document.getElementById("community-search");
+  if(inp) inp.value="";
+  filterCommunity();
+}
 async function openHotlistModal(){
   await loadCommunityHotlists();
   renderHotlistSlots();
@@ -5129,22 +5167,36 @@ function renderHotlistSlots(){
   el.innerHTML=myHotlist.map(function(g,i){
     if(g){
       var img=g.image?proxyImg(g.image):null;
-      return "<div style='display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px'>"
-        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:16px;flex-shrink:0'>"+(i+1)+"</div>"
+      return "<div style='display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px'>"
+        +"<div style='display:flex;flex-direction:column;gap:2px;flex-shrink:0'>"
+        +"<button onclick='moveHotlistSlot("+i+",-1)' "+(i===0?"disabled style='opacity:.25;cursor:default;":"style='")+"background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.75rem;padding:1px 4px;line-height:1' title='Nach oben'>▲</button>"
+        +"<button onclick='moveHotlistSlot("+i+",1)' "+(i===myHotlist.filter(Boolean).length-1&&i===myHotlist.lastIndexOf(g)?"disabled style='opacity:.25;cursor:default;":"style='")+"background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.75rem;padding:1px 4px;line-height:1' title='Nach unten'>▼</button>"
+        +"</div>"
+        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:14px;flex-shrink:0;text-align:center'>"+(i+1)+"</div>"
         +(img?"<img src='"+img+"' style='width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>":"<div style='width:40px;height:40px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>🎲</div>")
         +"<div style='flex:1;min-width:0'><div style='font-weight:600;font-size:.88rem'>"+h(g.name)+"</div>"
         +(g.year?"<div style='font-size:.72rem;color:var(--text-3)'>"+g.year+"</div>":"")
         +"</div>"
-        +"<button onclick='removeHotlistSlot("+i+")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem' title='Entfernen'>✕</button>"
+        +"<button onclick='removeHotlistSlot("+i+")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem;flex-shrink:0' title='Entfernen'>✕</button>"
         +"</div>";
     } else {
       return "<div onclick='openHotlistSearch("+i+")' style='display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;transition:border-color .15s' onmouseover=\"this.style.borderColor='var(--blue)'\" onmouseout=\"this.style.borderColor='var(--border)'\">"
-        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:16px;flex-shrink:0'>"+(i+1)+"</div>"
+        +"<div style='width:22px;flex-shrink:0'></div>"
+        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:14px;flex-shrink:0;text-align:center'>"+(i+1)+"</div>"
         +"<div style='width:40px;height:40px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>＋</div>"
         +"<div style='font-size:.82rem;color:var(--text-3)'>Spiel hinzufügen …</div>"
         +"</div>";
     }
   }).join("");
+}
+
+function moveHotlistSlot(i, dir){
+  var j=i+dir;
+  if(j<0||j>4) return;
+  var tmp=myHotlist[i];
+  myHotlist[i]=myHotlist[j];
+  myHotlist[j]=tmp;
+  renderHotlistSlots();
 }
 
 function removeHotlistSlot(i){
