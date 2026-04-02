@@ -543,7 +543,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <button class="tab" id="tab-btn-zusagen" onclick="showTab('zusagen',this)">Meine Zusagen</button>
         <button class="tab" id="tab-btn-sammlung" onclick="showTab('sammlung',this)">Sammlung</button>
         <button class="tab" id="tab-btn-bgstats" onclick="showTab('bgstats',this)">BG Stats</button>
-        <button class="tab" id="tab-btn-community" onclick="showTab('community',this)" style="display:none">Community</button>
+        <button class="tab" id="tab-btn-community" onclick="showTab('community',this)">Community</button>
         <button class="tab" id="tab-btn-markt" onclick="showTab('markt',this)" style="display:none">Marktplatz</button>
       </div>
       <!-- Mobile Dropdown -->
@@ -558,7 +558,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
           <button onclick="showTabMobile('zusagen')">Meine Zusagen</button>
           <button onclick="showTabMobile('sammlung')">Sammlung</button>
           <button onclick="showTabMobile('bgstats')">BG Stats</button>
-          <button id="tab-dd-community" onclick="showTabMobile('community')" style="display:none">Community</button>
+          <button id="tab-dd-community" onclick="showTabMobile('community')">Community</button>
           <button id="tab-dd-markt" onclick="showTabMobile('markt')" style="display:none">Marktplatz</button>
         </div>
       </div>
@@ -1483,8 +1483,8 @@ function toggleAdminMode(){
   if(adminBtn) adminBtn.style.display=adminMode?"":"none";
   var commBtn=document.getElementById("tab-btn-community");
   var commDd=document.getElementById("tab-dd-community");
-  if(commBtn) commBtn.style.display=adminMode?"":"none";
-  if(commDd) commDd.style.display=adminMode?"":"none";
+  if(commBtn) commBtn.style.display="";
+  if(commDd) commDd.style.display="";
   renderTermine();
   toast(adminMode?"👑 Admin-Modus aktiv":"👁 User-Ansicht aktiv");
 }
