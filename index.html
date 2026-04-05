@@ -3523,20 +3523,36 @@ function previewSlotAvail(tid, dateVal, personen){
   var el=document.getElementById("dpoll-avail-"+tid); if(!el) return;
   if(!dateVal){ el.innerHTML=""; return; }
   var dayNames=["So","Mo","Di","Mi","Do","Fr","Sa"];
-  var dow=dayNames[new Date(dateVal).getDay()];
-  var yes=[],no=[];
+  var slotDate=new Date(dateVal);
+  var dow=dayNames[slotDate.getDay()];
+  var slotDay=slotDate.toDateString();
+  var yes=[],no=[],conflict=[];
   (personen||[]).forEach(function(p){
+    // Check conflict: already has another termin on same day
+    var hasConflict=state.termine.some(function(t){
+      if(t.id===tid) return false;
+      if(!t.date) return false;
+      if(!t.personen||!t.personen.includes(p)) return false;
+      return new Date(t.date).toDateString()===slotDay;
+    });
+    if(hasConflict){ conflict.push(p); return; }
+    // Check availability
     var vf=userVerfuegbarkeit[p];
     if(!vf||!vf.days||!vf.days.length) return;
     if(vf.days.includes(dow)) yes.push(p);
     else no.push(p);
   });
-  if(!yes.length&&!no.length){ el.innerHTML=""; return; }
-  el.innerHTML=yes.map(function(p){
-    return "<span style='display:inline-flex;align-items:center;gap:3px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:2px 8px;font-size:.7rem;font-weight:600;color:var(--green)'>✅ "+h(p)+"</span>";
-  }).join("")+no.map(function(p){
-    return "<span style='display:inline-flex;align-items:center;gap:3px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:2px 8px;font-size:.7rem;font-weight:600;color:var(--red)'>⚠️ "+h(p)+"</span>";
-  }).join("");
+  if(!yes.length&&!no.length&&!conflict.length){ el.innerHTML=""; return; }
+  el.innerHTML=
+    conflict.map(function(p){
+      return "<span title='Hat an diesem Tag bereits einen anderen Termin' style='display:inline-flex;align-items:center;gap:3px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:2px 8px;font-size:.7rem;font-weight:600;color:var(--red)'>✖ "+h(p)+"</span>";
+    }).join("")+
+    no.map(function(p){
+      return "<span title='I.d.R. nicht verfügbar an diesem Wochentag' style='display:inline-flex;align-items:center;gap:3px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:2px 8px;font-size:.7rem;font-weight:600;color:#c2410c'>⚠️ "+h(p)+"</span>";
+    }).join("")+
+    yes.map(function(p){
+      return "<span title='Verfügbar an diesem Wochentag' style='display:inline-flex;align-items:center;gap:3px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:2px 8px;font-size:.7rem;font-weight:600;color:var(--green)'>✅ "+h(p)+"</span>";
+    }).join("");
 }
 
 function addDateSlot(tid){
