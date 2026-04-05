@@ -1241,7 +1241,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 
 <!-- INSERAT MODAL -->
 <div id="inserat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeInseratModal()">
-  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:80vh;overflow-y:auto;animation:up .2s ease">
+  <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:85vh;overflow-y:auto;animation:up .2s ease">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1">
       <div>
         <div id="inserat-modal-title" style="font-size:1.1rem;font-weight:800;color:#fff">🛒 Spiel inserieren</div>
@@ -1250,20 +1250,49 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
       <button onclick="closeInseratModal()" style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center">✕</button>
     </div>
     <div style="padding:24px">
-      <div class="form-grid" style="margin-bottom:16px">
-        <div class="form-field"><label>Spielname</label><input class="input-field" id="markt-titel" placeholder="z.B. Catan"></div>
-        <div class="form-field"><label>Preis (€)</label><input class="input-field" id="markt-preis" type="number" min="0" step="0.50" placeholder="z.B. 15"></div>
+      <!-- Mode toggle -->
+      <div style="display:flex;gap:6px;margin-bottom:20px;background:var(--bg);border-radius:10px;padding:4px" id="inserat-mode-toggle">
+        <button onclick="setInseratMode('single')" id="inserat-mode-single" style="flex:1;padding:8px;border-radius:8px;border:none;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:600;cursor:pointer;background:var(--blue);color:#fff;transition:all .15s">🎲 Einzelanzeige</button>
+        <button onclick="setInseratMode('multi')" id="inserat-mode-multi" style="flex:1;padding:8px;border-radius:8px;border:none;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:600;cursor:pointer;background:transparent;color:var(--text-2);transition:all .15s">📦 Sammelanzeige</button>
       </div>
-      <div class="form-field" style="margin-bottom:12px"><label>Zustand & Beschreibung</label><textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten …" style="resize:vertical;font-family:inherit"></textarea></div>
-      <div class="form-field" style="margin-bottom:12px"><label>BGG-Link (optional)</label><input class="input-field" id="markt-bgg" placeholder="https://boardgamegeek.com/…"></div>
-      <div style="margin-bottom:20px">
-        <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Bilder (optional) – URL eingeben</div>
-        <div style="display:flex;gap:6px;margin-bottom:8px">
-          <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
-          <button class="btn btn-outline btn-sm" onclick="addMarktImg()">+ Hinzufügen</button>
+
+      <!-- SINGLE mode -->
+      <div id="inserat-panel-single">
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-field"><label>Spielname</label><input class="input-field" id="markt-titel" placeholder="z.B. Catan"></div>
+          <div class="form-field"><label>Preis (€)</label><input class="input-field" id="markt-preis" type="number" min="0" step="0.50" placeholder="z.B. 15"></div>
         </div>
-        <div id="markt-img-preview-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <div class="form-field" style="margin-bottom:12px"><label>Zustand & Beschreibung</label><textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten …" style="resize:vertical;font-family:inherit"></textarea></div>
+        <div class="form-field" style="margin-bottom:12px"><label>BGG-Link (optional)</label><input class="input-field" id="markt-bgg" placeholder="https://boardgamegeek.com/…"></div>
+        <div style="margin-bottom:20px">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Bilder (optional)</div>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
+            <button class="btn btn-outline btn-sm" onclick="addMarktImg()">🔗 URL</button>
+          </div>
+          <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem;color:var(--text-2);font-weight:600;transition:border-color .15s;margin-bottom:8px" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+            <input type="file" accept="image/*" multiple id="markt-img-file" style="display:none" onchange="uploadMarktImages(this)">
+            <span id="markt-upload-label">📷 Bilder hochladen</span>
+          </label>
+          <div id="markt-img-preview-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
       </div>
+
+      <!-- MULTI mode -->
+      <div id="inserat-panel-multi" style="display:none">
+        <div class="form-field" style="margin-bottom:16px">
+          <label>Titel der Sammelanzeige</label>
+          <input class="input-field" id="markt-multi-titel" placeholder="z.B. Meine Spielesammlung">
+        </div>
+        <div class="form-field" style="margin-bottom:16px">
+          <label>Allgemeine Beschreibung (optional)</label>
+          <textarea class="input-field" id="markt-multi-desc" rows="2" placeholder="z.B. Alle Spiele sind sehr gut erhalten …" style="resize:vertical;font-family:inherit"></textarea>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:8px">Spiele in dieser Anzeige</div>
+        <div id="markt-multi-spiele-list" style="margin-bottom:10px"></div>
+        <button onclick="addMultiSpielRow()" class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:16px">＋ Spiel hinzufügen</button>
+      </div>
+
       <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-ghost" onclick="closeInseratModal()" style="flex:1">Abbrechen</button>
@@ -3643,8 +3672,10 @@ async function renderMarkt(reload){
     return "<div class='markt-card"+(m.sold?" markt-sold":"")+"' id='markt-card-"+m.id+"'>"+imgHtml
       +"<div class='markt-body'>"
       +(m.sold?"<div class='markt-sold-badge'>\u2713 Verkauft</div>":"")
+      +(m.isMulti?"<div style='display:inline-flex;align-items:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:2px 10px;font-size:.7rem;font-weight:700;color:var(--blue);margin-bottom:6px'>📦 Sammelanzeige &middot; "+(m.spiele||[]).length+" Spiele</div><br>":"")
       +"<div class='markt-name'>"+h(m.titel)+"</div>"
-      +"<div class='markt-price'>"+m.preis.toFixed(2)+" &euro;</div>"
+      +"<div class='markt-price'>"+m.preis.toFixed(2)+" &euro;"+(m.isMulti?" <span style='font-size:.7rem;font-weight:500;color:var(--text-3)'>(Gesamt)</span>":"")+"</div>"
+      +(m.isMulti&&(m.spiele||[]).length?"<div style='margin-bottom:8px'>"+(m.spiele||[]).map(function(s){ return "<div style='display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--surface2);border-radius:6px;margin-bottom:3px;font-size:.78rem'><span style='font-weight:600'>"+h(s.name)+"</span><span style='color:var(--blue);font-weight:700'>"+(s.preis?parseFloat(s.preis).toFixed(2)+" €":"—")+"</span></div>"; }).join("")+"</div>":"")
       +(m.desc?"<div style='font-size:.8rem;color:var(--text-2);margin-bottom:8px;line-height:1.5'>"+h(m.desc)+"</div>":"")
       +"<div style='font-size:.72rem;color:var(--text-3);margin-bottom:8px'>Verk\u00e4ufer: "+h(m.seller)+" &middot; "+new Date(m.ts).toLocaleDateString("de-DE")+"</div>"
       +(isSeller&&interessenten.length?"<div style='font-size:.75rem;color:var(--blue);margin-bottom:8px;background:#eff6ff;padding:6px 10px;border-radius:6px'>&#128587; Interesse von: "+interessenten.map(h).join(", ")+"</div>":"")
@@ -3662,15 +3693,63 @@ async function renderMarkt(reload){
 }
 
 var editInseratId=null;
+var inseratMode="single"; // "single" or "multi"
+var multiSpiele=[]; // [{name, preis, bgg}]
+
+function setInseratMode(mode){
+  inseratMode=mode;
+  document.getElementById("inserat-panel-single").style.display=mode==="single"?"block":"none";
+  document.getElementById("inserat-panel-multi").style.display=mode==="multi"?"block":"none";
+  var s=document.getElementById("inserat-mode-single");
+  var m=document.getElementById("inserat-mode-multi");
+  s.style.background=mode==="single"?"var(--blue)":"transparent";
+  s.style.color=mode==="single"?"#fff":"var(--text-2)";
+  m.style.background=mode==="multi"?"var(--blue)":"transparent";
+  m.style.color=mode==="multi"?"#fff":"var(--text-2)";
+  // Hide toggle in edit mode
+  var toggle=document.getElementById("inserat-mode-toggle");
+  if(toggle) toggle.style.display=editInseratId!==null?"none":"flex";
+}
+
+function addMultiSpielRow(){
+  multiSpiele.push({name:"",preis:"",bgg:""});
+  renderMultiSpiele();
+}
+
+function removeMultiSpielRow(i){
+  multiSpiele.splice(i,1);
+  renderMultiSpiele();
+}
+
+function renderMultiSpiele(){
+  var el=document.getElementById("markt-multi-spiele-list"); if(!el) return;
+  if(!multiSpiele.length){
+    el.innerHTML="<div style='font-size:.8rem;color:var(--text-3);text-align:center;padding:12px 0'>Noch keine Spiele hinzugefügt.</div>";
+    return;
+  }
+  el.innerHTML=multiSpiele.map(function(s,i){
+    return "<div style='display:grid;grid-template-columns:1fr 80px auto;gap:6px;align-items:center;margin-bottom:8px'>"
+      +"<input class='input-field' placeholder='Spielname *' value='"+h(s.name)+"' oninput='multiSpiele["+i+"].name=this.value' style='font-size:.83rem'>"
+      +"<input class='input-field' type='number' min='0' step='0.5' placeholder='Preis €' value='"+h(s.preis)+"' oninput='multiSpiele["+i+"].preis=this.value' style='font-size:.83rem'>"
+      +"<button onclick='removeMultiSpielRow("+i+")' style='background:#fef2f2;border:1px solid #fca5a5;color:var(--red);border-radius:8px;width:34px;height:38px;cursor:pointer;font-size:.9rem;flex-shrink:0'>✕</button>"
+      +"<input class='input-field' placeholder='BGG-Link (optional)' value='"+h(s.bgg)+"' oninput='multiSpiele["+i+"].bgg=this.value' style='font-size:.76rem;grid-column:1/3'>"
+      +"<div></div>"
+      +"</div>";
+  }).join("");
+}
 
 function openInseratModal(){
   editInseratId=null;
+  inseratMode="single";
+  multiSpiele=[];
   mImgs=[];
-  ["markt-titel","markt-preis","markt-desc","markt-bgg","markt-img-url"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
+  ["markt-titel","markt-preis","markt-desc","markt-bgg","markt-img-url","markt-multi-titel","markt-multi-desc"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
   document.getElementById("markt-img-preview-wrap").innerHTML="";
   document.getElementById("markt-error").style.display="none";
-  document.getElementById("inserat-modal-title").textContent="\uD83D\uDED2 Spiel inserieren";
-  document.getElementById("inserat-submit-btn").textContent="\uD83D\uDCE2 Inserat erstellen";
+  document.getElementById("inserat-modal-title").textContent="🛒 Inserieren";
+  document.getElementById("inserat-submit-btn").textContent="📢 Inserat erstellen";
+  renderMultiSpiele();
+  setInseratMode("single");
   document.getElementById("inserat-modal").style.display="flex";
   setTimeout(function(){ document.getElementById("markt-titel").focus(); },50);
 }
@@ -3678,20 +3757,60 @@ function openEditInseratModal(id){
   var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
   if(!isAdmin&&m.seller!==currentName){ toast("Keine Berechtigung."); return; }
   editInseratId=id;
+  inseratMode=m.isMulti?"multi":"single";
+  multiSpiele=(m.spiele||[]).slice();
   mImgs=(m.images||[]).slice();
   document.getElementById("markt-titel").value=m.titel||"";
   document.getElementById("markt-preis").value=m.preis||"";
   document.getElementById("markt-desc").value=m.desc||"";
   document.getElementById("markt-bgg").value=m.bgg||"";
   document.getElementById("markt-img-url").value="";
+  var mt=document.getElementById("markt-multi-titel"); if(mt) mt.value=m.titel||"";
+  var md=document.getElementById("markt-multi-desc"); if(md) md.value=m.desc||"";
   document.getElementById("markt-error").style.display="none";
-  document.getElementById("inserat-modal-title").textContent="\u270F\uFE0F Inserat bearbeiten";
-  document.getElementById("inserat-submit-btn").textContent="\u2713 Speichern";
+  document.getElementById("inserat-modal-title").textContent="✏️ Inserat bearbeiten";
+  document.getElementById("inserat-submit-btn").textContent="✓ Speichern";
+  renderMultiSpiele();
   renderMarktImgPreviews();
+  setInseratMode(inseratMode);
   document.getElementById("inserat-modal").style.display="flex";
-  setTimeout(function(){ document.getElementById("markt-titel").focus(); },50);
+  setTimeout(function(){ document.getElementById(inseratMode==="multi"?"markt-multi-titel":"markt-titel").focus(); },50);
 }
 function closeInseratModal(){ document.getElementById("inserat-modal").style.display="none"; editInseratId=null; }
+async function uploadMarktImages(input){
+  var files=Array.from(input.files||[]);
+  if(!files.length) return;
+  var lbl=document.getElementById("markt-upload-label");
+  lbl.textContent="⏳ Wird hochgeladen…";
+  input.disabled=true;
+  var errors=[];
+  for(var i=0;i<files.length;i++){
+    var file=files[i];
+    if(file.size>5*1024*1024){ errors.push(file.name+": max 5 MB"); continue; }
+    try{
+      var ext=file.name.split(".").pop().toLowerCase()||"jpg";
+      var filename="markt_"+Date.now()+"_"+i+"."+ext;
+      var r=await fetch(SB_URL+"/storage/v1/object/markt-images/"+filename,{
+        method:"POST",
+        headers:{"apikey":SB_ANON,"Authorization":"Bearer "+((session&&session.access_token)||SB_ANON),"Content-Type":file.type,"x-upsert":"true"},
+        body:file
+      });
+      if(!r.ok){ var err=await r.json(); throw new Error(err.error||r.status); }
+      var publicUrl=SB_URL+"/storage/v1/object/public/markt-images/"+filename;
+      mImgs.push(publicUrl);
+      renderMarktImgPreviews();
+    }catch(e){ errors.push(file.name+": "+e.message); }
+  }
+  lbl.textContent="📷 Bilder hochladen";
+  input.disabled=false;
+  input.value="";
+  if(errors.length){
+    var errEl=document.getElementById("markt-error");
+    errEl.textContent="Fehler: "+errors.join(", ");
+    errEl.style.display="block";
+  }
+}
+
 function addMarktImg(){
   var inp=document.getElementById("markt-img-url"); var url=inp.value.trim();
   var errEl=document.getElementById("markt-error");
@@ -3709,31 +3828,43 @@ function renderMarktImgPreviews(){
   }).join("");
 }
 async function createInserat(){
+  var errEl=document.getElementById("markt-error"); errEl.style.display="none";
+
+  if(inseratMode==="multi"){
+    var titel=document.getElementById("markt-multi-titel").value.trim();
+    if(!titel){ errEl.textContent="Titel der Sammelanzeige erforderlich."; errEl.style.display="block"; return; }
+    var valid=multiSpiele.filter(function(s){ return s.name.trim(); });
+    if(!valid.length){ errEl.textContent="Bitte mindestens ein Spiel hinzufügen."; errEl.style.display="block"; return; }
+    var desc=document.getElementById("markt-multi-desc").value.trim();
+    var gesamtpreis=valid.reduce(function(s,g){ return s+(parseFloat(g.preis)||0); },0);
+    if(editInseratId!==null){
+      var m=mData.find(function(x){ return x.id===editInseratId; }); if(!m) return;
+      m.titel=titel; m.preis=gesamtpreis; m.desc=desc; m.spiele=valid; m.isMulti=true;
+      closeInseratModal(); renderMarkt(false); toast("Inserat gespeichert ✓"); await saveMarkt();
+    } else {
+      mData.unshift({id:Date.now(),titel:titel,preis:gesamtpreis,desc:desc,spiele:valid,images:mImgs.slice(),isMulti:true,seller:currentName,ts:new Date().toISOString(),chat:[],interesse:[],sold:false});
+      closeInseratModal(); renderMarkt(false); toast("Sammelanzeige erstellt ✓"); await saveMarkt();
+      sendGlobalNotif("markt","Neue Sammelanzeige: "+titel,"<div class='section'><h3>📦 "+h(titel)+"</h3><p>"+valid.length+" Spiele &middot; "+gesamtpreis.toFixed(2)+" € gesamt</p><p>Verkäufer: <strong>"+h(currentName)+"</strong></p></div>");
+    }
+    return;
+  }
+
+  // Single mode
   var titel=document.getElementById("markt-titel").value.trim();
   var preis=parseFloat(document.getElementById("markt-preis").value);
-  var errEl=document.getElementById("markt-error"); errEl.style.display="none";
   if(!titel){ errEl.textContent="Spielname erforderlich."; errEl.style.display="block"; return; }
-  if(isNaN(preis)||preis<0){ errEl.textContent="G\u00fcltigen Preis eingeben."; errEl.style.display="block"; return; }
+  if(isNaN(preis)||preis<0){ errEl.textContent="Gültigen Preis eingeben."; errEl.style.display="block"; return; }
   if(editInseratId!==null){
-    // Edit mode
     var m=mData.find(function(x){ return x.id===editInseratId; }); if(!m) return;
     m.titel=titel; m.preis=preis;
     m.desc=document.getElementById("markt-desc").value.trim();
     m.bgg=document.getElementById("markt-bgg").value.trim()||null;
     m.images=mImgs.slice();
-    closeInseratModal();
-    renderMarkt(false);
-    toast("Inserat gespeichert \u2713");
-    await saveMarkt();
+    closeInseratModal(); renderMarkt(false); toast("Inserat gespeichert ✓"); await saveMarkt();
   } else {
-    // Create mode
     var id=Date.now();
     mData.unshift({id:id,titel:titel,preis:preis,desc:document.getElementById("markt-desc").value.trim(),images:mImgs.slice(),bgg:document.getElementById("markt-bgg").value.trim()||null,seller:currentName,ts:new Date().toISOString(),chat:[],interesse:[],sold:false});
-    closeInseratModal();
-    renderMarkt(false);
-    toast("Inserat erstellt \u2713");
-    await saveMarkt();
-    // Global notifications
+    closeInseratModal(); renderMarkt(false); toast("Inserat erstellt ✓"); await saveMarkt();
     var desc=document.getElementById("markt-desc")?document.getElementById("markt-desc").value.trim():"";
     sendGlobalNotif("markt","Neues Angebot: "+titel,"<div class='section'><h3>🛒 "+h(titel)+"</h3><p>💶 <strong>"+preis.toFixed(2)+" €</strong></p>"+(desc?"<p>"+h(desc)+"</p>":"")+"<p>Verkäufer: <strong>"+h(currentName)+"</strong></p></div>");
   }
