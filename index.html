@@ -4605,10 +4605,9 @@ function renderSammlungPickerList(){
     var checked=sammlungSelectedUsers===null||sammlungSelectedUsers.includes(u);
     var label=u===currentName?"Ich ("+h(u)+")":h(u);
     return "<label style='display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:.83rem;transition:background .1s' onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background=''\">"
-      +"<input type='checkbox' "+(checked?"checked":"")+" style='accent-color:var(--blue);width:15px;height:15px;flex-shrink:0' onchange='onSammlungUserToggle(\""+h(u)+"\")'>"
       +avHtml(u,"av-sm")
       +"<span style='flex:1'>"+label+"</span>"
-      +"<span style='color:var(--text-3);font-size:.72rem'>"+sammlungData[u].length+"</span>"
+      +"<input type='checkbox' "+(checked?"checked":"")+" style='accent-color:var(--blue);width:15px;height:15px;flex-shrink:0' onchange='onSammlungUserToggle(\""+h(u)+"\")'>"
       +"</label>";
   }).join("");
 }
