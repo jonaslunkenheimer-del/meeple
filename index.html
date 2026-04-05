@@ -5332,6 +5332,7 @@ async function renderCommunity(){
   list.innerHTML="<div style='font-size:.78rem;color:var(--text-3)'>Lade…</div>";
   try{
     var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile,verfuegbarkeit&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+    if(!r.ok) r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile&order=user_name&last_login=not.is.null",{headers:authHdrs()});
     var rows=r.ok?await r.json():[];
     var userMap={};
     rows.forEach(function(row){ userMap[(row.display_name&&row.display_name.trim())||row.user_name]=row; });
