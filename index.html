@@ -1743,6 +1743,7 @@ async function switchUser(){
 
 // ── What's New ──
 var bggProfiles={}; // name -> bgg_username
+var userVerfuegbarkeit={}; // name -> {days:[], notiz:""}
 var _whatsnewHtml=""; // cached for re-open
 var _whatsnewCount=0;
 var _lastWhatsnewCheck=null; // null = use last login time
@@ -1804,10 +1805,14 @@ function setNotifBadge(count){
 
 async function loadBggProfiles(){
   try{
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,bgg_profile",{headers:authHdrs()});
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,bgg_profile,verfuegbarkeit",{headers:authHdrs()});
+    if(!r.ok) r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,bgg_profile",{headers:authHdrs()});
     if(r.ok){
       var rows=await r.json();
-      rows.forEach(function(row){ if(row.bgg_profile) bggProfiles[row.user_name]=row.bgg_profile; });
+      rows.forEach(function(row){
+        if(row.bgg_profile) bggProfiles[row.user_name]=row.bgg_profile;
+        if(row.verfuegbarkeit) userVerfuegbarkeit[row.user_name]=row.verfuegbarkeit;
+      });
     }
   }catch(e){}
 }
@@ -2893,9 +2898,26 @@ function buildTerminCard(t, open){
           +"<button class='dpoll-vbtn v-vll"+(myVote==="vll"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"vll\")'>🤔 Vielleicht <span style='opacity:.6'>("+vllCount+")</span></button>"
           +"<button class='dpoll-vbtn v-nein"+(myVote==="nein"?" active":"")+"' onclick='voteDateSlot("+t.id+",\""+slot.id+"\",\"nein\")'>❌ Nein</button>"
           +"</div>":"";
+        var dayNames=["So","Mo","Di","Mi","Do","Fr","Sa"];
+        var slotDow=dayNames[new Date(slot.date).getDay()];
+        var availHtml="";
+        var availYes=[],availNo=[];
+        t.personen.forEach(function(p){
+          var vf=userVerfuegbarkeit[p];
+          if(!vf||!vf.days||!vf.days.length) return; // ignore if not set
+          if(vf.days.includes(slotDow)) availYes.push(p);
+          else availNo.push(p);
+        });
+        if(availYes.length||availNo.length){
+          availHtml="<div style='display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;margin-bottom:2px'>";
+          availYes.forEach(function(p){ availHtml+="<span title='"+h(p)+" → verfügbar am "+slotDow+"' style='display:inline-flex;align-items:center;gap:3px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:1px 7px;font-size:.65rem;font-weight:600;color:var(--green)'>✅ "+h(p)+"</span>"; });
+          availNo.forEach(function(p){ availHtml+="<span title='"+h(p)+" → i.d.R. nicht verfügbar am "+slotDow+"' style='display:inline-flex;align-items:center;gap:3px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:1px 7px;font-size:.65rem;font-weight:600;color:var(--red)'>⚠️ "+h(p)+"</span>"; });
+          availHtml+="</div>";
+        }
         return "<div class='dpoll-slot"+cls+"'>"
           +"<div style='display:flex;align-items:flex-start;justify-content:space-between'>"
           +"<div style='font-weight:700;font-size:.88rem'>📅 "+dtFmt+"</div>"+delBtn+"</div>"
+          +availHtml
           +"<div class='dpoll-bar'><div class='dpoll-bar-fill' style='width:"+pct+"%'></div></div>"
           +(voterNames?"<div style='font-size:.68rem;color:var(--text-3);margin-top:4px'>"+voterNames+"</div>":"")
           +voteRow+confirmBtn
