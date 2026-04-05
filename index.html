@@ -5360,7 +5360,10 @@ async function renderCommunity(){
           +"</div>"
         : "<div style='font-size:.78rem;color:var(--text-3);padding:4px 0'>Noch keine Hotlist eingetragen.</div>";
       var vf=row.verfuegbarkeit||{days:[],notiz:""};
-      var vfDays=vf.days||[];
+      var vfDays=(vf.days||[]).slice().sort(function(a,b){
+        var order=["Mo","Di","Mi","Do","Fr","Sa","So"];
+        return order.indexOf(a)-order.indexOf(b);
+      });
       var vfHtml=vfDays.length
         ? "<div style='display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;margin-bottom:8px'>"
           +vfDays.map(function(d){ return "<span style='background:var(--blue);color:#fff;border-radius:6px;padding:2px 8px;font-size:.68rem;font-weight:700'>"+h(d)+"</span>"; }).join("")
