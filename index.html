@@ -2925,10 +2925,10 @@ function buildTerminCard(t, open){
       }).join("");
       var addSlotForm=isCreator
         ? "<div style='display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center'>"
-          +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem'>"
+          +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem' oninput='previewSlotAvail("+t.id+",this.value,"+JSON.stringify(t.personen)+")'>"
           +"<button class='btn btn-outline btn-sm' onclick='addDateSlot("+t.id+")'>+ Vorschlag hinzufügen</button>"
           +"<button class='btn btn-ghost btn-sm' style='color:var(--red)' onclick='closeDatePoll("+t.id+")'>Abstimmung schließen</button>"
-          +"</div>" : "";
+          +"</div><div id='dpoll-avail-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:4px;margin-top:6px'></div>" : "";
       datePollHtml="<div class='lbl' style='margin-top:18px'>📅 Terminabstimmung</div>"
         +"<div class='dpoll-wrap'>"+slotsHtml+addSlotForm+"</div>";
     } else if(!dp.active&&isCreator){
@@ -2940,9 +2940,9 @@ function buildTerminCard(t, open){
       datePollHtml="<div class='lbl' style='margin-top:18px'>📅 Terminabstimmung</div>"
         +"<div class='dpoll-wrap'><div style='font-size:.82rem;color:var(--text-3);margin-bottom:8px'>Noch keine Vorschläge. Füge Termine hinzu:</div>"
         +"<div style='display:flex;gap:6px;flex-wrap:wrap;align-items:center'>"
-        +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem'>"
+        +"<input class='input-field' id='dpoll-new-"+t.id+"' type='datetime-local' style='flex:1;min-width:180px;font-size:.82rem' oninput='previewSlotAvail("+t.id+",this.value,"+JSON.stringify(t.personen)+")'>"
         +"<button class='btn btn-outline btn-sm' onclick='addDateSlot("+t.id+")'>+ Vorschlag hinzufügen</button>"
-        +"</div></div>";
+        +"</div><div id='dpoll-avail-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:4px;margin-top:6px'></div></div>";
     } else if(isParticipant&&dp.active){
       datePollHtml="<div style='margin:10px 0;font-size:.82rem;color:var(--text-3);background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 12px'>📅 Der Ersteller plant gerade die Terminabstimmung.</div>";
     } else if(!isCreator){
@@ -3519,6 +3519,26 @@ function closeDatePoll(tid){
   t.datePoll.active=false;
   rerenderCard(tid); saveState(); toast("Abstimmung geschlossen.");
 }
+function previewSlotAvail(tid, dateVal, personen){
+  var el=document.getElementById("dpoll-avail-"+tid); if(!el) return;
+  if(!dateVal){ el.innerHTML=""; return; }
+  var dayNames=["So","Mo","Di","Mi","Do","Fr","Sa"];
+  var dow=dayNames[new Date(dateVal).getDay()];
+  var yes=[],no=[];
+  (personen||[]).forEach(function(p){
+    var vf=userVerfuegbarkeit[p];
+    if(!vf||!vf.days||!vf.days.length) return;
+    if(vf.days.includes(dow)) yes.push(p);
+    else no.push(p);
+  });
+  if(!yes.length&&!no.length){ el.innerHTML=""; return; }
+  el.innerHTML=yes.map(function(p){
+    return "<span style='display:inline-flex;align-items:center;gap:3px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:2px 8px;font-size:.7rem;font-weight:600;color:var(--green)'>✅ "+h(p)+"</span>";
+  }).join("")+no.map(function(p){
+    return "<span style='display:inline-flex;align-items:center;gap:3px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:2px 8px;font-size:.7rem;font-weight:600;color:var(--red)'>⚠️ "+h(p)+"</span>";
+  }).join("");
+}
+
 function addDateSlot(tid){
   var t=getT(tid); if(!t) return;
   var inp=document.getElementById("dpoll-new-"+tid); if(!inp||!inp.value){ toast("Bitte ein Datum auswählen."); return; }
