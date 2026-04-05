@@ -1291,6 +1291,16 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:8px">Spiele in dieser Anzeige</div>
         <div id="markt-multi-spiele-list" style="margin-bottom:10px"></div>
         <button onclick="addMultiSpielRow()" class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:16px">＋ Spiel hinzufügen</button>
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:6px">Bilder (optional)</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input class="input-field" id="markt-multi-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
+          <button class="btn btn-outline btn-sm" onclick="addMarktImg()">🔗 URL</button>
+        </div>
+        <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem;color:var(--text-2);font-weight:600;transition:border-color .15s;margin-bottom:8px" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+          <input type="file" accept="image/*" multiple id="markt-multi-img-file" style="display:none" onchange="uploadMarktImages(this)">
+          <span id="markt-multi-upload-label">📷 Bilder hochladen</span>
+        </label>
+        <div id="markt-img-preview-wrap-multi" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
       </div>
 
       <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
@@ -3745,6 +3755,7 @@ function openInseratModal(){
   mImgs=[];
   ["markt-titel","markt-preis","markt-desc","markt-bgg","markt-img-url","markt-multi-titel","markt-multi-desc"].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=""; });
   document.getElementById("markt-img-preview-wrap").innerHTML="";
+  var mw=document.getElementById("markt-img-preview-wrap-multi"); if(mw) mw.innerHTML="";
   document.getElementById("markt-error").style.display="none";
   document.getElementById("inserat-modal-title").textContent="🛒 Inserieren";
   document.getElementById("inserat-submit-btn").textContent="📢 Inserat erstellen";
@@ -3778,9 +3789,10 @@ function openEditInseratModal(id){
 }
 function closeInseratModal(){ document.getElementById("inserat-modal").style.display="none"; editInseratId=null; }
 async function uploadMarktImages(input){
+  var isMulti=input.id==="markt-multi-img-file";
   var files=Array.from(input.files||[]);
   if(!files.length) return;
-  var lbl=document.getElementById("markt-upload-label");
+  var lbl=document.getElementById(isMulti?"markt-multi-upload-label":"markt-upload-label");
   lbl.textContent="⏳ Wird hochgeladen…";
   input.disabled=true;
   var errors=[];
@@ -3801,7 +3813,7 @@ async function uploadMarktImages(input){
       renderMarktImgPreviews();
     }catch(e){ errors.push(file.name+": "+e.message); }
   }
-  lbl.textContent="📷 Bilder hochladen";
+  lbl.textContent=isMulti?"📷 Bilder hochladen":"📷 Bilder hochladen";
   input.disabled=false;
   input.value="";
   if(errors.length){
@@ -3812,14 +3824,16 @@ async function uploadMarktImages(input){
 }
 
 function addMarktImg(){
-  var inp=document.getElementById("markt-img-url"); var url=inp.value.trim();
+  var urlFieldId=inseratMode==="multi"?"markt-multi-img-url":"markt-img-url";
+  var inp=document.getElementById(urlFieldId); var url=inp.value.trim();
   var errEl=document.getElementById("markt-error");
-  if(!url||url.indexOf("http")!==0){ errEl.textContent="G\u00fcltige URL eingeben."; errEl.style.display="block"; return; }
+  if(!url||url.indexOf("http")!==0){ errEl.textContent="Gültige URL eingeben."; errEl.style.display="block"; return; }
   errEl.style.display="none"; mImgs.push(url); inp.value=""; renderMarktImgPreviews();
 }
 function removeMarktImg(idx){ mImgs.splice(idx,1); renderMarktImgPreviews(); }
 function renderMarktImgPreviews(){
-  var wrap=document.getElementById("markt-img-preview-wrap"); if(!wrap) return;
+  var wrapId=inseratMode==="multi"?"markt-img-preview-wrap-multi":"markt-img-preview-wrap";
+  var wrap=document.getElementById(wrapId); if(!wrap) return;
   wrap.innerHTML=mImgs.map(function(url,i){
     return "<div style='position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid var(--border)'>"
       +"<img src='"+proxyImg(url)+"' onerror='this.src=\""+h(url)+"\"' style='width:100%;height:100%;object-fit:cover'>"
@@ -4890,7 +4904,7 @@ function drawCrop(){
   ctx.drawImage(_cropImg, W/2+_cropX-iw/2, H/2+_cropY-ih/2, iw, ih);
 }
 
-function confirmAvatarCrop(){
+async function confirmAvatarCrop(){
   var canvas=document.getElementById("avatar-crop-canvas"); if(!canvas) return;
   // Extract 160x160 circle from center
   var out=document.createElement("canvas"); out.width=160; out.height=160;
@@ -4898,17 +4912,32 @@ function confirmAvatarCrop(){
   ctx.beginPath(); ctx.arc(80,80,80,0,Math.PI*2); ctx.clip();
   var W=canvas.width, H=canvas.height;
   ctx.drawImage(canvas, (W-160)/2, (H-160)/2, 160, 160, 0, 0, 160, 160);
-  var dataUrl=out.toDataURL("image/jpeg",0.85);
-  userAvatars[currentName]=dataUrl;
-  // Update all avatars on screen
-  document.querySelectorAll(".av[id='profil-av'],.av[id='hdr-av']").forEach(function(el){ setAv(el,currentName); });
-  setAv(document.getElementById("profil-av"),currentName);
-  setAv(document.getElementById("hdr-av"),currentName);
-  // Save to DB
-  fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,avatar_url:dataUrl})});
-  cancelAvatarCrop();
-  renderTermine();
-  toast("✓ Profilbild gespeichert!");
+
+  toast("⏳ Bild wird hochgeladen…");
+
+  // Convert to Blob for upload
+  out.toBlob(async function(blob){
+    try{
+      var filename="avatar_"+currentName.replace(/[^a-z0-9]/gi,"_").toLowerCase()+"_"+Date.now()+".jpg";
+      var r=await fetch(SB_URL+"/storage/v1/object/avatars/"+filename,{
+        method:"POST",
+        headers:{"apikey":SB_ANON,"Authorization":"Bearer "+((session&&session.access_token)||SB_ANON),"Content-Type":"image/jpeg","x-upsert":"true"},
+        body:blob
+      });
+      if(!r.ok){ var err=await r.json(); throw new Error(err.error||r.status); }
+      var publicUrl=SB_URL+"/storage/v1/object/public/avatars/"+filename;
+      userAvatars[currentName]=publicUrl;
+      // Save URL to user_meta
+      await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,avatar_url:publicUrl})});
+      setAv(document.getElementById("profil-av"),currentName);
+      setAv(document.getElementById("hdr-av"),currentName);
+      cancelAvatarCrop();
+      renderTermine();
+      toast("✓ Profilbild gespeichert!");
+    }catch(e){
+      toast("Fehler beim Hochladen: "+e.message);
+    }
+  },"image/jpeg",0.85);
 }
 
 function cancelAvatarCrop(){
