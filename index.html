@@ -991,6 +991,25 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
         </div>
         <button class="btn btn-outline btn-sm" style="width:100%" onclick="saveBggProfile()">🎲 BGG Profil speichern</button>
       </div>
+      <!-- VERFÜGBARKEIT -->
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.88rem;margin-bottom:4px">📅 Meine Verfügbarkeit</div>
+        <div style="font-size:.75rem;color:var(--text-3);margin-bottom:12px">Wann hast du grundsätzlich Zeit für einen Spieleabend?</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px" id="verfuegbarkeit-days">
+          <label id="vf-Mo" class="vf-day-btn" onclick="toggleVerfuegbarkeit('Mo')" style="display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--text-3);background:var(--surface2);transition:all .15s;text-align:center;user-select:none">Mo</label>
+          <label id="vf-Di" class="vf-day-btn" onclick="toggleVerfuegbarkeit('Di')" style="display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--text-3);background:var(--surface2);transition:all .15s;text-align:center;user-select:none">Di</label>
+          <label id="vf-Mi" class="vf-day-btn" onclick="toggleVerfuegbarkeit('Mi')" style="display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--text-3);background:var(--surface2);transition:all .15s;text-align:center;user-select:none">Mi</label>
+          <label id="vf-Do" class="vf-day-btn" onclick="toggleVerfuegbarkeit('Do')" style="display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--text-3);background:var(--surface2);transition:all .15s;text-align:center;user-select:none">Do</label>
+          <label id="vf-Fr" class="vf-day-btn" onclick="toggleVerfuegbarkeit('Fr')" style="display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--text-3);background:var(--surface2);transition:all .15s;text-align:center;user-select:none">Fr</label>
+          <label id="vf-Sa" class="vf-day-btn" onclick="toggleVerfuegbarkeit('Sa')" style="display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--text-3);background:var(--surface2);transition:all .15s;text-align:center;user-select:none">Sa</label>
+          <label id="vf-So" class="vf-day-btn" onclick="toggleVerfuegbarkeit('So')" style="display:flex;flex-direction:column;align-items:center;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;color:var(--text-3);background:var(--surface2);transition:all .15s;text-align:center;user-select:none">So</label>
+        </div>
+        <div class="form-field" style="margin-bottom:10px">
+          <label>Notiz (optional)</label>
+          <input class="input-field" id="profil-verfuegbarkeit-notiz" placeholder="z.B. Eher abends ab 19 Uhr" maxlength="80">
+        </div>
+        <button class="btn btn-outline btn-sm" style="width:100%" onclick="saveVerfuegbarkeit()">💾 Verfügbarkeit speichern</button>
+      </div>
       <!-- NOTIFICATION SETTINGS -->
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
         <div style="font-weight:700;font-size:.88rem;margin-bottom:10px">🔔 E-Mail Benachrichtigungen</div>
@@ -2219,6 +2238,7 @@ function openProfileModal(){
   document.getElementById("profil-modal").style.display="flex";
   renderAchievements(currentName);
   checkPushStatus();
+  loadVerfuegbarkeit();
 }
 function closeProfileModal(){ document.getElementById("profil-modal").style.display="none"; }
 
@@ -5235,7 +5255,53 @@ async function sendGlobalNotif(type, subject, bodyHtml){
   }catch(e){}
 }
 
-// ── Community Tab ──
+// ── Verfügbarkeit ──
+var myVerfuegbarkeit={days:[],notiz:""};
+
+function toggleVerfuegbarkeit(day){
+  var idx=myVerfuegbarkeit.days.indexOf(day);
+  if(idx>-1) myVerfuegbarkeit.days.splice(idx,1);
+  else myVerfuegbarkeit.days.push(day);
+  renderVerfuegbarkeitBtns();
+}
+
+function renderVerfuegbarkeitBtns(){
+  ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(function(d){
+    var el=document.getElementById("vf-"+d); if(!el) return;
+    var active=myVerfuegbarkeit.days.includes(d);
+    el.style.background=active?"var(--blue)":"var(--surface2)";
+    el.style.color=active?"#fff":"var(--text-3)";
+    el.style.borderColor=active?"var(--blue)":"var(--border)";
+  });
+}
+
+async function loadVerfuegbarkeit(){
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(currentName)+"&select=verfuegbarkeit",{headers:authHdrs()});
+    if(r.ok){
+      var rows=await r.json();
+      if(rows.length&&rows[0].verfuegbarkeit){
+        myVerfuegbarkeit=rows[0].verfuegbarkeit;
+        if(!myVerfuegbarkeit.days) myVerfuegbarkeit.days=[];
+      }
+    }
+  }catch(e){}
+  renderVerfuegbarkeitBtns();
+  var notizEl=document.getElementById("profil-verfuegbarkeit-notiz");
+  if(notizEl) notizEl.value=myVerfuegbarkeit.notiz||"";
+}
+
+async function saveVerfuegbarkeit(){
+  myVerfuegbarkeit.notiz=(document.getElementById("profil-verfuegbarkeit-notiz")||{}).value||"";
+  try{
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,verfuegbarkeit:myVerfuegbarkeit})});
+    var msg=document.getElementById("profil-msg");
+    msg.textContent="✓ Verfügbarkeit gespeichert"; msg.style.color="var(--green)"; msg.style.display="block";
+    setTimeout(function(){ msg.style.display="none"; },2000);
+  }catch(e){ toast("Fehler beim Speichern"); }
+}
+
+
 var communityHotlists = {}; // {userName: [{id, name, image, bggId, bggUrl}]}
 var myHotlist = [null,null,null,null,null]; // 5 slots
 var hotlistEditSlot = -1;
@@ -5265,7 +5331,7 @@ async function renderCommunity(){
   var list=document.getElementById("community-list"); if(!list) return;
   list.innerHTML="<div style='font-size:.78rem;color:var(--text-3)'>Lade…</div>";
   try{
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile,verfuegbarkeit&order=user_name&last_login=not.is.null",{headers:authHdrs()});
     var rows=r.ok?await r.json():[];
     var userMap={};
     rows.forEach(function(row){ userMap[(row.display_name&&row.display_name.trim())||row.user_name]=row; });
@@ -5274,6 +5340,13 @@ async function renderCommunity(){
     list.innerHTML=users.map(function(u){
       var row=userMap[u]||{};
       var bgg=row.bgg_profile||"";
+      var vf=row.verfuegbarkeit||{days:[],notiz:""};
+      var vfDays=vf.days||[];
+      var vfHtml=vfDays.length
+        ? "<div style='display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;margin-bottom:"+(gamesHtml.length>50?"8":"0")+"px'>"
+          +vfDays.map(function(d){ return "<span style='background:var(--blue);color:#fff;border-radius:6px;padding:2px 8px;font-size:.68rem;font-weight:700'>"+h(d)+"</span>"; }).join("")
+          +(vf.notiz?"<span style='font-size:.7rem;color:var(--text-3);align-self:center;margin-left:2px'>· "+h(vf.notiz)+"</span>":"")
+          +"</div>" : "";
       var games=communityHotlists[u]||[];
       var gamesHtml=games.length
         ? "<div style='display:flex;flex-wrap:wrap;gap:8px'>"
@@ -5302,6 +5375,7 @@ async function renderCommunity(){
         +"</div>"
         +(u===currentName?"<button onclick='openHotlistModal()' style='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--text-2);flex-shrink:0'>✏️</button>":"")
         +"</div>"
+        +vfHtml
         +gamesHtml+"</div>";
     }).join("");
   }catch(e){ list.innerHTML="<div style='color:var(--red);font-size:.82rem'>Fehler beim Laden.</div>"; }
