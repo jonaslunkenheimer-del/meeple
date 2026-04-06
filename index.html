@@ -1499,15 +1499,7 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <script>
-window.onerror=function(msg,src,line){
-  var d=document.createElement("div");
-  d.style.cssText="position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:12px 16px;font-size:.85rem;font-family:monospace;z-index:9999;word-break:break-all";
-  d.textContent="JS Fehler: "+msg+" (Zeile "+line+")";
-  document.body.appendChild(d);
-};
-</script>
-
-<script>
+window.onerror=function(msg,src,line){var d=document.createElement("div");d.style.cssText="position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:12px 16px;font-size:.85rem;font-family:monospace;z-index:9999;word-break:break-all";d.textContent="JS Fehler: "+msg+" (Zeile "+line+")";document.body.appendChild(d);};
 // ── Constants ──
 const SB_URL   = "https://hsomxjwyzzgwxtjxvrts.supabase.co";
 const SB_ANON  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzb214and5enpnd3h0anh2cnRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzQxMjAsImV4cCI6MjA4ODcxMDEyMH0.nFkr0yFoZLX1npisMNUDgZjJka99HJSeU7QH-G8QjQE";
