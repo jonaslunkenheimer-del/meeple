@@ -1867,6 +1867,10 @@ async function showWhatsnew(){
     });
     // Neue Terminvorschläge zur Abstimmung
     if(isMember&&t.datePoll&&t.datePoll.slots){
+      // Abstimmung gestartet
+      if(t.datePoll.startedBy&&t.datePoll.startedBy!==currentName&&t.datePoll.startedTs&&new Date(t.datePoll.startedTs)>since){
+        activity.push({tid:t.id,title:t.title,type:"dpoll-start",icon:"🗓",label:"Terminabstimmung gestartet",detail:h(t.datePoll.startedBy)+" hat eine Terminabstimmung gestartet",author:t.datePoll.startedBy,ts:new Date(t.datePoll.startedTs)});
+      }
       t.datePoll.slots.forEach(function(slot){
         if(slot.addedBy&&slot.addedBy!==currentName&&slot.addedTs&&new Date(slot.addedTs)>since){
           var dayNames=["So","Mo","Di","Mi","Do","Fr","Sa"];
@@ -3570,10 +3574,12 @@ async function sendChat(tid){
 }
 
 // ── Date Poll ──
-function startDatePoll(tid){
+async function startDatePoll(tid){
   var t=getT(tid); if(!t) return;
   if(!t.datePoll) t.datePoll={active:false,slots:[]};
   t.datePoll.active=true;
+  t.datePoll.startedBy=currentName;
+  t.datePoll.startedTs=new Date().toISOString();
   if(!t.datePoll.slots) t.datePoll.slots=[];
   rerenderCard(tid); saveState(); toast("Terminabstimmung gestartet 📅");
   if(!t.privat) sendDatePollStartNotif(t);
@@ -5458,7 +5464,7 @@ async function sendDatePollStartNotif(t){
   try{
     var recipients=t.personen.filter(function(p){ return p!==currentName; });
     if(!recipients.length) return;
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,notif_email&user_name=in.("+recipients.map(encodeURIComponent).join(",")+")&notif_email=not.is.null",{headers:authHdrs()});
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,notif_email&user_name=in.("+recipients.map(function(p){ return '"'+p+'"'; }).join(",")+")",{headers:authHdrs()});
     if(!r.ok) return;
     var rows=await r.json();
     var emails=rows.filter(function(row){ return row.notif_email; }).map(function(row){ return row.notif_email; });
@@ -5475,10 +5481,9 @@ async function sendDatePollStartNotif(t){
 
 async function sendDatePollNotif(t, addedLabels){
   try{
-    // Fetch emails of all participants except the one who added
     var recipients=t.personen.filter(function(p){ return p!==currentName; });
     if(!recipients.length) return;
-    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,notif_email&user_name=in.("+recipients.map(function(p){ return encodeURIComponent(p); }).join(",")+")&notif_email=not.is.null",{headers:authHdrs()});
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,notif_email&user_name=in.("+recipients.map(function(p){ return '"'+p+'"'; }).join(",")+")",{headers:authHdrs()});
     if(!r.ok) return;
     var rows=await r.json();
     var emails=rows.filter(function(row){ return row.notif_email; }).map(function(row){ return row.notif_email; });
