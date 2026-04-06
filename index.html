@@ -3769,16 +3769,16 @@ async function renderMarkt(reload){
             var hasSpielInterest=(m.spieleInteresse&&m.spieleInteresse[si]||[]).includes(currentName);
             var spielInterestBtn=(!isSeller&&!m.sold)
               ?"<button onclick='toggleSpielInteresse("+m.id+","+si+")' style='padding:3px 8px;border-radius:6px;border:1.5px solid "+(hasSpielInterest?"var(--green)":"var(--border)")+";background:"+(hasSpielInterest?"var(--green-lt)":"transparent")+";color:"+(hasSpielInterest?"var(--green)":"var(--text-2)")+";font-family:Outfit,sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;flex-shrink:0'>"+(hasSpielInterest?"✓":"👋")+"</button>":"";
-            var soldBtnSpiel=(!m.sold&&isSeller)
-              ?"<button onclick='markSpielSold("+m.id+","+si+")' style='padding:3px 8px;border-radius:6px;border:1px solid var(--green-bd);background:var(--green-lt);color:var(--green);font-family:Outfit,sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;flex-shrink:0'>✓</button>":"";
-            var bggLink=s.bgg?"<a href='"+h(s.bgg)+"' target='_blank' style='display:inline-flex;align-items:center' title='BoardGameGeek'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:13px;height:13px;border-radius:2px' onerror='this.style.display=\"none\"'></a>":"";
-            var soldBadge=(m.spieleSold&&m.spieleSold[si])?"<span style='font-size:.65rem;color:var(--green);font-weight:700'>✓ Verk.</span>":"";
-            return "<div style='display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--surface2);border-radius:8px;margin-bottom:4px"+(m.spieleSold&&m.spieleSold[si]?";opacity:.5":"")+"'>"
-              +"<div style='flex:1;min-width:0'>"
-              +"<span style='font-weight:600;font-size:.82rem'>"+h(s.name)+"</span>"
-              +(s.preis?"<span style='color:var(--blue);font-weight:700;font-size:.82rem;margin-left:6px'>"+parseFloat(s.preis).toFixed(2)+" €</span>":"")
-              +"</div>"
-              +soldBadge+bggLink+spielInterestBtn+soldBtnSpiel
+            var isSold=!!(m.spieleSold&&m.spieleSold[si]);
+            var soldBtnSpiel=(!m.sold&&isSeller&&!isSold)
+              ?"<button onclick='markSpielSold("+m.id+","+si+")' title='Als verkauft markieren' style='padding:3px 8px;border-radius:6px;border:1px solid var(--green-bd);background:var(--green-lt);color:var(--green);font-family:Outfit,sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;flex-shrink:0'>✓ Verkauft</button>":"";
+            var undoSoldBtn=(isSeller&&isSold)
+              ?"<button onclick='unmarkSpielSold("+m.id+","+si+")' title='Verkauf rückgängig machen' style='padding:3px 8px;border-radius:6px;border:1px solid #fca5a5;background:#fef2f2;color:var(--red);font-family:Outfit,sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;flex-shrink:0'>↩ Rückgängig</button>":"";
+            var bggLink=s.bgg?"<a href='"+h(s.bgg)+"' target='_blank' title='BoardGameGeek' style='display:inline-flex;align-items:center'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:13px;height:13px;border-radius:2px' onerror='this.style.display=\"none\"'></a>":"";
+            return "<div style='display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--surface2);border-radius:8px;margin-bottom:4px"+(isSold?";opacity:.5":"")+"'>"
+              +"<span style='font-weight:600;font-size:.82rem;flex:1;min-width:0'>"+h(s.name)+(isSold?" <span style='font-size:.65rem;color:var(--green);font-weight:700'>✓ Verkauft</span>":"")+"</span>"
+              +(s.preis?"<span style='color:var(--blue);font-weight:700;font-size:.82rem;flex-shrink:0'>"+parseFloat(s.preis).toFixed(2)+" €</span>":"")
+              +bggLink+spielInterestBtn+soldBtnSpiel+undoSoldBtn
               +"</div>";
           }).join("")
           +(isSeller&&m.spieleInteresse?"<div style='font-size:.72rem;color:var(--text-3);margin-top:4px'>"+Object.entries(m.spieleInteresse||{}).filter(function(e){ return e[1].length; }).map(function(e){ return "Spiel "+(parseInt(e[0])+1)+": "+(m.spiele[e[0]]||{}).name+" → "+e[1].join(", "); }).join("<br>")+"</div>":"")
@@ -3991,6 +3991,14 @@ async function toggleSpielInteresse(id, spielIdx){
   var i=arr.indexOf(currentName);
   if(i>-1) arr.splice(i,1); else arr.push(currentName);
   renderMarkt(false); await saveMarkt();
+}
+
+async function unmarkSpielSold(id, spielIdx){
+  var m=mData.find(function(x){ return x.id===id; }); if(!m) return;
+  if(!m.spieleSold) return;
+  delete m.spieleSold[spielIdx];
+  m.sold=false;
+  renderMarkt(false); toast("↩ Verkauf rückgängig gemacht"); await saveMarkt();
 }
 
 async function markSpielSold(id, spielIdx){
