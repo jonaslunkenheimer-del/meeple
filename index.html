@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -385,131 +384,129 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
   .profile-trigger{padding:4px 6px}
   #hdr-admin-btn{padding:5px 8px;font-size:.72rem}
 
-/* ── Main ── */
-.main{padding:0 0 80px}
-#tab-termine,#tab-kalender,#tab-zusagen,#tab-markt,#tab-sammlung,#tab-bgstats,#tab-community{padding:12px 12px 0}
-#tab-zusagen > div:first-child,#tab-markt > div:first-child,#tab-sammlung > div:first-child,#tab-bgstats > div:first-child,#tab-community > div:first-child{padding:0;max-width:none}
-.tab-content.active{padding:0}
+  /* ── Main ── */
+  .main{padding:0 0 80px}
+  #tab-termine,#tab-kalender,#tab-zusagen,#tab-markt,#tab-sammlung,#tab-bgstats,#tab-community{padding:12px 12px 0}
+  #tab-zusagen > div:first-child,#tab-markt > div:first-child,#tab-sammlung > div:first-child,#tab-bgstats > div:first-child,#tab-community > div:first-child{padding:0;max-width:none}
+  .tab-content.active{padding:0}
 
-/* ── Cards & sections ── */
-.termin-item{margin-bottom:10px}
-.termin-header{padding:14px 16px}
-.termin-body{padding:0 16px 16px}
-.form-card{padding:16px}
-.spiele-grid{grid-template-columns:1fr}
-.suche-banner{padding:7px 16px;font-size:.74rem}
-.chips-row{gap:4px}
-.chip{font-size:.68rem;padding:2px 7px}
-.persons-wrap{gap:5px}
+  /* ── Cards & sections ── */
+  .termin-item{margin-bottom:10px}
+  .termin-header{padding:14px 16px}
+  .termin-body{padding:0 16px 16px}
+  .form-card{padding:16px}
+  .spiele-grid{grid-template-columns:1fr}
+  .suche-banner{padding:7px 16px;font-size:.74rem}
+  .chips-row{gap:4px}
+  .chip{font-size:.68rem;padding:2px 7px}
+  .persons-wrap{gap:5px}
 
-/* ── FAB: Neuer Termin ── */
-#fab-new-termin.fab-active{
-display:flex !important;
-position:fixed;bottom:20px;right:16px;
-width:52px;height:52px;border-radius:50%;
-background:var(–blue);color:#fff;
-border:none;cursor:pointer;
-align-items:center;justify-content:center;
-font-size:1.5rem;font-weight:700;
-box-shadow:0 4px 18px rgba(59,110,245,.45);
-z-index:500;transition:transform .15s
-}
-#fab-new-termin:active{transform:scale(.93)}
-/* hide inline “Neuer Termin” button on mobile */
-#btn-new-termin-inline{display:none !important}
+  /* ── FAB: Neuer Termin ── */
+  #fab-new-termin.fab-active{
+    display:flex !important;
+    position:fixed;bottom:20px;right:16px;
+    width:52px;height:52px;border-radius:50%;
+    background:var(--blue);color:#fff;
+    border:none;cursor:pointer;
+    align-items:center;justify-content:center;
+    font-size:1.5rem;font-weight:700;
+    box-shadow:0 4px 18px rgba(59,110,245,.45);
+    z-index:500;transition:transform .15s
+  }
+  #fab-new-termin:active{transform:scale(.93)}
+  /* hide inline "Neuer Termin" button on mobile */
+  #btn-new-termin-inline{display:none !important}
 
-/* ── All modals: full-screen sheet from bottom ── */
-#new-termin-modal,
-#edit-modal,
-#add-modal,
-#profil-modal,
-#inserat-modal,
-#admin-modal,
-#qr-modal,
-#confirm-modal,
-#markt-chat-modal,
-#add-sammlung-modal,
-#whatsnew-modal{
-padding:0 !important;
-align-items:flex-end !important
-}
-#markt-chat-modal > div{
-max-height:85vh !important;
-}
-#markt-chat-modal > div,
-#markt-chat-box{
-border-radius:20px 20px 0 0 !important;
-}
-#new-termin-modal > div,
-#edit-modal > div,
-#add-modal > div,
-#profil-modal > div,
-#inserat-modal > div,
-#admin-modal > div,
-#qr-modal > div,
-#confirm-modal > div,
-#markt-chat-modal > div,
-#add-sammlung-modal > div,
-#whatsnew-modal > div{
-max-width:100% !important;
-width:100% !important;
-border-radius:20px 20px 0 0 !important;
-max-height:92vh !important;
-overflow-y:auto !important;
-animation:slide-up .25s ease !important
-}
-/* sticky modal header so close btn always visible */
-#new-termin-modal > div > div:first-child,
-#edit-modal > div > div:first-child,
-#inserat-modal > div > div:first-child{
-position:sticky;top:0;z-index:10
-}
-/* scrollable modal body: limit height and scroll */
-#new-termin-modal .modal-scroll-body{
-max-height:calc(92vh - 80px);
-overflow-y:auto;
--webkit-overflow-scrolling:touch
-}
+  /* ── All modals: full-screen sheet from bottom ── */
+  #new-termin-modal,
+  #edit-modal,
+  #add-modal,
+  #profil-modal,
+  #inserat-modal,
+  #admin-modal,
+  #qr-modal,
+  #confirm-modal,
+  #markt-chat-modal,
+  #add-sammlung-modal,
+  #whatsnew-modal{
+    padding:0 !important;
+    align-items:flex-end !important
+  }
+  #markt-chat-modal > div{
+    max-height:85vh !important;
+  }
+  #markt-chat-modal > div,
+  #markt-chat-box{
+    border-radius:20px 20px 0 0 !important;
+  }
+  #new-termin-modal > div,
+  #edit-modal > div,
+  #add-modal > div,
+  #profil-modal > div,
+  #inserat-modal > div,
+  #admin-modal > div,
+  #qr-modal > div,
+  #confirm-modal > div,
+  #markt-chat-modal > div,
+  #add-sammlung-modal > div,
+  #whatsnew-modal > div{
+    max-width:100% !important;
+    width:100% !important;
+    border-radius:20px 20px 0 0 !important;
+    max-height:92vh !important;
+    overflow-y:auto !important;
+    animation:slide-up .25s ease !important
+  }
+  /* sticky modal header so close btn always visible */
+  #new-termin-modal > div > div:first-child,
+  #edit-modal > div > div:first-child,
+  #inserat-modal > div > div:first-child{
+    position:sticky;top:0;z-index:10
+  }
+  /* scrollable modal body: limit height and scroll */
+  #new-termin-modal .modal-scroll-body{
+    max-height:calc(92vh - 80px);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch
+  }
 
-/* ── Form inside modals ── */
-.form-grid{grid-template-columns:1fr}
-#new-termin-modal .form-grid,
-#edit-modal .form-grid{margin-bottom:10px}
+  /* ── Form inside modals ── */
+  .form-grid{grid-template-columns:1fr}
+  #new-termin-modal .form-grid,
+  #edit-modal .form-grid{margin-bottom:10px}
 
-/* Toggle rows: tighter on mobile */
-#new-termin-modal [style*=“padding:13px 15px”],
-#edit-modal [style*=“padding:12px 14px”]{
-padding:10px 12px !important
-}
+  /* Toggle rows: tighter on mobile */
+  #new-termin-modal [style*="padding:13px 15px"],
+  #edit-modal [style*="padding:12px 14px"]{
+    padding:10px 12px !important
+  }
 
-/* ── Kalender ── */
-.cal-day{min-height:36px;padding:3px 2px}
-.cal-day-num{font-size:.65rem}
+  /* ── Kalender ── */
+  .cal-day{min-height:36px;padding:3px 2px}
+  .cal-day-num{font-size:.65rem}
 
-/* ── Chat ── */
-.chat-box{max-height:180px}
+  /* ── Chat ── */
+  .chat-box{max-height:180px}
 
-/* ── Markt cards ── */
-#markt-list{grid-template-columns:1fr !important}
+  /* ── Markt cards ── */
+  #markt-list{grid-template-columns:1fr !important}
 
-/* ── Termine / Zusagen / Markt header ── */
-#tab-termine > div:first-child,
-#tab-zusagen > div:first-child,
-#tab-markt > div:first-child{flex-direction:column;align-items:stretch}
-#btn-new-termin-inline + *{margin-top:0}
+  /* ── Termine / Zusagen / Markt header ── */
+  #tab-termine > div:first-child,
+  #tab-zusagen > div:first-child,
+  #tab-markt > div:first-child{flex-direction:column;align-items:stretch}
+  #btn-new-termin-inline + *{margin-top:0}
 }
 
 @keyframes slide-up{
-from{transform:translateY(40px);opacity:0}
-to{transform:translateY(0);opacity:1}
+  from{transform:translateY(40px);opacity:0}
+  to{transform:translateY(0);opacity:1}
 }
 </style>
-
 </head>
 <body>
 
 <!-- LOGIN -->
-
 <div id="name-screen">
   <div class="name-box">
     <div class="name-logo">🎲</div>
@@ -532,7 +529,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- APP -->
-
 <div id="app-screen">
   <header>
     <div class="brand">
@@ -605,158 +601,154 @@ to{transform:translateY(0);opacity:1}
       <div id="termine-list"></div>
     </div>
 
-```
-<!-- KALENDER TAB -->
-<div id="tab-kalender" class="tab-content">
-  <div class="form-card" style="padding:16px;overflow:hidden">
-    <div class="cal-nav">
-      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
-      <div class="cal-month" id="cal-month-lbl"></div>
-      <button class="cal-nav-btn" onclick="calNext()">›</button>
+    <!-- KALENDER TAB -->
+    <div id="tab-kalender" class="tab-content">
+      <div class="form-card" style="padding:16px;overflow:hidden">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+          <div class="cal-month" id="cal-month-lbl"></div>
+          <button class="cal-nav-btn" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+          <div class="cal-dow">Mo</div><div class="cal-dow">Di</div><div class="cal-dow">Mi</div>
+          <div class="cal-dow">Do</div><div class="cal-dow">Fr</div><div class="cal-dow">Sa</div><div class="cal-dow">So</div>
+        </div>
+        <div class="cal-detail" id="cal-detail"></div>      </div>
+      </div>
+      <div id="cal-undated-wrap"></div>
     </div>
-    <div class="cal-grid" id="cal-grid">
-      <div class="cal-dow">Mo</div><div class="cal-dow">Di</div><div class="cal-dow">Mi</div>
-      <div class="cal-dow">Do</div><div class="cal-dow">Fr</div><div class="cal-dow">Sa</div><div class="cal-dow">So</div>
-    </div>
-    <div class="cal-detail" id="cal-detail"></div>      </div>
-  </div>
-  <div id="cal-undated-wrap"></div>
-</div>
 
-<!-- ZUSAGEN TAB -->
-<div id="tab-zusagen" class="tab-content">
-  <div style="max-width:860px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meine Zusagen</div>
-        <div style="font-size:.78rem;color:var(--text-3)">Termine bei denen du dabei bist</div>
-      </div>
-      <button onclick="exportAllZusagen()" style="display:flex;align-items:center;gap:8px;background:var(--surface);color:var(--text-2);border:1.5px solid var(--border);border-radius:12px;padding:10px 18px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;transition:all .15s" onmouseenter="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--text-2)'">
-        📅 Alle exportieren
-      </button>
-    </div>
-    <div id="zusagen-list"></div>
-  </div>
-</div>
-
-<!-- SAMMLUNG TAB -->
-<div id="tab-sammlung" class="tab-content">
-  <div style="max-width:860px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meeple Sammlung</div>
-        <div style="font-size:.78rem;color:var(--text-3)">Deine Spiele auf einen Blick</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="importFromBgg()" class="btn btn-outline btn-sm" id="bgg-import-btn">
-          <img src="https://cf.geekdo-static.com/icons/favicon2.ico" style="width:14px;height:14px;border-radius:2px;vertical-align:middle" onerror="this.style.display='none'"> <span id="bgg-import-btn-lbl">BGG importieren</span>
-        </button>
-        <button onclick="openAddSammlungModal()" class="btn btn-blue btn-sm">＋ Manuell hinzufügen</button>
-      </div>
-    </div>
-    <!-- BGG info bar -->
-    <div id="sammlung-bgg-info" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <div style="font-size:.8rem;color:#0369a1">
-        🔗 <strong>BGG-Profil:</strong> <span id="sammlung-bgg-name"></span>
-        <span id="sammlung-count-lbl" style="margin-left:8px;opacity:.7"></span>
-      </div>
-    </div>
-    <!-- Search/filter -->
-    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <input class="input-field" id="sammlung-search" placeholder="Sammlung durchsuchen …" oninput="filterSammlung()" style="flex:1;min-width:140px">
-      <div style="position:relative" id="sammlung-user-picker-wrap">
-        <button onclick="toggleSammlungPicker()" id="sammlung-picker-btn" style="display:flex;align-items:center;gap:6px;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-family:'Outfit',sans-serif;font-size:.85rem;cursor:pointer;color:var(--text-2);white-space:nowrap;min-width:160px;justify-content:space-between">
-          <span id="sammlung-picker-label">🌐 Alle Sammlungen</span>
-          <span style="font-size:.7rem;color:var(--text-3)">▾</span>
-        </button>
-        <div id="sammlung-picker-drop" style="display:none;position:absolute;top:calc(100% + 4px);right:0;min-width:220px;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:500;overflow:hidden">
-          <div style="padding:8px 10px;border-bottom:1px solid var(--border);display:flex;gap:6px">
-            <button onclick="sammlungPickAll()" class="btn btn-ghost btn-sm" style="flex:1;font-size:.72rem">Alle</button>
-            <button onclick="sammlungPickNone()" class="btn btn-ghost btn-sm" style="flex:1;font-size:.72rem">Keine</button>
+    <!-- ZUSAGEN TAB -->
+    <div id="tab-zusagen" class="tab-content">
+      <div style="max-width:860px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meine Zusagen</div>
+            <div style="font-size:.78rem;color:var(--text-3)">Termine bei denen du dabei bist</div>
           </div>
-          <div id="sammlung-picker-list" style="max-height:240px;overflow-y:auto;padding:6px 8px"></div>
+          <button onclick="exportAllZusagen()" style="display:flex;align-items:center;gap:8px;background:var(--surface);color:var(--text-2);border:1.5px solid var(--border);border-radius:12px;padding:10px 18px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;transition:all .15s" onmouseenter="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--text-2)'">
+            📅 Alle exportieren
+          </button>
+        </div>
+        <div id="zusagen-list"></div>
+      </div>
+    </div>
+
+    <!-- SAMMLUNG TAB -->
+    <div id="tab-sammlung" class="tab-content">
+      <div style="max-width:860px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Meeple Sammlung</div>
+            <div style="font-size:.78rem;color:var(--text-3)">Deine Spiele auf einen Blick</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="importFromBgg()" class="btn btn-outline btn-sm" id="bgg-import-btn">
+              <img src="https://cf.geekdo-static.com/icons/favicon2.ico" style="width:14px;height:14px;border-radius:2px;vertical-align:middle" onerror="this.style.display='none'"> <span id="bgg-import-btn-lbl">BGG importieren</span>
+            </button>
+            <button onclick="openAddSammlungModal()" class="btn btn-blue btn-sm">＋ Manuell hinzufügen</button>
+          </div>
+        </div>
+        <!-- BGG info bar -->
+        <div id="sammlung-bgg-info" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-size:.8rem;color:#0369a1">
+            🔗 <strong>BGG-Profil:</strong> <span id="sammlung-bgg-name"></span>
+            <span id="sammlung-count-lbl" style="margin-left:8px;opacity:.7"></span>
+          </div>
+        </div>
+        <!-- Search/filter -->
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <input class="input-field" id="sammlung-search" placeholder="Sammlung durchsuchen …" oninput="filterSammlung()" style="flex:1;min-width:140px">
+          <div style="position:relative" id="sammlung-user-picker-wrap">
+            <button onclick="toggleSammlungPicker()" id="sammlung-picker-btn" style="display:flex;align-items:center;gap:6px;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-family:'Outfit',sans-serif;font-size:.85rem;cursor:pointer;color:var(--text-2);white-space:nowrap;min-width:160px;justify-content:space-between">
+              <span id="sammlung-picker-label">🌐 Alle Sammlungen</span>
+              <span style="font-size:.7rem;color:var(--text-3)">▾</span>
+            </button>
+            <div id="sammlung-picker-drop" style="display:none;position:absolute;top:calc(100% + 4px);right:0;min-width:220px;background:var(--surface);border:1.5px solid var(--blue);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:500;overflow:hidden">
+              <div style="padding:8px 10px;border-bottom:1px solid var(--border);display:flex;gap:6px">
+                <button onclick="sammlungPickAll()" class="btn btn-ghost btn-sm" style="flex:1;font-size:.72rem">Alle</button>
+                <button onclick="sammlungPickNone()" class="btn btn-ghost btn-sm" style="flex:1;font-size:.72rem">Keine</button>
+              </div>
+              <div id="sammlung-picker-list" style="max-height:240px;overflow-y:auto;padding:6px 8px"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <div onclick="toggleSammlungErweiterungen()" style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer;user-select:none;transition:all .15s" id="erweiterung-toggle">
+            <span id="erweiterung-icon">🚫</span>
+            <span id="erweiterung-lbl" style="font-weight:600;color:var(--text-2)">Erweiterungen ausgeblendet</span>
+          </div>
+          <span id="sammlung-count-badge" style="font-size:.75rem;color:var(--text-3)"></span>
+        </div>
+        <div id="sammlung-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
+      </div>
+    </div>
+
+    <!-- COMMUNITY TAB -->
+    <div id="tab-community" class="tab-content">
+      <div style="max-width:860px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">🏘️ Community</div>
+            <div style="font-size:.78rem;color:var(--text-3)">Übersicht aller Mitglieder und ihre Hotlists</div>
+          </div>
+          <button onclick="openHotlistModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35)">
+            🔥 Meine Hotlist
+          </button>
+        </div>
+        <div style="position:relative;margin-bottom:16px">
+          <input class="input-field" id="community-search" placeholder="👤 User oder 🎲 Spiel suchen …" oninput="filterCommunity()" autocomplete="off" style="padding-left:36px">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:.9rem;pointer-events:none">🔍</span>
+          <button id="community-search-clear" onclick="clearCommunitySearch()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem">✕</button>
+        </div>
+        <div id="community-list"></div>
+      </div>
+    </div>
+
+    <!-- BG STATS TAB -->
+    <div id="tab-bgstats" class="tab-content">
+      <div style="max-width:860px;margin:0 auto;padding:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">📊 BG Stats</div>
+            <div style="font-size:.78rem;color:var(--text-3)">QR Codes für Spielabend-Statistiken teilen</div>
+          </div>
+          <button onclick="openBgstatsCreateModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s">
+            <span style="font-size:1.1rem">＋</span> QR Code teilen
+          </button>
+        </div>
+        <!-- Meine geteilten QR Codes -->
+        <div id="bgstats-shared-section" style="margin-bottom:24px">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">Meine geteilten QR Codes</div>
+          <div id="bgstats-shared-list"></div>
+        </div>
+        <!-- Für mich freigegebene QR Codes -->
+        <div id="bgstats-received-section">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">Für mich freigegeben</div>
+          <div id="bgstats-received-list"></div>
         </div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <div onclick="toggleSammlungErweiterungen()" style="display:inline-flex;align-items:center;gap:7px;padding:6px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;font-size:.78rem;cursor:pointer;user-select:none;transition:all .15s" id="erweiterung-toggle">
-        <span id="erweiterung-icon">🚫</span>
-        <span id="erweiterung-lbl" style="font-weight:600;color:var(--text-2)">Erweiterungen ausgeblendet</span>
-      </div>
-      <span id="sammlung-count-badge" style="font-size:.75rem;color:var(--text-3)"></span>
-    </div>
-    <div id="sammlung-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px"></div>
-  </div>
-</div>
 
-<!-- COMMUNITY TAB -->
-<div id="tab-community" class="tab-content">
-  <div style="max-width:860px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">🏘️ Community</div>
-        <div style="font-size:.78rem;color:var(--text-3)">Übersicht aller Mitglieder und ihre Hotlists</div>
+    <!-- MARKTPLATZ TAB -->
+    <div id="tab-markt" class="tab-content">
+      <div style="max-width:860px;margin:0 auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spielemarktplatz</div>
+            <div style="font-size:.78rem;color:var(--text-3)">Kaufe und verkaufe Spiele innerhalb der Gruppe</div>
+          </div>
+          <button onclick="openInseratModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
+            <span style="font-size:1.1rem">＋</span> Spiel inserieren
+          </button>
+        </div>
+        <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
       </div>
-      <button onclick="openHotlistModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35)">
-        🔥 Meine Hotlist
-      </button>
     </div>
-    <div style="position:relative;margin-bottom:16px">
-      <input class="input-field" id="community-search" placeholder="👤 User oder 🎲 Spiel suchen …" oninput="filterCommunity()" autocomplete="off" style="padding-left:36px">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:.9rem;pointer-events:none">🔍</span>
-      <button id="community-search-clear" onclick="clearCommunitySearch()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem">✕</button>
-    </div>
-    <div id="community-list"></div>
-  </div>
-</div>
-
-<!-- BG STATS TAB -->
-<div id="tab-bgstats" class="tab-content">
-  <div style="max-width:860px;margin:0 auto;padding:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">📊 BG Stats</div>
-        <div style="font-size:.78rem;color:var(--text-3)">QR Codes für Spielabend-Statistiken teilen</div>
-      </div>
-      <button onclick="openBgstatsCreateModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s">
-        <span style="font-size:1.1rem">＋</span> QR Code teilen
-      </button>
-    </div>
-    <!-- Meine geteilten QR Codes -->
-    <div id="bgstats-shared-section" style="margin-bottom:24px">
-      <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">Meine geteilten QR Codes</div>
-      <div id="bgstats-shared-list"></div>
-    </div>
-    <!-- Für mich freigegebene QR Codes -->
-    <div id="bgstats-received-section">
-      <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:10px">Für mich freigegeben</div>
-      <div id="bgstats-received-list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- MARKTPLATZ TAB -->
-<div id="tab-markt" class="tab-content">
-  <div style="max-width:860px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-      <div>
-        <div style="font-size:1.1rem;font-weight:800;margin-bottom:2px">Spielemarktplatz</div>
-        <div style="font-size:.78rem;color:var(--text-3)">Kaufe und verkaufe Spiele innerhalb der Gruppe</div>
-      </div>
-      <button onclick="openInseratModal()" style="display:flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:11px 20px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;box-shadow:0 4px 14px rgba(59,110,245,.35);transition:all .16s" onmouseenter="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform=''">
-        <span style="font-size:1.1rem">＋</span> Spiel inserieren
-      </button>
-    </div>
-    <div id="markt-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding-bottom:32px"></div>
-  </div>
-</div>
-```
-
   </div>
 </div>
 
 <!-- NACHRICHTEN MODAL (Discord-style) -->
-
 <div id="nachr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeNachrModal()">
   <div class="nachr-modal-inner">
     <!-- LEFT SIDEBAR -->
@@ -837,7 +829,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- ADD SAMMLUNG MODAL -->
-
 <div id="add-sammlung-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:820;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeAddSammlungModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;animation:up .2s ease">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1">
@@ -864,15 +855,12 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- TOAST -->
-
 <div id="toast"><span id="toast-msg"></span></div>
 
 <!-- LIGHTBOX -->
-
 <div id="lightbox" onclick="this.style.display='none'"><img id="lb-img" src="" alt=""></div>
 
 <!-- CONFIRM MODAL -->
-
 <div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:950;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:380px;animation:up .18s ease">
     <div style="font-size:1.05rem;font-weight:700;margin-bottom:8px" id="confirm-title"></div>
@@ -887,7 +875,6 @@ to{transform:translateY(0);opacity:1}
 <!-- BGG TOKEN MODAL -->
 
 <!-- ADMIN MODAL -->
-
 <div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:920;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);padding:28px;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;animation:up .18s ease">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
@@ -942,7 +929,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- PROFIL MODAL -->
-
 <div id="profil-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:16px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;max-height:90vh;display:flex;flex-direction:column;animation:up .2s ease;overflow:hidden">
     <!-- Sticky header -->
@@ -1090,33 +1076,29 @@ to{transform:translateY(0);opacity:1}
           <button class="btn btn-outline btn-sm" style="width:100%;border-color:var(--green);color:var(--green)" id="push-toggle-btn" onclick="togglePushSubscription()">🔔 Push aktivieren</button>
         </div>
 
-```
-    <!-- Install Guide Modal (inline) -->
-    <div id="install-guide-box" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:var(--radius-sm);padding:14px"></div>
-  </div>
-  <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
-    <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
-  </div>
-    <button class="btn btn-outline btn-sm" style="width:100%;" onclick="savePassword()">🔑 Passwort ändern</button>
-  <!-- ACHIEVEMENTS -->
-  <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;margin-bottom:16px">
-    <div style="font-weight:700;font-size:.9rem;margin-bottom:12px">🏆 Achievements</div>
-    <div id="profil-achievements"></div>
-  </div>
-  <div id="profil-msg" style="display:none;font-size:.82rem;margin-bottom:12px"></div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-ghost" style="flex:1" onclick="closeProfileModal()">Schließen</button>
-    <button class="btn" style="flex:1;background:var(--red);color:#fff;border-color:var(--red)" onclick="switchUser()">Abmelden</button>
-  </div>
+        <!-- Install Guide Modal (inline) -->
+        <div id="install-guide-box" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:var(--radius-sm);padding:14px"></div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
+      </div>
+        <button class="btn btn-outline btn-sm" style="width:100%;" onclick="savePassword()">🔑 Passwort ändern</button>
+      <!-- ACHIEVEMENTS -->
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:12px">🏆 Achievements</div>
+        <div id="profil-achievements"></div>
+      </div>
+      <div id="profil-msg" style="display:none;font-size:.82rem;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeProfileModal()">Schließen</button>
+        <button class="btn" style="flex:1;background:var(--red);color:#fff;border-color:var(--red)" onclick="switchUser()">Abmelden</button>
+      </div>
 
-</div>
-```
-
+    </div>
   </div>
 </div>
 
 <!-- ADD SPIEL MODAL -->
-
 <div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:flex-start;justify-content:center;padding:12px 12px 0" onclick="if(event.target===this)closeAddModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:90vh;overflow-y:auto;animation:up .2s ease;margin-top:8px">
     <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
@@ -1159,7 +1141,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- EDIT TERMIN MODAL -->
-
 <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeEditModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:500px;animation:up .2s ease;overflow:hidden">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:18px 24px;display:flex;justify-content:space-between;align-items:center">
@@ -1216,7 +1197,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- NEUER TERMIN MODAL -->
-
 <div id="new-termin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeNewTerminModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;animation:up .2s ease;overflow:hidden">
     <div style="display:none" class="modal-drag-handle" aria-hidden="true"></div>
@@ -1279,7 +1259,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- INSERAT MODAL -->
-
 <div id="inserat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeInseratModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:700px;max-height:85vh;overflow-y:auto;animation:up .2s ease">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1">
@@ -1296,67 +1275,63 @@ to{transform:translateY(0);opacity:1}
         <button onclick="setInseratMode('multi')" id="inserat-mode-multi" style="flex:1;padding:8px;border-radius:8px;border:none;font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:600;cursor:pointer;background:transparent;color:var(--text-2);transition:all .15s">📦 Sammelanzeige</button>
       </div>
 
-```
-  <!-- SINGLE mode -->
-  <div id="inserat-panel-single">
-    <div class="form-grid" style="margin-bottom:16px">
-      <div class="form-field"><label>Spielname</label><input class="input-field" id="markt-titel" placeholder="z.B. Catan"></div>
-      <div class="form-field"><label>Preis (€)</label><input class="input-field" id="markt-preis" type="number" min="0" step="0.50" placeholder="z.B. 15"></div>
-    </div>
-    <div class="form-field" style="margin-bottom:12px"><label>Zustand & Beschreibung</label><textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten …" style="resize:vertical;font-family:inherit"></textarea></div>
-    <div class="form-field" style="margin-bottom:12px"><label>BGG-Link (optional)</label><input class="input-field" id="markt-bgg" placeholder="https://boardgamegeek.com/…"></div>
-    <div style="margin-bottom:20px">
-      <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Bilder (optional)</div>
-      <div style="display:flex;gap:6px;margin-bottom:6px">
-        <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
-        <button class="btn btn-outline btn-sm" onclick="addMarktImg()">🔗 URL</button>
+      <!-- SINGLE mode -->
+      <div id="inserat-panel-single">
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="form-field"><label>Spielname</label><input class="input-field" id="markt-titel" placeholder="z.B. Catan"></div>
+          <div class="form-field"><label>Preis (€)</label><input class="input-field" id="markt-preis" type="number" min="0" step="0.50" placeholder="z.B. 15"></div>
+        </div>
+        <div class="form-field" style="margin-bottom:12px"><label>Zustand & Beschreibung</label><textarea class="input-field" id="markt-desc" rows="3" placeholder="z.B. Sehr gut erhalten …" style="resize:vertical;font-family:inherit"></textarea></div>
+        <div class="form-field" style="margin-bottom:12px"><label>BGG-Link (optional)</label><input class="input-field" id="markt-bgg" placeholder="https://boardgamegeek.com/…"></div>
+        <div style="margin-bottom:20px">
+          <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;font-weight:500">Bilder (optional)</div>
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input class="input-field" id="markt-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
+            <button class="btn btn-outline btn-sm" onclick="addMarktImg()">🔗 URL</button>
+          </div>
+          <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem;color:var(--text-2);font-weight:600;transition:border-color .15s;margin-bottom:8px" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+            <input type="file" accept="image/*" multiple id="markt-img-file" style="display:none" onchange="uploadMarktImages(this)">
+            <span id="markt-upload-label">📷 Bilder hochladen</span>
+          </label>
+          <div id="markt-img-preview-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
       </div>
-      <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem;color:var(--text-2);font-weight:600;transition:border-color .15s;margin-bottom:8px" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
-        <input type="file" accept="image/*" multiple id="markt-img-file" style="display:none" onchange="uploadMarktImages(this)">
-        <span id="markt-upload-label">📷 Bilder hochladen</span>
-      </label>
-      <div id="markt-img-preview-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
-    </div>
-  </div>
 
-  <!-- MULTI mode -->
-  <div id="inserat-panel-multi" style="display:none">
-    <div class="form-field" style="margin-bottom:16px">
-      <label>Titel der Sammelanzeige</label>
-      <input class="input-field" id="markt-multi-titel" placeholder="z.B. Meine Spielesammlung">
-    </div>
-    <div class="form-field" style="margin-bottom:16px">
-      <label>Allgemeine Beschreibung (optional)</label>
-      <textarea class="input-field" id="markt-multi-desc" rows="2" placeholder="z.B. Alle Spiele sind sehr gut erhalten …" style="resize:vertical;font-family:inherit"></textarea>
-    </div>
-    <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:8px">Spiele in dieser Anzeige</div>
-    <div id="markt-multi-spiele-list" style="margin-bottom:10px"></div>
-    <button onclick="addMultiSpielRow()" class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:16px">＋ Spiel hinzufügen</button>
-    <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:6px">Bilder (optional)</div>
-    <div style="display:flex;gap:6px;margin-bottom:6px">
-      <input class="input-field" id="markt-multi-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
-      <button class="btn btn-outline btn-sm" onclick="addMarktImg()">🔗 URL</button>
-    </div>
-    <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem;color:var(--text-2);font-weight:600;transition:border-color .15s;margin-bottom:8px" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
-      <input type="file" accept="image/*" multiple id="markt-multi-img-file" style="display:none" onchange="uploadMarktImages(this)">
-      <span id="markt-multi-upload-label">📷 Bilder hochladen</span>
-    </label>
-    <div id="markt-img-preview-wrap-multi" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
-  </div>
+      <!-- MULTI mode -->
+      <div id="inserat-panel-multi" style="display:none">
+        <div class="form-field" style="margin-bottom:16px">
+          <label>Titel der Sammelanzeige</label>
+          <input class="input-field" id="markt-multi-titel" placeholder="z.B. Meine Spielesammlung">
+        </div>
+        <div class="form-field" style="margin-bottom:16px">
+          <label>Allgemeine Beschreibung (optional)</label>
+          <textarea class="input-field" id="markt-multi-desc" rows="2" placeholder="z.B. Alle Spiele sind sehr gut erhalten …" style="resize:vertical;font-family:inherit"></textarea>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:8px">Spiele in dieser Anzeige</div>
+        <div id="markt-multi-spiele-list" style="margin-bottom:10px"></div>
+        <button onclick="addMultiSpielRow()" class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:16px">＋ Spiel hinzufügen</button>
+        <div style="font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:6px">Bilder (optional)</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input class="input-field" id="markt-multi-img-url" placeholder="https://…/bild.jpg" style="flex:1" onkeydown="if(event.keyCode===13){event.preventDefault();addMarktImg()}">
+          <button class="btn btn-outline btn-sm" onclick="addMarktImg()">🔗 URL</button>
+        </div>
+        <label style="display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem;color:var(--text-2);font-weight:600;transition:border-color .15s;margin-bottom:8px" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+          <input type="file" accept="image/*" multiple id="markt-multi-img-file" style="display:none" onchange="uploadMarktImages(this)">
+          <span id="markt-multi-upload-label">📷 Bilder hochladen</span>
+        </label>
+        <div id="markt-img-preview-wrap-multi" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px"></div>
+      </div>
 
-  <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
-  <div style="display:flex;gap:10px">
-    <button class="btn btn-ghost" onclick="closeInseratModal()" style="flex:1">Abbrechen</button>
-    <button class="btn btn-blue" id="inserat-submit-btn" onclick="submitInserat()" style="flex:2">📢 Inserat erstellen</button>
-  </div>
-</div>
-```
-
+      <div id="markt-error" style="display:none;color:var(--red);font-size:.82rem;margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeInseratModal()" style="flex:1">Abbrechen</button>
+        <button class="btn btn-blue" id="inserat-submit-btn" onclick="submitInserat()" style="flex:2">📢 Inserat erstellen</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- HOTLIST MODAL -->
-
 <div id="hotlist-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeHotlistModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;animation:up .2s ease">
     <div style="background:linear-gradient(135deg,#f59e0b,#fbbf24);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1">
@@ -1396,7 +1371,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- BG STATS QR OVERLAY -->
-
 <div id="bgstats-qr-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px" onclick="document.getElementById('bgstats-qr-overlay').style.display='none'">
   <img id="bgstats-qr-large" src="" style="max-width:min(80vw,400px);max-height:min(80vw,400px);border-radius:12px;background:#fff;padding:12px;box-shadow:0 8px 40px rgba(0,0,0,.5)" alt="QR Code">
   <div id="bgstats-qr-overlay-title" style="color:#fff;font-weight:700;font-size:1rem;text-align:center"></div>
@@ -1404,7 +1378,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- BG STATS CREATE MODAL -->
-
 <div id="bgstats-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeBgstatsModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:500px;animation:up .2s ease;overflow:hidden">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:18px 24px;display:flex;justify-content:space-between;align-items:center">
@@ -1438,7 +1411,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- QR CODE MODAL -->
-
 <div id="qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:810;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeQrModal()">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:440px;animation:up .2s ease;overflow:hidden">
     <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
@@ -1465,7 +1437,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- WHATS NEW MODAL -->
-
 <div id="whatsnew-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:920;align-items:center;justify-content:center;padding:20px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:460px;animation:up .25s ease;overflow:hidden">
     <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:22px 24px 18px">
@@ -1480,7 +1451,6 @@ to{transform:translateY(0);opacity:1}
 </div>
 
 <!-- MARKT CHAT MODAL -->
-
 <div id="markt-chat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeMarktChat()">
   <div style="background:var(--surface);border-radius:20px 20px 0 0;box-shadow:var(--shadow-lg);width:100%;max-width:480px;height:85vh;display:flex;flex-direction:column;animation:up .2s ease">
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
@@ -5470,108 +5440,108 @@ async function toggleTerminSubscribe(tid){
 // ── Notification Email Sending ──
 function buildNotifEmail(subject, bodyHtml){
   return "<!DOCTYPE html><html><head><meta charset='UTF-8'><style>body{font-family:sans-serif;background:#f4f6fb;margin:0;padding:0}.wrap{max-width:580px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#3b6ef5,#6a9af8);padding:24px;text-align:center;color:#fff}.header h1{margin:0;font-size:1.4rem}.logo{font-size:2rem;margin-bottom:8px}.body{padding:24px}.section{background:#f8f9fd;border-radius:8px;padding:14px 16px;margin-bottom:14px;border-left:4px solid #3b6ef5}.section h3{margin:0 0 6px;font-size:.95rem;color:#111827}.section p{margin:0;font-size:.85rem;color:#374151;line-height:1.5}.chip{display:inline-block;background:#eef2fe;color:#3b6ef5;border-radius:20px;padding:2px 10px;font-size:.78rem;font-weight:600;margin:2px}.footer{padding:16px 24px;text-align:center;font-size:.75rem;color:#9ca3af;border-top:1px solid #e4e8f0}</style></head><body><div style='padding:20px'><div class='wrap'><div class='header'><div class='logo'>🎲</div><h1>Die Meeples</h1><div style='font-size:.85rem;opacity:.85'>Spieleabend Planer</div></div><div class='body'>"+bodyHtml+"</div><div class='footer'>Du erhältst diese E-Mail weil du Benachrichtigungen aktiviert hast. <br>Du kannst sie in deinem Profil deaktivieren.</div></div></div></body></html>";
-
 }
 
 async function sendNotifToSubscribers(t, eventType, extraInfo){
-if(!t.subscribers||!t.subscribers.length) return;
-var dt=t.date?new Date(t.date).toLocaleDateString(“de-DE”,{weekday:“long”,day:“2-digit”,month:“long”,year:“numeric”,hour:“2-digit”,minute:“2-digit”}):“Datum noch offen”;
-var bodyHtml=”<div class='section'><h3>📅 “+h(t.title)+”</h3>”
-+(t.date?”<p>🗓 <strong>”+dt+”</strong></p>”:””)
-+(t.ort?”<p>📍 “+h(t.ort)+”</p>”:””)
-+”<p>👥 “+t.personen.length+” Teilnehmer  •  🎮 “+t.spiele.length+” Spiele</p>”
-+”</div>”
-+”<div class='section'><h3>”+eventType+”</h3><p>”+extraInfo+”</p></div>”;
-var emailHtml=buildNotifEmail(“Neuigkeit: “+t.title, bodyHtml);
-var subscribers=t.subscribers.filter(function(s){ return s.name!==currentName; });
-if(!subscribers.length) return;
+  if(!t.subscribers||!t.subscribers.length) return;
+  var dt=t.date?new Date(t.date).toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Datum noch offen";
+  var bodyHtml="<div class='section'><h3>📅 "+h(t.title)+"</h3>"
+    +(t.date?"<p>🗓 <strong>"+dt+"</strong></p>":"")
+    +(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")
+    +"<p>👥 "+t.personen.length+" Teilnehmer &nbsp;•&nbsp; 🎮 "+t.spiele.length+" Spiele</p>"
+    +"</div>"
+    +"<div class='section'><h3>"+eventType+"</h3><p>"+extraInfo+"</p></div>";
+  var emailHtml=buildNotifEmail("Neuigkeit: "+t.title, bodyHtml);
+  var subscribers=t.subscribers.filter(function(s){ return s.name!==currentName; });
+  if(!subscribers.length) return;
 
-// E-Mail senden
-var emailRecips=subscribers.filter(function(s){ return s.email; });
-if(emailRecips.length){
-try{
-await sendMail(emailRecips.map(function(s){ return s.email; }),“🎲 “+t.title+” – “+eventType,emailHtml);
-}catch(e){}
-}
+  // E-Mail senden
+  var emailRecips=subscribers.filter(function(s){ return s.email; });
+  if(emailRecips.length){
+    try{
+      await sendMail(emailRecips.map(function(s){ return s.email; }),"🎲 "+t.title+" – "+eventType,emailHtml);
+    }catch(e){}
+  }
 
-// Push senden an alle Abonnenten
-try{
-var names=subscribers.map(function(s){ return s.name; });
-var r=await fetch(SB_URL+”/rest/v1/user_meta?select=user_name,push_subscription”,{headers:authHdrs()});
-if(r.ok){
-var rows=await r.json();
-var pushSubs=rows.filter(function(row){ return names.includes(row.user_name)&&row.push_subscription; })
-.map(function(row){ try{ return JSON.parse(row.push_subscription); }catch(e){ return null; } })
-.filter(Boolean);
-if(pushSubs.length){
-await fetch(SB_URL+”/functions/v1/send-push”,{
-method:“POST”,
-headers:{“Content-Type”:“application/json”,“apikey”:SB_ANON,“Authorization”:“Bearer “+SB_ANON},
-body:JSON.stringify({subscriptions:pushSubs,title:“🎲 “+t.title,body:eventType+”: “+extraInfo.replace(/<[^>]*>/g,””).slice(0,80),url:”/”})
-});
-}
-}
-}catch(e){}
+  // Push senden an alle Abonnenten
+  try{
+    var names=subscribers.map(function(s){ return s.name; });
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,push_subscription",{headers:authHdrs()});
+    if(r.ok){
+      var rows=await r.json();
+      var pushSubs=rows.filter(function(row){ return names.includes(row.user_name)&&row.push_subscription; })
+                       .map(function(row){ try{ return JSON.parse(row.push_subscription); }catch(e){ return null; } })
+                       .filter(Boolean);
+      if(pushSubs.length){
+        await fetch(SB_URL+"/functions/v1/send-push",{
+          method:"POST",
+          headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},
+          body:JSON.stringify({subscriptions:pushSubs,title:"🎲 "+t.title,body:eventType+": "+extraInfo.replace(/<[^>]*>/g,"").slice(0,80),url:"/"})
+        });
+      }
+    }
+  }catch(e){}
 }
 
 async function sendGlobalNotif(type, subject, bodyHtml){
-try{
-var field=type===“termine”?“notif_all_termine”:“notif_all_markt”;
-var r=await fetch(SB_URL+”/rest/v1/user_meta?”+field+”=eq.true&select=user_name,notif_email”,{headers:authHdrs()});
-if(!r.ok) return;
-var rows=await r.json();
-var emails=rows.filter(function(row){ return row.notif_email&&row.user_name!==currentName; }).map(function(row){ return row.notif_email; });
-if(!emails.length) return;
-var emailHtml=buildNotifEmail(subject,bodyHtml);
-await sendMail(emails,“🎲 “+subject,emailHtml);
-}catch(e){}
+  try{
+    var field=type==="termine"?"notif_all_termine":"notif_all_markt";
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?"+field+"=eq.true&select=user_name,notif_email",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    var emails=rows.filter(function(row){ return row.notif_email&&row.user_name!==currentName; }).map(function(row){ return row.notif_email; });
+    if(!emails.length) return;
+    var emailHtml=buildNotifEmail(subject,bodyHtml);
+    await sendMail(emails,"🎲 "+subject,emailHtml);
+  }catch(e){}
 }
 
 // ── Verfügbarkeit ──
-var myVerfuegbarkeit={days:[],notiz:””};
+var myVerfuegbarkeit={days:[],notiz:""};
 
 function toggleVerfuegbarkeit(day){
-var idx=myVerfuegbarkeit.days.indexOf(day);
-if(idx>-1) myVerfuegbarkeit.days.splice(idx,1);
-else myVerfuegbarkeit.days.push(day);
-renderVerfuegbarkeitBtns();
+  var idx=myVerfuegbarkeit.days.indexOf(day);
+  if(idx>-1) myVerfuegbarkeit.days.splice(idx,1);
+  else myVerfuegbarkeit.days.push(day);
+  renderVerfuegbarkeitBtns();
 }
 
 function renderVerfuegbarkeitBtns(){
-[“Mo”,“Di”,“Mi”,“Do”,“Fr”,“Sa”,“So”].forEach(function(d){
-var el=document.getElementById(“vf-”+d); if(!el) return;
-var active=myVerfuegbarkeit.days.includes(d);
-el.style.background=active?“var(–blue)”:“var(–surface2)”;
-el.style.color=active?”#fff”:“var(–text-3)”;
-el.style.borderColor=active?“var(–blue)”:“var(–border)”;
-});
+  ["Mo","Di","Mi","Do","Fr","Sa","So"].forEach(function(d){
+    var el=document.getElementById("vf-"+d); if(!el) return;
+    var active=myVerfuegbarkeit.days.includes(d);
+    el.style.background=active?"var(--blue)":"var(--surface2)";
+    el.style.color=active?"#fff":"var(--text-3)";
+    el.style.borderColor=active?"var(--blue)":"var(--border)";
+  });
 }
 
 async function loadVerfuegbarkeit(){
-try{
-var r=await fetch(SB_URL+”/rest/v1/user_meta?user_name=eq.”+encodeURIComponent(currentName)+”&select=verfuegbarkeit”,{headers:authHdrs()});
-if(r.ok){
-var rows=await r.json();
-if(rows.length&&rows[0].verfuegbarkeit){
-myVerfuegbarkeit=rows[0].verfuegbarkeit;
-if(!myVerfuegbarkeit.days) myVerfuegbarkeit.days=[];
-}
-}
-}catch(e){}
-renderVerfuegbarkeitBtns();
-var notizEl=document.getElementById(“profil-verfuegbarkeit-notiz”);
-if(notizEl) notizEl.value=myVerfuegbarkeit.notiz||””;
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?user_name=eq."+encodeURIComponent(currentName)+"&select=verfuegbarkeit",{headers:authHdrs()});
+    if(r.ok){
+      var rows=await r.json();
+      if(rows.length&&rows[0].verfuegbarkeit){
+        myVerfuegbarkeit=rows[0].verfuegbarkeit;
+        if(!myVerfuegbarkeit.days) myVerfuegbarkeit.days=[];
+      }
+    }
+  }catch(e){}
+  renderVerfuegbarkeitBtns();
+  var notizEl=document.getElementById("profil-verfuegbarkeit-notiz");
+  if(notizEl) notizEl.value=myVerfuegbarkeit.notiz||"";
 }
 
 async function saveVerfuegbarkeit(){
-myVerfuegbarkeit.notiz=(document.getElementById(“profil-verfuegbarkeit-notiz”)||{}).value||””;
-try{
-await fetch(SB_URL+”/rest/v1/user_meta”,{method:“POST”,headers:Object.assign(authHdrs(),{“Prefer”:“resolution=merge-duplicates”}),body:JSON.stringify({user_name:currentName,verfuegbarkeit:myVerfuegbarkeit})});
-var msg=document.getElementById(“profil-msg”);
-msg.textContent=“✓ Verfügbarkeit gespeichert”; msg.style.color=“var(–green)”; msg.style.display=“block”;
-setTimeout(function(){ msg.style.display=“none”; },2000);
-}catch(e){ toast(“Fehler beim Speichern”); }
+  myVerfuegbarkeit.notiz=(document.getElementById("profil-verfuegbarkeit-notiz")||{}).value||"";
+  try{
+    await fetch(SB_URL+"/rest/v1/user_meta",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({user_name:currentName,verfuegbarkeit:myVerfuegbarkeit})});
+    var msg=document.getElementById("profil-msg");
+    msg.textContent="✓ Verfügbarkeit gespeichert"; msg.style.color="var(--green)"; msg.style.display="block";
+    setTimeout(function(){ msg.style.display="none"; },2000);
+  }catch(e){ toast("Fehler beim Speichern"); }
 }
+
 
 var communityHotlists = {}; // {userName: [{id, name, image, bggId, bggUrl}]}
 var myHotlist = [null,null,null,null,null]; // 5 slots
@@ -5579,315 +5549,312 @@ var hotlistEditSlot = -1;
 var hotlistSearchDebounce = null;
 
 async function loadCommunityHotlists(){
-try{
-var r=await fetch(SB_URL+”/rest/v1/app_config?key=eq.community_hotlists&select=value”,{headers:authHdrs()});
-if(r.ok){ var rows=await r.json(); if(rows.length) communityHotlists=JSON.parse(rows[0].value||”{}”); }
-}catch(e){ communityHotlists={}; }
-myHotlist=(communityHotlists[currentName]||[null,null,null,null,null]).slice(0,5);
-while(myHotlist.length<5) myHotlist.push(null);
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/app_config?key=eq.community_hotlists&select=value",{headers:authHdrs()});
+    if(r.ok){ var rows=await r.json(); if(rows.length) communityHotlists=JSON.parse(rows[0].value||"{}"); }
+  }catch(e){ communityHotlists={}; }
+  myHotlist=(communityHotlists[currentName]||[null,null,null,null,null]).slice(0,5);
+  while(myHotlist.length<5) myHotlist.push(null);
 }
 
 async function saveCommunityHotlists(){
-communityHotlists[currentName]=myHotlist.filter(Boolean);
-await fetch(SB_URL+”/rest/v1/app_config”,{method:“POST”,headers:Object.assign(authHdrs(),{“Prefer”:“resolution=merge-duplicates”}),body:JSON.stringify({key:“community_hotlists”,value:JSON.stringify(communityHotlists)})});
+  communityHotlists[currentName]=myHotlist.filter(Boolean);
+  await fetch(SB_URL+"/rest/v1/app_config",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({key:"community_hotlists",value:JSON.stringify(communityHotlists)})});
 }
 
 async function renderCommunity(){
-var searchEl=document.getElementById(“community-search”);
-if(searchEl) searchEl.value=””;
-var clearBtn=document.getElementById(“community-search-clear”);
-if(clearBtn) clearBtn.style.display=“none”;
-await loadCommunityHotlists();
-// Load all users
-var list=document.getElementById(“community-list”); if(!list) return;
-list.innerHTML=”<div style='font-size:.78rem;color:var(--text-3)'>Lade…</div>”;
-try{
-var r=await fetch(SB_URL+”/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile,verfuegbarkeit&order=user_name&last_login=not.is.null”,{headers:authHdrs()});
-if(!r.ok) r=await fetch(SB_URL+”/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile&order=user_name&last_login=not.is.null”,{headers:authHdrs()});
-var rows=r.ok?await r.json():[];
-var userMap={};
-rows.forEach(function(row){ userMap[(row.display_name&&row.display_name.trim())||row.user_name]=row; });
-var users=Object.keys(userMap);
-if(!users.length){ list.innerHTML=”<div class='empty'><div class='empty-icon'>👥</div><p>Keine Mitglieder gefunden.</p></div>”; return; }
-list.innerHTML=users.map(function(u){
-var row=userMap[u]||{};
-var bgg=row.bgg_profile||””;
-var games=communityHotlists[u]||[];
-var gamesHtml=games.length
-? “<div style='display:flex;flex-wrap:wrap;gap:8px'>”
-+games.map(function(g,gi){
-var img=g.image?proxyImg(g.image):null;
-var gameJsonStr=JSON.stringify(JSON.stringify(g)).slice(1,-1);
-return “<div style='position:relative;width:72px;cursor:pointer;group' title='"+h(g.name)+"' onclick='createTerminFromGame(\""+gameJsonStr+"\")'>”
-+(img
-?”<img src='"+img+"' style='width:72px;height:72px;border-radius:10px;object-fit:cover;display:block;border:1.5px solid var(--border)' onerror='this.src=\"\";this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'>”
-+”<div style='display:none;width:72px;height:72px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border);align-items:center;justify-content:center;font-size:1.5rem'>🎲</div>”
-:”<div style='width:72px;height:72px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem'>🎲</div>”)
-+”<div style='font-size:.62rem;font-weight:600;color:var(--text-2);margin-top:4px;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3'>”+h(g.name)+”</div>”
-+”<div style='position:absolute;top:3px;left:4px;background:rgba(0,0,0,.55);color:#fff;border-radius:50%;width:16px;height:16px;font-size:.55rem;font-weight:700;display:flex;align-items:center;justify-content:center'>”+(gi+1)+”</div>”
-+”<div style=‘position:absolute;inset:0 0 auto 0;height:72px;border-radius:10px;background:rgba(59,110,245,.12);opacity:0;transition:opacity .15s’ onmouseover="this.style.opacity=‘1’" onmouseout="this.style.opacity=‘0’"></div>”
-+”</div>”;
-}).join(””)
-+”</div>”
-: “<div style='font-size:.78rem;color:var(--text-3);padding:4px 0'>Noch keine Hotlist eingetragen.</div>”;
-var vf=row.verfuegbarkeit||{days:[],notiz:””};
-var vfDays=(vf.days||[]).slice().sort(function(a,b){
-var order=[“Mo”,“Di”,“Mi”,“Do”,“Fr”,“Sa”,“So”];
-return order.indexOf(a)-order.indexOf(b);
-});
-var vfHtml=vfDays.length
-? “<div style='display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;margin-bottom:8px'>”
-+vfDays.map(function(d){ return “<span style='background:var(--blue);color:#fff;border-radius:6px;padding:2px 8px;font-size:.68rem;font-weight:700'>”+h(d)+”</span>”; }).join(””)
-+(vf.notiz?”<span style='font-size:.7rem;color:var(--text-3);align-self:center;margin-left:2px'>· “+h(vf.notiz)+”</span>”:””)
-+”</div>” : “”;
-return “<div class='community-card' data-user='"+h(u.toLowerCase())+"' data-games='"+h(games.map(function(g){ return g.name; }).join(" ").toLowerCase())+"' style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px'>”
-+”<div style='display:flex;align-items:center;gap:10px;margin-bottom:10px'>”
-+avHtml(u,“av-sm”)
-+”<div style='flex:1;min-width:0;display:flex;align-items:center;gap:6px'>”
-+”<span style='font-weight:700;font-size:.9rem'>”+h(u)+”</span>”
-+(bgg?”<a href='https://boardgamegeek.com/user/"+encodeURIComponent(bgg)+"' target='_blank' title='BGG: "+h(bgg)+"' onclick='event.stopPropagation()' style='display:inline-flex;align-items:center'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:12px;height:12px;border-radius:2px' onerror='this.style.display=\"none\"'></a>”:””)
-
-```
-    +"</div>"
-    +(u===currentName?"<button onclick='openHotlistModal()' style='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--text-2);flex-shrink:0'>✏️</button>":"")
-    +"</div>"
-    +vfHtml
-    +gamesHtml+"</div>";
-}).join("");
-```
-
-}catch(e){ list.innerHTML=”<div style='color:var(--red);font-size:.82rem'>Fehler beim Laden.</div>”; }
+  var searchEl=document.getElementById("community-search");
+  if(searchEl) searchEl.value="";
+  var clearBtn=document.getElementById("community-search-clear");
+  if(clearBtn) clearBtn.style.display="none";
+  await loadCommunityHotlists();
+  // Load all users
+  var list=document.getElementById("community-list"); if(!list) return;
+  list.innerHTML="<div style='font-size:.78rem;color:var(--text-3)'>Lade…</div>";
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile,verfuegbarkeit&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+    if(!r.ok) r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name,avatar_url,bgg_profile&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+    var rows=r.ok?await r.json():[];
+    var userMap={};
+    rows.forEach(function(row){ userMap[(row.display_name&&row.display_name.trim())||row.user_name]=row; });
+    var users=Object.keys(userMap);
+    if(!users.length){ list.innerHTML="<div class='empty'><div class='empty-icon'>👥</div><p>Keine Mitglieder gefunden.</p></div>"; return; }
+    list.innerHTML=users.map(function(u){
+      var row=userMap[u]||{};
+      var bgg=row.bgg_profile||"";
+      var games=communityHotlists[u]||[];
+      var gamesHtml=games.length
+        ? "<div style='display:flex;flex-wrap:wrap;gap:8px'>"
+          +games.map(function(g,gi){
+            var img=g.image?proxyImg(g.image):null;
+            var gameJsonStr=JSON.stringify(JSON.stringify(g)).slice(1,-1);
+            return "<div style='position:relative;width:72px;cursor:pointer;group' title='"+h(g.name)+"' onclick='createTerminFromGame(\""+gameJsonStr+"\")'>"
+              +(img
+                ?"<img src='"+img+"' style='width:72px;height:72px;border-radius:10px;object-fit:cover;display:block;border:1.5px solid var(--border)' onerror='this.src=\"\";this.style.display=\"none\";this.nextElementSibling.style.display=\"flex\"'>"
+                  +"<div style='display:none;width:72px;height:72px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border);align-items:center;justify-content:center;font-size:1.5rem'>🎲</div>"
+                :"<div style='width:72px;height:72px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem'>🎲</div>")
+              +"<div style='font-size:.62rem;font-weight:600;color:var(--text-2);margin-top:4px;text-align:center;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3'>"+h(g.name)+"</div>"
+              +"<div style='position:absolute;top:3px;left:4px;background:rgba(0,0,0,.55);color:#fff;border-radius:50%;width:16px;height:16px;font-size:.55rem;font-weight:700;display:flex;align-items:center;justify-content:center'>"+(gi+1)+"</div>"
+              +"<div style='position:absolute;inset:0 0 auto 0;height:72px;border-radius:10px;background:rgba(59,110,245,.12);opacity:0;transition:opacity .15s' onmouseover=\"this.style.opacity='1'\" onmouseout=\"this.style.opacity='0'\"></div>"
+              +"</div>";
+          }).join("")
+          +"</div>"
+        : "<div style='font-size:.78rem;color:var(--text-3);padding:4px 0'>Noch keine Hotlist eingetragen.</div>";
+      var vf=row.verfuegbarkeit||{days:[],notiz:""};
+      var vfDays=(vf.days||[]).slice().sort(function(a,b){
+        var order=["Mo","Di","Mi","Do","Fr","Sa","So"];
+        return order.indexOf(a)-order.indexOf(b);
+      });
+      var vfHtml=vfDays.length
+        ? "<div style='display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;margin-bottom:8px'>"
+          +vfDays.map(function(d){ return "<span style='background:var(--blue);color:#fff;border-radius:6px;padding:2px 8px;font-size:.68rem;font-weight:700'>"+h(d)+"</span>"; }).join("")
+          +(vf.notiz?"<span style='font-size:.7rem;color:var(--text-3);align-self:center;margin-left:2px'>· "+h(vf.notiz)+"</span>":"")
+          +"</div>" : "";
+      return "<div class='community-card' data-user='"+h(u.toLowerCase())+"' data-games='"+h(games.map(function(g){ return g.name; }).join(" ").toLowerCase())+"' style='background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px'>"
+        +"<div style='display:flex;align-items:center;gap:10px;margin-bottom:10px'>"
+        +avHtml(u,"av-sm")
+        +"<div style='flex:1;min-width:0;display:flex;align-items:center;gap:6px'>"
+        +"<span style='font-weight:700;font-size:.9rem'>"+h(u)+"</span>"
+        +(bgg?"<a href='https://boardgamegeek.com/user/"+encodeURIComponent(bgg)+"' target='_blank' title='BGG: "+h(bgg)+"' onclick='event.stopPropagation()' style='display:inline-flex;align-items:center'><img src='https://cf.geekdo-static.com/icons/favicon2.ico' style='width:12px;height:12px;border-radius:2px' onerror='this.style.display=\"none\"'></a>":"")
+        
+        +"</div>"
+        +(u===currentName?"<button onclick='openHotlistModal()' style='background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--text-2);flex-shrink:0'>✏️</button>":"")
+        +"</div>"
+        +vfHtml
+        +gamesHtml+"</div>";
+    }).join("");
+  }catch(e){ list.innerHTML="<div style='color:var(--red);font-size:.82rem'>Fehler beim Laden.</div>"; }
 }
 
 // Create termin from hotlist game
 function createTerminFromGame(gameJson){
-try{
-var g=JSON.parse(gameJson);
-var interested=Object.keys(communityHotlists).filter(function(u){
-return (communityHotlists[u]||[]).some(function(x){ return x.bggId&&x.bggId===g.bggId||x.name===g.name; });
-});
-var others=interested.filter(function(u){ return u!==currentName; });
-var msg=“Möchtest du einen Termin für "”+g.name+”" erstellen?”
-+(others.length?”\n\nFolgende Mitglieder haben dieses Spiel ebenfalls in ihrer Hotlist und werden automatisch eingeladen:\n• “+others.join(”\n• “):””);
-showConfirm(
-“📅 Termin erstellen”,
-msg,
-function(){ doCreateTerminFromGame(g, interested); },
-“📅 Termin erstellen”,
-“background:var(–blue);color:#fff;border-color:var(–blue)”
-);
-}catch(e){ toast(“Fehler.”); }
+  try{
+    var g=JSON.parse(gameJson);
+    var interested=Object.keys(communityHotlists).filter(function(u){
+      return (communityHotlists[u]||[]).some(function(x){ return x.bggId&&x.bggId===g.bggId||x.name===g.name; });
+    });
+    var others=interested.filter(function(u){ return u!==currentName; });
+    var msg="Möchtest du einen Termin für \""+g.name+"\" erstellen?"
+      +(others.length?"\n\nFolgende Mitglieder haben dieses Spiel ebenfalls in ihrer Hotlist und werden automatisch eingeladen:\n• "+others.join("\n• "):"");
+    showConfirm(
+      "📅 Termin erstellen",
+      msg,
+      function(){ doCreateTerminFromGame(g, interested); },
+      "📅 Termin erstellen",
+      "background:var(--blue);color:#fff;border-color:var(--blue)"
+    );
+  }catch(e){ toast("Fehler."); }
 }
 
 function doCreateTerminFromGame(g, interested){
-var t={
-id:state.nextId++,
-title:g.name,
-date:””, ort:””,
-creator:currentName,
-offen:true, privat:false,
-limitOn:false, limitVal:0,
-voteOn:false, diceOn:false,
-mitspielerGesucht:false,
-personen:[currentName],
-spiele:[Object.assign({id:“b”+Date.now(),votes:{}},g,{vorschlaeger:currentName})],
-chat:[], qrcodes:[],
-subscribers:(currentNotifEmail||window._hasPushSub)?[{name:currentName,email:currentNotifEmail||””}]:[],
-ts:new Date().toISOString()
-};
-// Add other interested users
-interested.forEach(function(u){
-if(u!==currentName&&!t.personen.includes(u)){
-t.personen.push(u);
-autoSubscribeUser(t,u);
-sendInviteNotification(t,u);
-}
-});
-state.termine.unshift(t);
-renderTermine();
-toast(“📅 Termin erstellt! “+interested.length+” Mitspieler eingeladen 🎉”);
-saveState();
-if(!t.privat){
-sendGlobalNotif(“termine”,“Neuer Termin: “+t.title,”<div class='section'><h3>📅 “+h(t.title)+”</h3><p>Erstellt von <strong>”+h(currentName)+”</strong></p></div>”);
-sendPushNotifications(“📅 Neuer Termin: “+t.title,h(currentName)+” möchte “+h(g.name)+” spielen”,”/”);
-}
-showTab(“termine”,document.getElementById(“tab-btn-termine”));
+    var t={
+      id:state.nextId++,
+      title:g.name,
+      date:"", ort:"",
+      creator:currentName,
+      offen:true, privat:false,
+      limitOn:false, limitVal:0,
+      voteOn:false, diceOn:false,
+      mitspielerGesucht:false,
+      personen:[currentName],
+      spiele:[Object.assign({id:"b"+Date.now(),votes:{}},g,{vorschlaeger:currentName})],
+      chat:[], qrcodes:[],
+      subscribers:(currentNotifEmail||window._hasPushSub)?[{name:currentName,email:currentNotifEmail||""}]:[],
+      ts:new Date().toISOString()
+    };
+    // Add other interested users
+    interested.forEach(function(u){
+      if(u!==currentName&&!t.personen.includes(u)){
+        t.personen.push(u);
+        autoSubscribeUser(t,u);
+        sendInviteNotification(t,u);
+      }
+    });
+    state.termine.unshift(t);
+    renderTermine();
+    toast("📅 Termin erstellt! "+interested.length+" Mitspieler eingeladen 🎉");
+    saveState();
+    if(!t.privat){
+      sendGlobalNotif("termine","Neuer Termin: "+t.title,"<div class='section'><h3>📅 "+h(t.title)+"</h3><p>Erstellt von <strong>"+h(currentName)+"</strong></p></div>");
+      sendPushNotifications("📅 Neuer Termin: "+t.title,h(currentName)+" möchte "+h(g.name)+" spielen","/");
+    }
+    showTab("termine",document.getElementById("tab-btn-termine"));
 }
 
 function filterCommunity(){
-var q=document.getElementById(“community-search”).value.toLowerCase().trim();
-var clearBtn=document.getElementById(“community-search-clear”);
-if(clearBtn) clearBtn.style.display=q?””:“none”;
-document.querySelectorAll(”.community-card”).forEach(function(card){
-if(!q){ card.style.display=””; return; }
-var user=card.dataset.user||””;
-var games=card.dataset.games||””;
-card.style.display=(user.includes(q)||games.includes(q))?””:“none”;
-});
-// Show empty state if all hidden
-var visible=document.querySelectorAll(”.community-card:not([style*=‘none’])”).length;
-var existing=document.getElementById(“community-search-empty”);
-if(!visible&&q){
-if(!existing){
-var el=document.createElement(“div”);
-el.id=“community-search-empty”;
-el.className=“empty”;
-el.style.padding=“30px 0”;
-el.innerHTML=”<div class='empty-icon'>🔍</div><p>Keine Treffer für "”+h(q)+”"</p>”;
-document.getElementById(“community-list”).appendChild(el);
-}
-} else if(existing){ existing.remove(); }
+  var q=document.getElementById("community-search").value.toLowerCase().trim();
+  var clearBtn=document.getElementById("community-search-clear");
+  if(clearBtn) clearBtn.style.display=q?"":"none";
+  document.querySelectorAll(".community-card").forEach(function(card){
+    if(!q){ card.style.display=""; return; }
+    var user=card.dataset.user||"";
+    var games=card.dataset.games||"";
+    card.style.display=(user.includes(q)||games.includes(q))?"":"none";
+  });
+  // Show empty state if all hidden
+  var visible=document.querySelectorAll(".community-card:not([style*='none'])").length;
+  var existing=document.getElementById("community-search-empty");
+  if(!visible&&q){
+    if(!existing){
+      var el=document.createElement("div");
+      el.id="community-search-empty";
+      el.className="empty";
+      el.style.padding="30px 0";
+      el.innerHTML="<div class='empty-icon'>🔍</div><p>Keine Treffer für \""+h(q)+"\"</p>";
+      document.getElementById("community-list").appendChild(el);
+    }
+  } else if(existing){ existing.remove(); }
 }
 
 function clearCommunitySearch(){
-var inp=document.getElementById(“community-search”);
-if(inp) inp.value=””;
-filterCommunity();
+  var inp=document.getElementById("community-search");
+  if(inp) inp.value="";
+  filterCommunity();
 }
 async function openHotlistModal(){
-await loadCommunityHotlists();
-renderHotlistSlots();
-closeHotlistSearch();
-document.getElementById(“hotlist-modal”).style.display=“flex”;
+  await loadCommunityHotlists();
+  renderHotlistSlots();
+  closeHotlistSearch();
+  document.getElementById("hotlist-modal").style.display="flex";
 }
 
 function closeHotlistModal(){
-document.getElementById(“hotlist-modal”).style.display=“none”;
-closeHotlistSearch();
+  document.getElementById("hotlist-modal").style.display="none";
+  closeHotlistSearch();
 }
 
 function renderHotlistSlots(){
-var el=document.getElementById(“hotlist-slots”); if(!el) return;
-el.innerHTML=myHotlist.map(function(g,i){
-if(g){
-var img=g.image?proxyImg(g.image):null;
-return “<div style='display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px'>”
-+”<div style='display:flex;flex-direction:column;gap:2px;flex-shrink:0'>”
-+”<button onclick=‘moveHotlistSlot(”+i+”,-1)’ “+(i===0?“disabled style=‘opacity:.25;cursor:default;”:“style=’”)+“background:none;border:none;cursor:pointer;color:var(–text-3);font-size:.75rem;padding:1px 4px;line-height:1’ title=‘Nach oben’>▲</button>”
-+”<button onclick=‘moveHotlistSlot(”+i+”,1)’ “+(i===myHotlist.filter(Boolean).length-1&&i===myHotlist.lastIndexOf(g)?“disabled style=‘opacity:.25;cursor:default;”:“style=’”)+“background:none;border:none;cursor:pointer;color:var(–text-3);font-size:.75rem;padding:1px 4px;line-height:1’ title=‘Nach unten’>▼</button>”
-+”</div>”
-+”<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:14px;flex-shrink:0;text-align:center'>”+(i+1)+”</div>”
-+(img?”<img src='"+img+"' style='width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>”:”<div style='width:40px;height:40px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>🎲</div>”)
-+”<div style='flex:1;min-width:0'><div style='font-weight:600;font-size:.88rem'>”+h(g.name)+”</div>”
-+(g.year?”<div style='font-size:.72rem;color:var(--text-3)'>”+g.year+”</div>”:””)
-+”</div>”
-+”<button onclick='removeHotlistSlot("+i+")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem;flex-shrink:0' title='Entfernen'>✕</button>”
-+”</div>”;
-} else {
-return “<div onclick=‘openHotlistSearch(”+i+”)’ style=‘display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(–bg);border:1.5px dashed var(–border);border-radius:var(–radius-sm);margin-bottom:8px;cursor:pointer;transition:border-color .15s’ onmouseover="this.style.borderColor=‘var(–blue)’" onmouseout="this.style.borderColor=‘var(–border)’">”
-+”<div style='width:22px;flex-shrink:0'></div>”
-+”<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:14px;flex-shrink:0;text-align:center'>”+(i+1)+”</div>”
-+”<div style='width:40px;height:40px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>＋</div>”
-+”<div style='font-size:.82rem;color:var(--text-3)'>Spiel hinzufügen …</div>”
-+”</div>”;
-}
-}).join(””);
+  var el=document.getElementById("hotlist-slots"); if(!el) return;
+  el.innerHTML=myHotlist.map(function(g,i){
+    if(g){
+      var img=g.image?proxyImg(g.image):null;
+      return "<div style='display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px'>"
+        +"<div style='display:flex;flex-direction:column;gap:2px;flex-shrink:0'>"
+        +"<button onclick='moveHotlistSlot("+i+",-1)' "+(i===0?"disabled style='opacity:.25;cursor:default;":"style='")+"background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.75rem;padding:1px 4px;line-height:1' title='Nach oben'>▲</button>"
+        +"<button onclick='moveHotlistSlot("+i+",1)' "+(i===myHotlist.filter(Boolean).length-1&&i===myHotlist.lastIndexOf(g)?"disabled style='opacity:.25;cursor:default;":"style='")+"background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.75rem;padding:1px 4px;line-height:1' title='Nach unten'>▼</button>"
+        +"</div>"
+        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:14px;flex-shrink:0;text-align:center'>"+(i+1)+"</div>"
+        +(img?"<img src='"+img+"' style='width:40px;height:40px;border-radius:6px;object-fit:cover;flex-shrink:0' onerror='this.style.display=\"none\"'>":"<div style='width:40px;height:40px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>🎲</div>")
+        +"<div style='flex:1;min-width:0'><div style='font-weight:600;font-size:.88rem'>"+h(g.name)+"</div>"
+        +(g.year?"<div style='font-size:.72rem;color:var(--text-3)'>"+g.year+"</div>":"")
+        +"</div>"
+        +"<button onclick='removeHotlistSlot("+i+")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem;flex-shrink:0' title='Entfernen'>✕</button>"
+        +"</div>";
+    } else {
+      return "<div onclick='openHotlistSearch("+i+")' style='display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;transition:border-color .15s' onmouseover=\"this.style.borderColor='var(--blue)'\" onmouseout=\"this.style.borderColor='var(--border)'\">"
+        +"<div style='width:22px;flex-shrink:0'></div>"
+        +"<div style='font-family:\"DM Mono\",monospace;font-size:.7rem;color:var(--text-3);font-weight:600;width:14px;flex-shrink:0;text-align:center'>"+(i+1)+"</div>"
+        +"<div style='width:40px;height:40px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0'>＋</div>"
+        +"<div style='font-size:.82rem;color:var(--text-3)'>Spiel hinzufügen …</div>"
+        +"</div>";
+    }
+  }).join("");
 }
 
 function moveHotlistSlot(i, dir){
-var j=i+dir;
-if(j<0||j>4) return;
-var tmp=myHotlist[i];
-myHotlist[i]=myHotlist[j];
-myHotlist[j]=tmp;
-renderHotlistSlots();
+  var j=i+dir;
+  if(j<0||j>4) return;
+  var tmp=myHotlist[i];
+  myHotlist[i]=myHotlist[j];
+  myHotlist[j]=tmp;
+  renderHotlistSlots();
 }
 
 function removeHotlistSlot(i){
-myHotlist[i]=null;
-renderHotlistSlots();
+  myHotlist[i]=null;
+  renderHotlistSlots();
 }
 
 function openHotlistSearch(slotIdx){
-hotlistEditSlot=slotIdx;
-document.getElementById(“hotlist-search-wrap”).style.display=“block”;
-document.getElementById(“hotlist-search-input”).value=””;
-document.getElementById(“hotlist-search-results”).innerHTML=””;
-setTimeout(function(){ document.getElementById(“hotlist-search-input”).focus(); },50);
+  hotlistEditSlot=slotIdx;
+  document.getElementById("hotlist-search-wrap").style.display="block";
+  document.getElementById("hotlist-search-input").value="";
+  document.getElementById("hotlist-search-results").innerHTML="";
+  setTimeout(function(){ document.getElementById("hotlist-search-input").focus(); },50);
 }
 
 function closeHotlistSearch(){
-document.getElementById(“hotlist-search-wrap”).style.display=“none”;
-hotlistEditSlot=-1;
+  document.getElementById("hotlist-search-wrap").style.display="none";
+  hotlistEditSlot=-1;
 }
 
 function setHotlistSearchTab(tab){
-document.getElementById(“hotlist-panel-search”).style.display=tab===“search”?“block”:“none”;
-document.getElementById(“hotlist-panel-link”).style.display=tab===“link”?“block”:“none”;
-var s=document.getElementById(“hotlist-tab-search”);
-var l=document.getElementById(“hotlist-tab-link”);
-s.style.background=tab===“search”?“var(–blue)”:“transparent”;
-s.style.color=tab===“search”?”#fff”:“var(–text-2)”;
-s.style.borderColor=tab===“search”?“var(–blue)”:“var(–border)”;
-l.style.background=tab===“link”?“var(–blue)”:“transparent”;
-l.style.color=tab===“link”?”#fff”:“var(–text-2)”;
-l.style.borderColor=tab===“link”?“var(–blue)”:“var(–border)”;
-if(tab===“link”) setTimeout(function(){ document.getElementById(“hotlist-link-input”).focus(); },50);
+  document.getElementById("hotlist-panel-search").style.display=tab==="search"?"block":"none";
+  document.getElementById("hotlist-panel-link").style.display=tab==="link"?"block":"none";
+  var s=document.getElementById("hotlist-tab-search");
+  var l=document.getElementById("hotlist-tab-link");
+  s.style.background=tab==="search"?"var(--blue)":"transparent";
+  s.style.color=tab==="search"?"#fff":"var(--text-2)";
+  s.style.borderColor=tab==="search"?"var(--blue)":"var(--border)";
+  l.style.background=tab==="link"?"var(--blue)":"transparent";
+  l.style.color=tab==="link"?"#fff":"var(--text-2)";
+  l.style.borderColor=tab==="link"?"var(--blue)":"var(--border)";
+  if(tab==="link") setTimeout(function(){ document.getElementById("hotlist-link-input").focus(); },50);
 }
 
 async function loadHotlistFromLink(){
-var url=document.getElementById(“hotlist-link-input”).value.trim();
-var status=document.getElementById(“hotlist-link-status”);
-var m=url.match(/boardgame(?:geek.com/boardgame)?/([0-9]+)/);
-if(!m){ status.style.color=“var(–red)”; status.textContent=“Ungültige BGG URL.”; return; }
-status.style.color=“var(–text-3)”; status.textContent=“Lade…”;
-try{
-var data=await loadBggGameDetails(m[1]);
-myHotlist[hotlistEditSlot]=data;
-closeHotlistSearch();
-renderHotlistSlots();
-}catch(e){ status.style.color=“var(–red)”; status.textContent=“Fehler: “+e.message; }
+  var url=document.getElementById("hotlist-link-input").value.trim();
+  var status=document.getElementById("hotlist-link-status");
+  var m=url.match(/boardgame(?:geek\.com\/boardgame)?\/([0-9]+)/);
+  if(!m){ status.style.color="var(--red)"; status.textContent="Ungültige BGG URL."; return; }
+  status.style.color="var(--text-3)"; status.textContent="Lade…";
+  try{
+    var data=await loadBggGameDetails(m[1]);
+    myHotlist[hotlistEditSlot]=data;
+    closeHotlistSearch();
+    renderHotlistSlots();
+  }catch(e){ status.style.color="var(--red)"; status.textContent="Fehler: "+e.message; }
 }
 
 function onHotlistSearch(){
-clearTimeout(hotlistSearchDebounce);
-var q=document.getElementById(“hotlist-search-input”).value.trim();
-if(!q){ document.getElementById(“hotlist-search-results”).innerHTML=””; return; }
-hotlistSearchDebounce=setTimeout(function(){ doHotlistSearch(q); },350);
+  clearTimeout(hotlistSearchDebounce);
+  var q=document.getElementById("hotlist-search-input").value.trim();
+  if(!q){ document.getElementById("hotlist-search-results").innerHTML=""; return; }
+  hotlistSearchDebounce=setTimeout(function(){ doHotlistSearch(q); },350);
 }
 
 async function doHotlistSearch(q){
-var el=document.getElementById(“hotlist-search-results”);
-el.innerHTML=”<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Suche…</div>”;
-try{
-var r=await fetch(SB_URL+”/functions/v1/bgg-proxy?action=search&q=”+encodeURIComponent(q),{headers:authHdrs()});
-var xml=await r.text();
-var doc=new DOMParser().parseFromString(xml,“text/xml”);
-var items=Array.from(doc.querySelectorAll(“item”)).slice(0,8);
-if(!items.length){ el.innerHTML=”<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Keine Ergebnisse.</div>”; return; }
-el.innerHTML=items.map(function(item,i){
-var id=item.getAttribute(“id”);
-var nameEl=item.querySelector(“name[type=‘primary’]”)||item.querySelector(“name”);
-var name=nameEl?nameEl.getAttribute(“value”):“Unbekannt”;
-var yearEl=item.querySelector(“yearpublished”);
-var year=yearEl?yearEl.getAttribute(“value”):””;
-return “<div onclick=‘selectHotlistGame("”+id+”","”+h(name).replace(/”/g,”"”)+”","”+year+”")’ style=‘display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .1s’ onmouseover="this.style.background=‘var(–surface2)’" onmouseout="this.style.background=’’">”
-+”<div style='width:32px;height:32px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0'>🎲</div>”
-+”<div><div style='font-weight:600;font-size:.82rem'>”+h(name)+”</div>”
-+(year?”<div style='font-size:.7rem;color:var(--text-3)'>”+year+”</div>”:””)
-+”</div></div>”;
-}).join(””);
-}catch(e){ el.innerHTML=”<div style='font-size:.78rem;color:var(--red);padding:6px'>Fehler bei der Suche.</div>”; }
+  var el=document.getElementById("hotlist-search-results");
+  el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Suche…</div>";
+  try{
+    var r=await fetch(SB_URL+"/functions/v1/bgg-proxy?action=search&q="+encodeURIComponent(q),{headers:authHdrs()});
+    var xml=await r.text();
+    var doc=new DOMParser().parseFromString(xml,"text/xml");
+    var items=Array.from(doc.querySelectorAll("item")).slice(0,8);
+    if(!items.length){ el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Keine Ergebnisse.</div>"; return; }
+    el.innerHTML=items.map(function(item,i){
+      var id=item.getAttribute("id");
+      var nameEl=item.querySelector("name[type='primary']")||item.querySelector("name");
+      var name=nameEl?nameEl.getAttribute("value"):"Unbekannt";
+      var yearEl=item.querySelector("yearpublished");
+      var year=yearEl?yearEl.getAttribute("value"):"";
+      return "<div onclick='selectHotlistGame(\""+id+"\",\""+h(name).replace(/"/g,"&quot;")+"\",\""+year+"\")' style='display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background .1s' onmouseover=\"this.style.background='var(--surface2)'\" onmouseout=\"this.style.background=''\">"
+        +"<div style='width:32px;height:32px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0'>🎲</div>"
+        +"<div><div style='font-weight:600;font-size:.82rem'>"+h(name)+"</div>"
+        +(year?"<div style='font-size:.7rem;color:var(--text-3)'>"+year+"</div>":"")
+        +"</div></div>";
+    }).join("");
+  }catch(e){ el.innerHTML="<div style='font-size:.78rem;color:var(--red);padding:6px'>Fehler bei der Suche.</div>"; }
 }
 
 async function selectHotlistGame(bggId, name, year){
-var el=document.getElementById(“hotlist-search-results”);
-el.innerHTML=”<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Lade Details…</div>”;
-try{
-var data=await loadBggGameDetails(bggId);
-myHotlist[hotlistEditSlot]=data;
-}catch(e){
-myHotlist[hotlistEditSlot]={id:“h”+Date.now(),name:name,year:year,bggId:bggId,bggUrl:“https://boardgamegeek.com/boardgame/”+bggId};
-}
-closeHotlistSearch();
-renderHotlistSlots();
+  var el=document.getElementById("hotlist-search-results");
+  el.innerHTML="<div style='font-size:.78rem;color:var(--text-3);padding:6px'>Lade Details…</div>";
+  try{
+    var data=await loadBggGameDetails(bggId);
+    myHotlist[hotlistEditSlot]=data;
+  }catch(e){
+    myHotlist[hotlistEditSlot]={id:"h"+Date.now(),name:name,year:year,bggId:bggId,bggUrl:"https://boardgamegeek.com/boardgame/"+bggId};
+  }
+  closeHotlistSearch();
+  renderHotlistSlots();
 }
 
 async function saveHotlist(){
-await saveCommunityHotlists();
-closeHotlistModal();
-toast(“🔥 Hotlist gespeichert!”);
-if(document.getElementById(“tab-community”).classList.contains(“active”)) renderCommunity();
+  await saveCommunityHotlists();
+  closeHotlistModal();
+  toast("🔥 Hotlist gespeichert!");
+  if(document.getElementById("tab-community").classList.contains("active")) renderCommunity();
 }
 
 // ── BG Stats Tab ──
@@ -5895,218 +5862,218 @@ var bgstatsData = []; // [{id, title, url, author, recipients, ts, scannedBy:[]}
 var bgstatsSelectedRecipients = {};
 
 async function loadBgstats(){
-try{
-var r=await fetch(SB_URL+”/rest/v1/app_config?key=eq.bgstats&select=value”,{headers:authHdrs()});
-if(r.ok){ var rows=await r.json(); if(rows.length) bgstatsData=JSON.parse(rows[0].value||”[]”); }
-}catch(e){ bgstatsData=[]; }
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/app_config?key=eq.bgstats&select=value",{headers:authHdrs()});
+    if(r.ok){ var rows=await r.json(); if(rows.length) bgstatsData=JSON.parse(rows[0].value||"[]"); }
+  }catch(e){ bgstatsData=[]; }
 }
 async function saveBgstats(){
-await fetch(SB_URL+”/rest/v1/app_config”,{method:“POST”,headers:Object.assign(authHdrs(),{“Prefer”:“resolution=merge-duplicates”}),body:JSON.stringify({key:“bgstats”,value:JSON.stringify(bgstatsData)})});
+  await fetch(SB_URL+"/rest/v1/app_config",{method:"POST",headers:Object.assign(authHdrs(),{"Prefer":"resolution=merge-duplicates"}),body:JSON.stringify({key:"bgstats",value:JSON.stringify(bgstatsData)})});
 }
 
 async function renderBgstats(){
-await loadBgstats();
-// Meine geteilten
-var myShared=bgstatsData.filter(function(q){ return q.author===currentName; });
-var sharedList=document.getElementById(“bgstats-shared-list”);
-if(sharedList){
-if(!myShared.length){
-sharedList.innerHTML=”<div class='empty' style='padding:20px 0'><div class='empty-icon'>📊</div><p>Noch keine QR Codes geteilt.</p></div>”;
-} else {
-sharedList.innerHTML=myShared.map(function(q){
-var recips=(q.recipients||[]).join(”, “)||“Alle”;
-var scanned=(q.scannedBy||[]).length;
-var qrSrc=“https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=”+encodeURIComponent(q.url);
-return “<div style='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px'>”
-+”<img src='"+qrSrc+"' style='width:64px;height:64px;border-radius:6px;flex-shrink:0;background:#fff;border:1px solid var(--border)'>”
-+”<div style='flex:1;min-width:0'>”
-+”<div style='font-weight:700;font-size:.88rem;margin-bottom:2px'>”+h(q.title)+”</div>”
-+”<div style='font-size:.72rem;color:var(--text-3);margin-bottom:2px'>👥 “+h(recips)+”</div>”
-+”<div style='font-size:.72rem;color:var(--text-3)'>✅ “+scanned+” von “+(q.recipients||[]).length+” gescannt · “+new Date(q.ts).toLocaleDateString(“de-DE”)+”</div>”
-+”<a href='"+h(q.url)+"' target='_blank' style='font-size:.7rem;color:var(--blue);text-decoration:none'>”+h(q.url.slice(0,50))+(q.url.length>50?”…”:””)+”</a>”
-+”</div>”
-+”<button onclick='deleteBgstatsQr(\""+q.id+"\")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem;flex-shrink:0' title='Löschen'>🗑</button>”
-+”</div>”;
-}).join(””);
-}
-}
-// Für mich freigegeben (nicht von mir, ich bin in recipients)
-var myReceived=bgstatsData.filter(function(q){
-return q.author!==currentName&&(q.recipients||[]).includes(currentName)&&!(q.scannedBy||[]).includes(currentName);
-});
-var receivedList=document.getElementById(“bgstats-received-list”);
-if(receivedList){
-if(!myReceived.length){
-receivedList.innerHTML=”<div class='empty' style='padding:20px 0'><div class='empty-icon'>📭</div><p>Keine QR Codes für dich.</p></div>”;
-} else {
-window._bgstatsQrUrls=[];
-window._bgstatsQrTitles=[];
-receivedList.innerHTML=myReceived.map(function(q,idx){
-var qrSmall=“https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=”+encodeURIComponent(q.url);
-var qrLarge=“https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=”+encodeURIComponent(q.url);
-window._bgstatsQrUrls[idx]=qrLarge;
-window._bgstatsQrTitles[idx]=q.title;
-return “<div style='background:var(--surface);border:1.5px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px'>”
-+”<div style='display:flex;align-items:center;gap:14px;margin-bottom:12px'>”
-+”<img src='"+qrSmall+"' data-qridx='"+idx+"' class='bgstats-qr-img' style='width:80px;height:80px;border-radius:8px;flex-shrink:0;background:#fff;border:1px solid var(--border);cursor:zoom-in'>”
-+”<div style='flex:1;min-width:0'>”
-+”<div style='font-weight:700;font-size:.92rem;margin-bottom:3px'>”+h(q.title)+”</div>”
-+”<div style='font-size:.75rem;color:var(--text-3);margin-bottom:6px'>von <strong>”+h(q.author)+”</strong> · “+new Date(q.ts).toLocaleDateString(“de-DE”)+”</div>”
-+”<a href='"+h(q.url)+"' target='_blank' style='font-size:.72rem;color:var(--blue);text-decoration:none;word-break:break-all'>”+h(q.url)+”</a>”
-+”</div></div>”
-+”<div style='display:flex;gap:8px'>”
-+”<button data-qrid='"+q.id+"' class='bgstats-scan-btn' style='width:100%;background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd);border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>✓ Gescannt</button>”
-+”</div>”
-+”</div>”;
-}).join(””);
-// Attach events directly after render
-receivedList.querySelectorAll(”.bgstats-qr-img”).forEach(function(el){
-el.addEventListener(“click”,function(){
-var idx=parseInt(this.dataset.qridx);
-var url=window._bgstatsQrUrls[idx];
-var title=window._bgstatsQrTitles[idx]||””;
-document.getElementById(“bgstats-qr-large”).src=url;
-document.getElementById(“bgstats-qr-overlay-title”).textContent=title;
-document.getElementById(“bgstats-qr-overlay”).style.display=“flex”;
-});
-});
-receivedList.querySelectorAll(”.bgstats-scan-btn”).forEach(function(el){
-el.addEventListener(“click”,function(){ markBgstatsScanned(this.dataset.qrid); });
-});
-}
-}
+  await loadBgstats();
+  // Meine geteilten
+  var myShared=bgstatsData.filter(function(q){ return q.author===currentName; });
+  var sharedList=document.getElementById("bgstats-shared-list");
+  if(sharedList){
+    if(!myShared.length){
+      sharedList.innerHTML="<div class='empty' style='padding:20px 0'><div class='empty-icon'>📊</div><p>Noch keine QR Codes geteilt.</p></div>";
+    } else {
+      sharedList.innerHTML=myShared.map(function(q){
+        var recips=(q.recipients||[]).join(", ")||"Alle";
+        var scanned=(q.scannedBy||[]).length;
+        var qrSrc="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data="+encodeURIComponent(q.url);
+        return "<div style='background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px'>"
+          +"<img src='"+qrSrc+"' style='width:64px;height:64px;border-radius:6px;flex-shrink:0;background:#fff;border:1px solid var(--border)'>"
+          +"<div style='flex:1;min-width:0'>"
+          +"<div style='font-weight:700;font-size:.88rem;margin-bottom:2px'>"+h(q.title)+"</div>"
+          +"<div style='font-size:.72rem;color:var(--text-3);margin-bottom:2px'>👥 "+h(recips)+"</div>"
+          +"<div style='font-size:.72rem;color:var(--text-3)'>✅ "+scanned+" von "+(q.recipients||[]).length+" gescannt &middot; "+new Date(q.ts).toLocaleDateString("de-DE")+"</div>"
+          +"<a href='"+h(q.url)+"' target='_blank' style='font-size:.7rem;color:var(--blue);text-decoration:none'>"+h(q.url.slice(0,50))+(q.url.length>50?"…":"")+"</a>"
+          +"</div>"
+          +"<button onclick='deleteBgstatsQr(\""+q.id+"\")' style='background:none;border:none;cursor:pointer;color:var(--text-3);font-size:.9rem;flex-shrink:0' title='Löschen'>🗑</button>"
+          +"</div>";
+      }).join("");
+    }
+  }
+  // Für mich freigegeben (nicht von mir, ich bin in recipients)
+  var myReceived=bgstatsData.filter(function(q){
+    return q.author!==currentName&&(q.recipients||[]).includes(currentName)&&!(q.scannedBy||[]).includes(currentName);
+  });
+  var receivedList=document.getElementById("bgstats-received-list");
+  if(receivedList){
+    if(!myReceived.length){
+      receivedList.innerHTML="<div class='empty' style='padding:20px 0'><div class='empty-icon'>📭</div><p>Keine QR Codes für dich.</p></div>";
+    } else {
+      window._bgstatsQrUrls=[];
+      window._bgstatsQrTitles=[];
+      receivedList.innerHTML=myReceived.map(function(q,idx){
+        var qrSmall="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data="+encodeURIComponent(q.url);
+        var qrLarge="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data="+encodeURIComponent(q.url);
+        window._bgstatsQrUrls[idx]=qrLarge;
+        window._bgstatsQrTitles[idx]=q.title;
+        return "<div style='background:var(--surface);border:1.5px solid var(--blue);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px'>"
+          +"<div style='display:flex;align-items:center;gap:14px;margin-bottom:12px'>"
+          +"<img src='"+qrSmall+"' data-qridx='"+idx+"' class='bgstats-qr-img' style='width:80px;height:80px;border-radius:8px;flex-shrink:0;background:#fff;border:1px solid var(--border);cursor:zoom-in'>"
+          +"<div style='flex:1;min-width:0'>"
+          +"<div style='font-weight:700;font-size:.92rem;margin-bottom:3px'>"+h(q.title)+"</div>"
+          +"<div style='font-size:.75rem;color:var(--text-3);margin-bottom:6px'>von <strong>"+h(q.author)+"</strong> &middot; "+new Date(q.ts).toLocaleDateString("de-DE")+"</div>"
+          +"<a href='"+h(q.url)+"' target='_blank' style='font-size:.72rem;color:var(--blue);text-decoration:none;word-break:break-all'>"+h(q.url)+"</a>"
+          +"</div></div>"
+          +"<div style='display:flex;gap:8px'>"
+          +"<button data-qrid='"+q.id+"' class='bgstats-scan-btn' style='width:100%;background:var(--green-lt);color:var(--green);border:1px solid var(--green-bd);border-radius:8px;padding:8px;font-family:\"Outfit\",sans-serif;font-size:.82rem;font-weight:600;cursor:pointer'>✓ Gescannt</button>"
+          +"</div>"
+          +"</div>";
+      }).join("");
+      // Attach events directly after render
+      receivedList.querySelectorAll(".bgstats-qr-img").forEach(function(el){
+        el.addEventListener("click",function(){
+          var idx=parseInt(this.dataset.qridx);
+          var url=window._bgstatsQrUrls[idx];
+          var title=window._bgstatsQrTitles[idx]||"";
+          document.getElementById("bgstats-qr-large").src=url;
+          document.getElementById("bgstats-qr-overlay-title").textContent=title;
+          document.getElementById("bgstats-qr-overlay").style.display="flex";
+        });
+      });
+      receivedList.querySelectorAll(".bgstats-scan-btn").forEach(function(el){
+        el.addEventListener("click",function(){ markBgstatsScanned(this.dataset.qrid); });
+      });
+    }
+  }
 }
 
 async function openBgstatsCreateModal(){
-document.getElementById(“bgstats-title”).value=””;
-document.getElementById(“bgstats-url”).value=””;
-document.getElementById(“bgstats-preview-wrap”).style.display=“none”;
-document.getElementById(“bgstats-error”).style.display=“none”;
-bgstatsSelectedRecipients={};
-// Load users for recipient selection
-var recipsEl=document.getElementById(“bgstats-recipients”);
-recipsEl.innerHTML=”<span style='font-size:.78rem;color:var(--text-3)'>Lade…</span>”;
-document.getElementById(“bgstats-modal”).style.display=“flex”;
-setTimeout(function(){ document.getElementById(“bgstats-title”).focus(); },50);
-try{
-var r=await fetch(SB_URL+”/rest/v1/user_meta?select=user_name,display_name&order=user_name&last_login=not.is.null”,{headers:authHdrs()});
-var rows=r.ok?await r.json():[];
-var users=rows.map(function(row){ return (row.display_name&&row.display_name.trim())||row.user_name; })
-.filter(function(u){ return u&&u!==currentName; });
-recipsEl.innerHTML=users.map(function(u){
-return “<label style='display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:.8rem;background:var(--surface);transition:all .15s'>”
-+”<input type='checkbox' style='accent-color:var(--blue)' onchange='bgstatsSelectedRecipients[\""+h(u)+"\"]=(this.checked)' value='"+h(u)+"'>”
-+avHtml(u,“av-sm”)+h(u)+”</label>”;
-}).join(””);
-}catch(e){ recipsEl.innerHTML=”<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>”; }
+  document.getElementById("bgstats-title").value="";
+  document.getElementById("bgstats-url").value="";
+  document.getElementById("bgstats-preview-wrap").style.display="none";
+  document.getElementById("bgstats-error").style.display="none";
+  bgstatsSelectedRecipients={};
+  // Load users for recipient selection
+  var recipsEl=document.getElementById("bgstats-recipients");
+  recipsEl.innerHTML="<span style='font-size:.78rem;color:var(--text-3)'>Lade…</span>";
+  document.getElementById("bgstats-modal").style.display="flex";
+  setTimeout(function(){ document.getElementById("bgstats-title").focus(); },50);
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,display_name&order=user_name&last_login=not.is.null",{headers:authHdrs()});
+    var rows=r.ok?await r.json():[];
+    var users=rows.map(function(row){ return (row.display_name&&row.display_name.trim())||row.user_name; })
+                  .filter(function(u){ return u&&u!==currentName; });
+    recipsEl.innerHTML=users.map(function(u){
+      return "<label style='display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:.8rem;background:var(--surface);transition:all .15s'>"
+        +"<input type='checkbox' style='accent-color:var(--blue)' onchange='bgstatsSelectedRecipients[\""+h(u)+"\"]=(this.checked)' value='"+h(u)+"'>"
+        +avHtml(u,"av-sm")+h(u)+"</label>";
+    }).join("");
+  }catch(e){ recipsEl.innerHTML="<span style='font-size:.78rem;color:var(--red)'>Fehler beim Laden.</span>"; }
 }
 
-function closeBgstatsModal(){ document.getElementById(“bgstats-modal”).style.display=“none”; }
+function closeBgstatsModal(){ document.getElementById("bgstats-modal").style.display="none"; }
 
 function updateBgstatsPreview(){
-var url=document.getElementById(“bgstats-url”).value.trim();
-var wrap=document.getElementById(“bgstats-preview-wrap”);
-if(!url||url.indexOf(“http”)!==0){ wrap.style.display=“none”; return; }
-document.getElementById(“bgstats-preview-img”).src=“https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=”+encodeURIComponent(url);
-wrap.style.display=“block”;
+  var url=document.getElementById("bgstats-url").value.trim();
+  var wrap=document.getElementById("bgstats-preview-wrap");
+  if(!url||url.indexOf("http")!==0){ wrap.style.display="none"; return; }
+  document.getElementById("bgstats-preview-img").src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data="+encodeURIComponent(url);
+  wrap.style.display="block";
 }
 
 async function saveBgstatsQr(){
-var title=document.getElementById(“bgstats-title”).value.trim();
-var url=document.getElementById(“bgstats-url”).value.trim();
-var errEl=document.getElementById(“bgstats-error”); errEl.style.display=“none”;
-if(!title){ errEl.textContent=“Bitte Titel eingeben.”; errEl.style.display=“block”; return; }
-if(!url||url.indexOf(“http”)!==0){ errEl.textContent=“Bitte gültige URL eingeben.”; errEl.style.display=“block”; return; }
-var recipients=Object.keys(bgstatsSelectedRecipients).filter(function(k){ return bgstatsSelectedRecipients[k]; });
-if(!recipients.length){ errEl.textContent=“Bitte mindestens einen Empfänger auswählen.”; errEl.style.display=“block”; return; }
-bgstatsData.unshift({id:“bg”+Date.now(),title:title,url:url,author:currentName,recipients:recipients,scannedBy:[],ts:new Date().toISOString()});
-await saveBgstats();
-closeBgstatsModal();
-renderBgstats();
-toast(“📊 QR Code geteilt!”);
-// Notify recipients
-sendBgstatsNotification(title, recipients);
+  var title=document.getElementById("bgstats-title").value.trim();
+  var url=document.getElementById("bgstats-url").value.trim();
+  var errEl=document.getElementById("bgstats-error"); errEl.style.display="none";
+  if(!title){ errEl.textContent="Bitte Titel eingeben."; errEl.style.display="block"; return; }
+  if(!url||url.indexOf("http")!==0){ errEl.textContent="Bitte gültige URL eingeben."; errEl.style.display="block"; return; }
+  var recipients=Object.keys(bgstatsSelectedRecipients).filter(function(k){ return bgstatsSelectedRecipients[k]; });
+  if(!recipients.length){ errEl.textContent="Bitte mindestens einen Empfänger auswählen."; errEl.style.display="block"; return; }
+  bgstatsData.unshift({id:"bg"+Date.now(),title:title,url:url,author:currentName,recipients:recipients,scannedBy:[],ts:new Date().toISOString()});
+  await saveBgstats();
+  closeBgstatsModal();
+  renderBgstats();
+  toast("📊 QR Code geteilt!");
+  // Notify recipients
+  sendBgstatsNotification(title, recipients);
 }
 
 async function sendBgstatsNotification(title, recipients){
-try{
-var r=await fetch(SB_URL+”/rest/v1/user_meta?select=user_name,notif_email,notif_all_bgstats,push_subscription”,{headers:authHdrs()});
-if(!r.ok) return;
-var rows=await r.json();
-var emails=[];
-var pushSubs=[];
-rows.forEach(function(row){
-if(!recipients.includes(row.user_name)) return;
-if(row.notif_all_bgstats&&row.notif_email) emails.push(row.notif_email);
-if(row.push_subscription){ try{ pushSubs.push(JSON.parse(row.push_subscription)); }catch(e){} }
-});
-if(emails.length){
-var bodyHtml=”<div class='section'><h3>📊 “+h(title)+”</h3><p><strong>”+h(currentName)+”</strong> hat einen BG Stats QR Code mit dir geteilt.</p></div>”;
-await sendMail(emails,“📊 BG Stats geteilt: “+title,buildNotifEmail(“BG Stats: “+title,bodyHtml));
-}
-if(pushSubs.length){
-await fetch(SB_URL+”/functions/v1/send-push”,{method:“POST”,headers:{“Content-Type”:“application/json”,“apikey”:SB_ANON,“Authorization”:“Bearer “+SB_ANON},body:JSON.stringify({subscriptions:pushSubs,title:“📊 BG Stats geteilt”,body:h(currentName)+” hat "”+title+”" mit dir geteilt”,url:”/”})});
-}
-}catch(e){}
+  try{
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,notif_email,notif_all_bgstats,push_subscription",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    var emails=[];
+    var pushSubs=[];
+    rows.forEach(function(row){
+      if(!recipients.includes(row.user_name)) return;
+      if(row.notif_all_bgstats&&row.notif_email) emails.push(row.notif_email);
+      if(row.push_subscription){ try{ pushSubs.push(JSON.parse(row.push_subscription)); }catch(e){} }
+    });
+    if(emails.length){
+      var bodyHtml="<div class='section'><h3>📊 "+h(title)+"</h3><p><strong>"+h(currentName)+"</strong> hat einen BG Stats QR Code mit dir geteilt.</p></div>";
+      await sendMail(emails,"📊 BG Stats geteilt: "+title,buildNotifEmail("BG Stats: "+title,bodyHtml));
+    }
+    if(pushSubs.length){
+      await fetch(SB_URL+"/functions/v1/send-push",{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+SB_ANON},body:JSON.stringify({subscriptions:pushSubs,title:"📊 BG Stats geteilt",body:h(currentName)+" hat \""+title+"\" mit dir geteilt",url:"/"})});
+    }
+  }catch(e){}
 }
 
 async function markBgstatsScanned(id){
-var q=bgstatsData.find(function(x){ return x.id===id; }); if(!q) return;
-if(!q.scannedBy) q.scannedBy=[];
-if(!q.scannedBy.includes(currentName)) q.scannedBy.push(currentName);
-await saveBgstats();
-renderBgstats();
-toast(“✅ Als gescannt markiert!”);
+  var q=bgstatsData.find(function(x){ return x.id===id; }); if(!q) return;
+  if(!q.scannedBy) q.scannedBy=[];
+  if(!q.scannedBy.includes(currentName)) q.scannedBy.push(currentName);
+  await saveBgstats();
+  renderBgstats();
+  toast("✅ Als gescannt markiert!");
 }
 
 async function deleteBgstatsQr(id){
-showConfirm(“QR Code löschen?”,“Dieser QR Code wird für alle Empfänger entfernt.”,async function(){
-bgstatsData=bgstatsData.filter(function(x){ return x.id!==id; });
-await saveBgstats();
-renderBgstats();
-toast(“Gelöscht.”);
-});
+  showConfirm("QR Code löschen?","Dieser QR Code wird für alle Empfänger entfernt.",async function(){
+    bgstatsData=bgstatsData.filter(function(x){ return x.id!==id; });
+    await saveBgstats();
+    renderBgstats();
+    toast("Gelöscht.");
+  });
 }
 
 // ── QR Codes (legacy Termine) ──
 function openQrModal(tid){
-qrTid=tid;
-document.getElementById(“qr-label”).value=””;
-document.getElementById(“qr-url”).value=””;
-document.getElementById(“qr-preview-wrap”).style.display=“none”;
-document.getElementById(“qr-error”).style.display=“none”;
-document.getElementById(“qr-modal”).style.display=“flex”;
-setTimeout(function(){ document.getElementById(“qr-url”).focus(); },50);
+  qrTid=tid;
+  document.getElementById("qr-label").value="";
+  document.getElementById("qr-url").value="";
+  document.getElementById("qr-preview-wrap").style.display="none";
+  document.getElementById("qr-error").style.display="none";
+  document.getElementById("qr-modal").style.display="flex";
+  setTimeout(function(){ document.getElementById("qr-url").focus(); },50);
 }
-function closeQrModal(){ document.getElementById(“qr-modal”).style.display=“none”; qrTid=null; }
+function closeQrModal(){ document.getElementById("qr-modal").style.display="none"; qrTid=null; }
 function updateQrPreview(){
-var url=document.getElementById(“qr-url”).value.trim();
-var wrap=document.getElementById(“qr-preview-wrap”);
-if(!url||url.indexOf(“http”)!==0){ wrap.style.display=“none”; return; }
-document.getElementById(“qr-preview-img”).src=“https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=”+encodeURIComponent(url);
-wrap.style.display=“block”;
+  var url=document.getElementById("qr-url").value.trim();
+  var wrap=document.getElementById("qr-preview-wrap");
+  if(!url||url.indexOf("http")!==0){ wrap.style.display="none"; return; }
+  document.getElementById("qr-preview-img").src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data="+encodeURIComponent(url);
+  wrap.style.display="block";
 }
 async function saveQr(){
-var url=document.getElementById(“qr-url”).value.trim();
-var label=document.getElementById(“qr-label”).value.trim();
-var errEl=document.getElementById(“qr-error”); errEl.style.display=“none”;
-if(!url||url.indexOf(“http”)!==0){ errEl.textContent=“G\u00fcltige URL eingeben.”; errEl.style.display=“block”; return; }
-var t=getT(qrTid); if(!t) return;
-if(!t.qrcodes) t.qrcodes=[];
-t.qrcodes.push({url:url,label:label||“BG Stats Link”,author:currentName,ts:new Date().toISOString()});
-closeQrModal();
-// Update QR list directly in DOM without full card rerender
-var qrListEl=document.getElementById(“qr-list-”+qrTid);
-if(qrListEl) qrListEl.innerHTML=buildQrList(t);
-toast(“QR Code hinzugef\u00fcgt \u2713”);
-saveState();
+  var url=document.getElementById("qr-url").value.trim();
+  var label=document.getElementById("qr-label").value.trim();
+  var errEl=document.getElementById("qr-error"); errEl.style.display="none";
+  if(!url||url.indexOf("http")!==0){ errEl.textContent="G\u00fcltige URL eingeben."; errEl.style.display="block"; return; }
+  var t=getT(qrTid); if(!t) return;
+  if(!t.qrcodes) t.qrcodes=[];
+  t.qrcodes.push({url:url,label:label||"BG Stats Link",author:currentName,ts:new Date().toISOString()});
+  closeQrModal();
+  // Update QR list directly in DOM without full card rerender
+  var qrListEl=document.getElementById("qr-list-"+qrTid);
+  if(qrListEl) qrListEl.innerHTML=buildQrList(t);
+  toast("QR Code hinzugef\u00fcgt \u2713");
+  saveState();
 }
 async function removeQr(tid,idx){
-var t=getT(tid); if(!t||!t.qrcodes) return;
-t.qrcodes.splice(idx,1);
-var qrListEl=document.getElementById(“qr-list-”+tid);
-if(qrListEl) qrListEl.innerHTML=buildQrList(t);
-toast(“QR Code entfernt.”); saveState();
+  var t=getT(tid); if(!t||!t.qrcodes) return;
+  t.qrcodes.splice(idx,1);
+  var qrListEl=document.getElementById("qr-list-"+tid);
+  if(qrListEl) qrListEl.innerHTML=buildQrList(t);
+  toast("QR Code entfernt."); saveState();
 }
 
 </script>
