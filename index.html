@@ -2976,7 +2976,7 @@ function buildTerminCard(t, open){
           +"<div style='font-size:.75rem;font-weight:600;color:var(--text-2);margin-bottom:8px'>📅 Termine zur Abstimmung hinzufügen</div>"
           +"<div style='display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px'>"
           +"<div style='flex:1;min-width:130px'><label style='display:block;font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:4px'>Datum</label><input class='input-field' id='dpoll-date-"+t.id+"' type='date' style='width:100%;font-size:.82rem' oninput='previewSlotAvail("+t.id+",buildDpollValue("+t.id+"),"+JSON.stringify(t.personen)+")'></div>"
-          +"<div style='width:130px'><label style='display:block;font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:4px'>Uhrzeit <span style='font-weight:400;text-transform:none;letter-spacing:0'>(optional)</span></label><input class='input-field' id='dpoll-time-"+t.id+"' type='time' style='width:100%;font-size:.82rem'></div>"
+          +"<div style='display:flex;flex-direction:column;justify-content:flex-end;gap:4px'><label style='display:flex;align-items:center;gap:5px;cursor:pointer;font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;white-space:nowrap'><input type='checkbox' id='dpoll-time-on-"+t.id+"' style='accent-color:var(--blue)' onchange='var f=document.getElementById(\"dpoll-time-"+t.id+"\");f.style.display=this.checked?\"block\":\"none\";if(!this.checked)f.value=\"\";'> Uhrzeit</label><input class='input-field' id='dpoll-time-"+t.id+"' type='time' style='width:110px;font-size:.82rem;display:none'></div>"
           +"<button class='btn btn-outline btn-sm' onclick='queueDateSlot("+t.id+")' style='flex-shrink:0;margin-bottom:1px'>+ Zur Liste</button>"
           +"</div>"
           +"<div id='dpoll-avail-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px'></div>"
@@ -2999,7 +2999,7 @@ function buildTerminCard(t, open){
         +"<div style='background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px'>"
         +"<div style='display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;margin-bottom:6px'>"
         +"<div style='flex:1;min-width:130px'><label style='display:block;font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:4px'>Datum</label><input class='input-field' id='dpoll-date-"+t.id+"' type='date' style='width:100%;font-size:.82rem' oninput='previewSlotAvail("+t.id+",buildDpollValue("+t.id+"),"+JSON.stringify(t.personen)+")'></div>"
-        +"<div style='width:130px'><label style='display:block;font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin-bottom:4px'>Uhrzeit <span style='font-weight:400;text-transform:none;letter-spacing:0'>(optional)</span></label><input class='input-field' id='dpoll-time-"+t.id+"' type='time' style='width:100%;font-size:.82rem'></div>"
+        +"<div style='display:flex;flex-direction:column;justify-content:flex-end;gap:4px'><label style='display:flex;align-items:center;gap:5px;cursor:pointer;font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:600;white-space:nowrap'><input type='checkbox' id='dpoll-time-on-"+t.id+"' style='accent-color:var(--blue)' onchange='var f=document.getElementById(\"dpoll-time-"+t.id+"\");f.style.display=this.checked?\"block\":\"none\";if(!this.checked)f.value=\"\";'> Uhrzeit</label><input class='input-field' id='dpoll-time-"+t.id+"' type='time' style='width:110px;font-size:.82rem;display:none'></div>"
         +"<button class='btn btn-outline btn-sm' onclick='queueDateSlot("+t.id+")' style='flex-shrink:0;margin-bottom:1px'>+ Zur Liste</button>"
         +"</div>"
         +"<div id='dpoll-avail-"+t.id+"' style='display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px'></div>"
@@ -3576,6 +3576,7 @@ function startDatePoll(tid){
   t.datePoll.active=true;
   if(!t.datePoll.slots) t.datePoll.slots=[];
   rerenderCard(tid); saveState(); toast("Terminabstimmung gestartet 📅");
+  if(!t.privat) sendDatePollStartNotif(t);
 }
 function closeDatePoll(tid){
   var t=getT(tid); if(!t||!t.datePoll) return;
@@ -5451,6 +5452,25 @@ async function toggleTerminSubscribe(tid){
 // ── Notification Email Sending ──
 function buildNotifEmail(subject, bodyHtml){
   return "<!DOCTYPE html><html><head><meta charset='UTF-8'><style>body{font-family:sans-serif;background:#f4f6fb;margin:0;padding:0}.wrap{max-width:580px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1)}.header{background:linear-gradient(135deg,#3b6ef5,#6a9af8);padding:24px;text-align:center;color:#fff}.header h1{margin:0;font-size:1.4rem}.logo{font-size:2rem;margin-bottom:8px}.body{padding:24px}.section{background:#f8f9fd;border-radius:8px;padding:14px 16px;margin-bottom:14px;border-left:4px solid #3b6ef5}.section h3{margin:0 0 6px;font-size:.95rem;color:#111827}.section p{margin:0;font-size:.85rem;color:#374151;line-height:1.5}.chip{display:inline-block;background:#eef2fe;color:#3b6ef5;border-radius:20px;padding:2px 10px;font-size:.78rem;font-weight:600;margin:2px}.footer{padding:16px 24px;text-align:center;font-size:.75rem;color:#9ca3af;border-top:1px solid #e4e8f0}</style></head><body><div style='padding:20px'><div class='wrap'><div class='header'><div class='logo'>🎲</div><h1>Die Meeples</h1><div style='font-size:.85rem;opacity:.85'>Spieleabend Planer</div></div><div class='body'>"+bodyHtml+"</div><div class='footer'>Du erhältst diese E-Mail weil du Benachrichtigungen aktiviert hast. <br>Du kannst sie in deinem Profil deaktivieren.</div></div></div></body></html>";
+}
+
+async function sendDatePollStartNotif(t){
+  try{
+    var recipients=t.personen.filter(function(p){ return p!==currentName; });
+    if(!recipients.length) return;
+    var r=await fetch(SB_URL+"/rest/v1/user_meta?select=user_name,notif_email&user_name=in.("+recipients.map(encodeURIComponent).join(",")+")&notif_email=not.is.null",{headers:authHdrs()});
+    if(!r.ok) return;
+    var rows=await r.json();
+    var emails=rows.filter(function(row){ return row.notif_email; }).map(function(row){ return row.notif_email; });
+    if(!emails.length) return;
+    var bodyHtml="<div class='section'><h3>📅 "+h(t.title)+"</h3>"
+      +(t.ort?"<p>📍 "+h(t.ort)+"</p>":"")
+      +"<p>👥 "+t.personen.length+" Teilnehmer</p></div>"
+      +"<div class='section'><h3>🗓 Terminabstimmung gestartet</h3>"
+      +"<p><strong>"+h(currentName)+"</strong> hat eine Terminabstimmung für <strong>"+h(t.title)+"</strong> gestartet.</p>"
+      +"<p style='font-size:.85rem;color:#374151'>Öffne die App um Terminvorschläge zu sehen und abzustimmen.</p></div>";
+    await sendMail(emails,"📅 "+t.title+" – Terminabstimmung gestartet",buildNotifEmail("Terminabstimmung: "+t.title,bodyHtml));
+  }catch(e){}
 }
 
 async function sendDatePollNotif(t, addedLabels){
