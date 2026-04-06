@@ -1865,6 +1865,17 @@ async function showWhatsnew(){
         activity.push({tid:t.id,title:t.title,type:"chat",icon:"💬",label:"Chat-Nachricht",detail:h(m.author)+": \""+h(m.text.slice(0,60))+(m.text.length>60?"…":"")+"\"",author:m.author,ts:new Date(m.ts)});
       }
     });
+    // Neue Terminvorschläge zur Abstimmung
+    if(isMember&&t.datePoll&&t.datePoll.slots){
+      t.datePoll.slots.forEach(function(slot){
+        if(slot.addedBy&&slot.addedBy!==currentName&&slot.addedTs&&new Date(slot.addedTs)>since){
+          var dayNames=["So","Mo","Di","Mi","Do","Fr","Sa"];
+          var d=new Date(slot.date);
+          var label=dayNames[d.getDay()]+", "+d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"})+(slot.hasTime?" "+d.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})+" Uhr":"");
+          activity.push({tid:t.id,title:t.title,type:"dpoll",icon:"🗓",label:"Terminvorschlag hinzugefügt",detail:h(slot.addedBy)+" schlug <strong>"+label+"</strong> vor",author:slot.addedBy,ts:new Date(slot.addedTs)});
+        }
+      });
+    }
     // Neue Spiele (nur wenn dabei)
     if(isMember){
       (t.spiele||[]).forEach(function(s){
@@ -3668,7 +3679,7 @@ function addAllQueuedSlots(tid){
   var addedLabels=[];
   queue.forEach(function(q){
     if(t.datePoll.slots.some(function(s){ return s.date===q.fullVal; })) return;
-    t.datePoll.slots.push({id:"ds"+Date.now()+Math.random(),date:q.fullVal,hasTime:!!q.time,votes:{}});
+    t.datePoll.slots.push({id:"ds"+Date.now()+Math.random(),date:q.fullVal,hasTime:!!q.time,votes:{},addedBy:currentName,addedTs:new Date().toISOString()});
     addedLabels.push(q.label);
     added++;
   });
