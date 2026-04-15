@@ -3269,6 +3269,17 @@ function buildSpielCard(t,s){
   var myVote=voter&&s.votes&&s.votes[voter]!==undefined?s.votes[voter]:null;
   var voteHtml="";
   if(showVote){
+    var upVoters=Object.entries(s.votes||{}).filter(function(e){ return e[1]===1; }).map(function(e){ return e[0]; });
+    var downVoters=Object.entries(s.votes||{}).filter(function(e){ return e[1]===-1; }).map(function(e){ return e[0]; });
+    var absVoters=Object.entries(s.votes||{}).filter(function(e){ return e[1]===0; }).map(function(e){ return e[0]; });
+    var voterChips="";
+    if(upVoters.length||downVoters.length||absVoters.length){
+      voterChips="<div style='display:flex;flex-wrap:wrap;gap:3px;margin-top:4px'>"
+        +upVoters.map(function(p){ return "<span style='display:inline-flex;align-items:center;gap:2px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:10px;padding:1px 6px;font-size:.65rem;font-weight:600;color:var(--green)'>👍 "+h(p)+"</span>"; }).join("")
+        +downVoters.map(function(p){ return "<span style='display:inline-flex;align-items:center;gap:2px;background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:1px 6px;font-size:.65rem;font-weight:600;color:var(--red)'>👎 "+h(p)+"</span>"; }).join("")
+        +absVoters.map(function(p){ return "<span style='display:inline-flex;align-items:center;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1px 6px;font-size:.65rem;font-weight:600;color:var(--text-3)'>🤷 "+h(p)+"</span>"; }).join("")
+        +"</div>";
+    }
     if(voter){
       var upA=myVote===1?" up active":"";
       var downA=myVote===-1?" down active":"";
@@ -3277,9 +3288,9 @@ function buildSpielCard(t,s){
         +"<button class='vote-btn up"+upA+"' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='voteSpiel(this.dataset.tid,this.dataset.sid,1)'>&#128077; <span>"+ups+"</span></button>"
         +"<button class='vote-btn down"+downA+"' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='voteSpiel(this.dataset.tid,this.dataset.sid,-1)'>&#128078; <span>"+downs+"</span></button>"
         +"<button class='vote-btn abstain"+absA+"' data-tid='"+t.id+"' data-sid='"+s.id+"' onclick='voteSpiel(this.dataset.tid,this.dataset.sid,0)' title='Enthalten'>&#129335;</button>"
-        +"</div>";
+        +"</div>"+voterChips;
     } else {
-      voteHtml="<div class='vote-info'>&#128077; "+ups+" &nbsp;&#128078; "+downs+"</div>";
+      voteHtml="<div class='vote-info'>&#128077; "+ups+" &nbsp;&#128078; "+downs+"</div>"+voterChips;
     }
   }
   return "<div class='spiel-card"+(isTop?" top-pick":"")+(isDicePick?" dice-pick":"")+"'>"+imgHtml
