@@ -29,6 +29,29 @@
   --shadow-lg:0 4px 24px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.08);
   --shadow-card:0 2px 8px rgba(0,0,0,.06)
 }
+/* Dark mode — system & manual */
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#000000;--surface:#1c1c1e;--surface2:#2c2c2e;
+    --border:rgba(255,255,255,.12);--border-strong:rgba(255,255,255,.22);
+    --green-lt:rgba(52,199,89,.15);--green-bd:rgba(52,199,89,.3);
+    --red-lt:rgba(255,59,48,.15);
+    --text:#ffffff;--text-2:rgba(255,255,255,.85);--text-3:rgba(255,255,255,.45);
+    --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3);
+    --shadow-lg:0 4px 24px rgba(0,0,0,.5),0 1px 4px rgba(0,0,0,.3);
+    --shadow-card:0 2px 8px rgba(0,0,0,.35)
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#000000;--surface:#1c1c1e;--surface2:#2c2c2e;
+  --border:rgba(255,255,255,.12);--border-strong:rgba(255,255,255,.22);
+  --green-lt:rgba(52,199,89,.15);--green-bd:rgba(52,199,89,.3);
+  --red-lt:rgba(255,59,48,.15);
+  --text:#ffffff;--text-2:rgba(255,255,255,.85);--text-3:rgba(255,255,255,.45);
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 4px 12px rgba(0,0,0,.3);
+  --shadow-lg:0 4px 24px rgba(0,0,0,.5),0 1px 4px rgba(0,0,0,.3);
+  --shadow-card:0 2px 8px rgba(0,0,0,.35)
+}
 body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;letter-spacing:-.2px}
 /* LOGIN */
 #name-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
@@ -366,6 +389,16 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
 }
 
 @keyframes slide-up{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+/* Dark mode fixes for hardcoded colors */
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] input[type="datetime-local"],
+[data-theme="dark"] input[type="color"]{color-scheme:dark}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) input[type="date"],:root:not([data-theme="light"]) input[type="time"],:root:not([data-theme="light"]) input[type="datetime-local"],:root:not([data-theme="light"]) input[type="color"]{color-scheme:dark}}
+[data-theme="dark"] .dpoll-wrap,
+[data-theme="dark"] #wiz-step-1,
+[data-theme="dark"] #wiz-step-2{background:rgba(255,255,255,.04)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .dpoll-wrap,:root:not([data-theme="light"]) #wiz-step-1,:root:not([data-theme="light"]) #wiz-step-2{background:rgba(255,255,255,.04)}}
 </style>
 </head>
 <body>
@@ -432,6 +465,7 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
       <button class="notif-btn" id="notif-btn" onclick="reopenWhatsnew()" title="Neuigkeiten anzeigen">
         🔔<div class="notif-badge" id="notif-badge"></div>
       </button>
+      <button class="notif-btn" id="darkmode-btn" onclick="toggleDarkMode()" title="Dark Mode umschalten" style="font-size:1rem">☀️</button>
       <div class="profile-trigger" onclick="openProfileModal()">
         <div class="av av-md" id="hdr-av"></div>
         <span style="font-size:.88rem;font-weight:600" id="hdr-name"></span>
@@ -1541,6 +1575,35 @@ function h(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").r
 function proxyImg(u){ if(!u) return null; if(u.startsWith("//")) u="https:"+u; return "https://images.weserv.nl/?url="+encodeURIComponent(u)+"&w=400&fit=cover&output=webp"; }
 function fmtDate(d,t){ if(!d) return "\u2014"; var base=new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}); if(t&&t.isAllDay) return base+" · Ganztägig"; if(t&&t.isTimeOpen) return base+" · Uhrzeit noch offen"; return new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
 function fmtTime(t){ return new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
+// ── Dark Mode ──
+function initDarkMode(){
+  var saved=localStorage.getItem("meeples_theme");
+  var prefersDark=window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;
+  var isDark=(saved==="dark")||(saved===null&&prefersDark);
+  document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
+  updateDarkModeBtn(isDark);
+  // Listen for system changes (only applies when no manual override)
+  if(window.matchMedia) window.matchMedia("(prefers-color-scheme:dark)").addEventListener("change",function(e){
+    if(!localStorage.getItem("meeples_theme")){ // only if auto
+      document.documentElement.setAttribute("data-theme",e.matches?"dark":"light");
+      updateDarkModeBtn(e.matches);
+    }
+  });
+}
+function updateDarkModeBtn(isDark){
+  var btn=document.getElementById("darkmode-btn");
+  if(btn) btn.textContent=isDark?"☀️":"🌙";
+}
+function toggleDarkMode(){
+  var current=document.documentElement.getAttribute("data-theme");
+  var isDark=current==="dark";
+  var next=isDark?"light":"dark";
+  document.documentElement.setAttribute("data-theme",next);
+  localStorage.setItem("meeples_theme",next);
+  updateDarkModeBtn(next==="dark");
+}
+initDarkMode();
+
 function toast(msg,duration){ var el=document.getElementById("toast"); el.querySelector("span").textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("show"); },duration||(msg.toLowerCase().includes("fehler")||msg.toLowerCase().includes("nicht")?5000:2400)); }
 function getT(id){ return state.termine.find(function(t){ return t.id===id; }); }
 function avg(s){ if(!s.votes||!Object.keys(s.votes).length) return 0; var v=Object.values(s.votes); return v.reduce(function(a,b){ return a+b; },0)/v.length; }
