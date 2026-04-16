@@ -2148,7 +2148,15 @@ function startPolling(){
     if(rows[0].data&&rows[0].data.termine){
       // Smart diff: track previous state to detect setting changes
       var prevState={};
-      state.termine.forEach(function(t){ prevState[t.id]={voteOn:t.voteOn,diceOn:t.diceOn,offen:t.offen}; });
+      state.termine.forEach(function(t){
+        var dp=t.datePoll||{};
+        prevState[t.id]={
+          voteOn:t.voteOn,diceOn:t.diceOn,offen:t.offen,
+          dpActive:!!dp.active,
+          dpSlots:(dp.slots||[]).length,
+          dpConfirmed:dp.confirmed||null
+        };
+      });
       state=rows[0].data;
       if(!state.userColors) state.userColors={};
       checkStichtag();
@@ -2187,7 +2195,11 @@ function startPolling(){
         vis.forEach(function(t,idx){
           var el=document.getElementById("termin-"+t.id);
           var prev=prevState[t.id]||{};
-          var settingsChanged=prev.voteOn!==t.voteOn||prev.diceOn!==t.diceOn||prev.offen!==t.offen;
+          var dp=t.datePoll||{};
+          var settingsChanged=prev.voteOn!==t.voteOn||prev.diceOn!==t.diceOn||prev.offen!==t.offen
+            ||prev.dpActive!==!!dp.active
+            ||(prev.dpSlots!==((dp.slots||[]).length))
+            ||(prev.dpConfirmed!==(dp.confirmed||null));
           if(!el){
             var newEl=document.createElement("div");
             newEl.innerHTML=buildTerminCard(t,false);
