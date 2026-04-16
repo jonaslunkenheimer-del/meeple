@@ -1092,13 +1092,25 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
           <input class="input-field" id="new-title" placeholder="z.B. Spieleabend bei Max" style="font-size:.95rem">
         </div>
         <div class="form-field" style="margin-bottom:10px">
-          <label>Datum & Uhrzeit</label>
-          <input class="input-field" id="new-date" type="datetime-local">
+          <label>Datum</label>
+          <input class="input-field" id="new-date-only" type="date" style="width:100%">
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px">
           <span style="font-size:.85rem;font-weight:500;color:var(--text-2)">Datum noch offen</span>
-          <label class="toggle-wrap"><input type="checkbox" id="new-no-date" onchange="var d=document.getElementById('new-date');d.disabled=this.checked;d.style.opacity=this.checked?'.35':'1';if(this.checked)d.value='';"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          <label class="toggle-wrap"><input type="checkbox" id="new-no-date" onchange="var dd=document.getElementById('new-date-only');dd.disabled=this.checked;dd.style.opacity=this.checked?'.35':'1';if(this.checked)dd.value='';document.getElementById('new-time-section').style.opacity=this.checked?'.35':'1';document.getElementById('new-time-section').style.pointerEvents=this.checked?'none':'';"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
         </div>
+        <div id="new-time-section" style="margin-bottom:14px">
+          <label class="form-field" style="display:block;margin-bottom:6px"><span style="font-size:.72rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em">Uhrzeit</span></label>
+          <div style="display:flex;gap:6px">
+            <button id="wiz-time-fixed" onclick="setTimeMode('fixed')" style="flex:1;padding:9px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--blue);background:rgba(0,122,255,.08);color:var(--blue);font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer">🕐 Uhrzeit</button>
+            <button id="wiz-time-allday" onclick="setTimeMode('allday')" style="flex:1;padding:9px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);color:var(--text-2);font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer">☀️ Ganztägig</button>
+            <button id="wiz-time-open" onclick="setTimeMode('open')" style="flex:1;padding:9px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);color:var(--text-2);font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer">💬 Noch offen</button>
+          </div>
+          <div id="wiz-time-input-wrap" style="margin-top:8px">
+            <input class="input-field" id="new-time-only" type="time" style="width:160px">
+          </div>
+        </div>
+        <input type="hidden" id="new-date">
         <div class="form-field" style="margin-bottom:14px">
           <label>Ort</label>
           <input class="input-field" id="new-ort" placeholder="z.B. Wohnzimmer, Café …">
@@ -1527,7 +1539,7 @@ var userCache = null;
 // ── Helpers ──
 function h(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function proxyImg(u){ if(!u) return null; if(u.startsWith("//")) u="https:"+u; return "https://images.weserv.nl/?url="+encodeURIComponent(u)+"&w=400&fit=cover&output=webp"; }
-function fmtDate(d){ if(!d) return "\u2014"; return new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+function fmtDate(d,t){ if(!d) return "\u2014"; var base=new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}); if(t&&t.isAllDay) return base+" · Ganztägig"; if(t&&t.isTimeOpen) return base+" · Uhrzeit noch offen"; return new Date(d).toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
 function fmtTime(t){ return new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}); }
 function toast(msg,duration){ var el=document.getElementById("toast"); el.querySelector("span").textContent=msg; el.classList.add("show"); clearTimeout(el._t); el._t=setTimeout(function(){ el.classList.remove("show"); },duration||(msg.toLowerCase().includes("fehler")||msg.toLowerCase().includes("nicht")?5000:2400)); }
 function getT(id){ return state.termine.find(function(t){ return t.id===id; }); }
@@ -2525,6 +2537,33 @@ function showConfirm(title,msg,onOk,okLabel,okStyle){
 function closeConfirm(){ document.getElementById("confirm-modal").style.display="none"; }
 
 // ── Termine: New/Edit/Delete ──
+var wizTimeMode = 'fixed'; // 'fixed' | 'allday' | 'open'
+
+function setTimeMode(mode){
+  wizTimeMode = mode;
+  var btns = {fixed:'wiz-time-fixed', allday:'wiz-time-allday', open:'wiz-time-open'};
+  Object.keys(btns).forEach(function(k){
+    var el = document.getElementById(btns[k]); if(!el) return;
+    var active = k === mode;
+    el.style.border = active ? '1.5px solid var(--blue)' : '1.5px solid var(--border)';
+    el.style.background = active ? 'rgba(0,122,255,.08)' : 'var(--surface2)';
+    el.style.color = active ? 'var(--blue)' : 'var(--text-2)';
+  });
+  var wrap = document.getElementById('wiz-time-input-wrap');
+  if(wrap) wrap.style.display = mode === 'fixed' ? 'block' : 'none';
+}
+
+function buildNewDateValue(){
+  var noDate = document.getElementById('new-no-date').checked;
+  if(noDate) return '';
+  var dateOnly = document.getElementById('new-date-only').value;
+  if(!dateOnly) return '';
+  if(wizTimeMode === 'allday') return dateOnly + 'T00:00_allday';
+  if(wizTimeMode === 'open') return dateOnly + 'T00:00_timeopen';
+  var timeOnly = document.getElementById('new-time-only').value;
+  return timeOnly ? dateOnly + 'T' + timeOnly : dateOnly + 'T00:00';
+}
+
 var wizardStep = 1;
 
 function openNewTerminModal(){
@@ -2561,9 +2600,16 @@ function wizardRender(){
 function wizardBuildSummary(){
   var wrap=document.getElementById("wiz-summary");
   var title=document.getElementById("new-title").value.trim()||"—";
-  var dateVal=document.getElementById("new-date").value;
   var noDate=document.getElementById("new-no-date").checked;
-  var dateStr=noDate?"Datum noch offen":(dateVal?fmtDate(dateVal):"Nicht festgelegt");
+  var dateOnly=document.getElementById("new-date-only").value;
+  var dateStr="Datum noch offen";
+  if(!noDate&&dateOnly){
+    var d=new Date(dateOnly);
+    dateStr=d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"long",year:"numeric"});
+    if(wizTimeMode==="allday") dateStr+=" · Ganztägig";
+    else if(wizTimeMode==="open") dateStr+=" · Uhrzeit noch offen";
+    else{ var t=document.getElementById("new-time-only").value; if(t) dateStr+=" · "+t+" Uhr"; }
+  }
   var ort=document.getElementById("new-ort").value.trim()||"—";
   var rows=[
     ["📅 Termin",title],
@@ -2588,10 +2634,12 @@ function wizardNext(){
     var title=document.getElementById("new-title").value.trim();
     if(!title){ document.getElementById("new-title").style.boxShadow="0 0 0 3px rgba(255,59,48,.25)"; document.getElementById("new-title").focus(); return; }
     document.getElementById("new-title").style.boxShadow="";
-    var dateVal=document.getElementById("new-date").value;
     var noDate=document.getElementById("new-no-date").checked;
-    if(!noDate&&dateVal&&new Date(dateVal)<new Date()){ document.getElementById("new-date").style.boxShadow="0 0 0 3px rgba(255,59,48,.25)"; toast("Datum liegt in der Vergangenheit."); return; }
-    document.getElementById("new-date").style.boxShadow="";
+    var dateOnly=document.getElementById("new-date-only").value;
+    if(!noDate&&dateOnly&&new Date(dateOnly)<new Date(new Date().toDateString())){ document.getElementById("new-date-only").style.boxShadow="0 0 0 3px rgba(255,59,48,.25)"; toast("Datum liegt in der Vergangenheit."); return; }
+    document.getElementById("new-date-only").style.boxShadow="";
+    // Write combined value to hidden field
+    document.getElementById("new-date").value = buildNewDateValue();
     wizardStep=2; wizardRender();
   } else if(wizardStep===2){
     wizardStep=3; wizardRender();
@@ -2605,7 +2653,7 @@ function wizardBack(){
 }
 function closeNewTerminModal(){
   document.getElementById("new-termin-modal").style.display="none";
-  wizardStep=1;
+  wizardStep=1; wizTimeMode='fixed';
   ["new-title","new-ort","new-date","new-maps"].forEach(function(id){ var el=document.getElementById(id); if(el){ el.value=""; el.style.boxShadow=""; el.disabled=false; el.style.opacity="1"; } });
   var nd=document.getElementById("new-no-date"); if(nd) nd.checked=false;
   var o=document.getElementById("new-offen"); if(o) o.checked=true;
@@ -2622,14 +2670,15 @@ async function createTermin(){
   if(!title){ document.getElementById("new-title").style.borderColor="var(--red)"; return; }
   document.getElementById("new-title").style.borderColor="";
   var noDate=document.getElementById("new-no-date").checked===true;
-  var dateVal=noDate?"":document.getElementById("new-date").value;
-  if(!noDate&&dateVal&&new Date(dateVal)<new Date()){ document.getElementById("new-date").style.borderColor="var(--red)"; alert("Datum liegt in der Vergangenheit."); return; }
-  document.getElementById("new-date").style.borderColor="";
+  var rawDate=noDate?"":buildNewDateValue();
+  // Strip special flags for the actual stored date
+  var dateVal=rawDate.replace(/_allday|_timeopen/,"");
+  var isAllDay=rawDate.indexOf("_allday")!==-1;
+  var isTimeOpen=rawDate.indexOf("_timeopen")!==-1;
   var sucheOn=document.getElementById("new-suche-on").checked===true;
   var limitOn=document.getElementById("new-limit-on").checked===true;
   var limitVal=parseInt(document.getElementById("new-limit-val").value)||0;
   if(sucheOn&&(!limitOn||limitVal<1)){
-    document.getElementById("new-limit-on").closest("div.toggle-wrap")||document.getElementById("new-limit-on");
     document.getElementById("new-limit-on").checked=true;
     document.getElementById("new-limit-wrap").style.display="block";
     document.getElementById("new-limit-val").style.borderColor="var(--red)";
@@ -2641,6 +2690,8 @@ async function createTermin(){
   var t={
     id:state.nextId++, title:title,
     date:dateVal,
+    isAllDay:isAllDay||false,
+    isTimeOpen:isTimeOpen||false,
     ort:document.getElementById("new-ort").value.trim(),
     creator:currentName,
     offen:document.getElementById("new-offen").checked!==false,
@@ -2910,7 +2961,7 @@ function buildTerminCard(t, open){
 
   // Chips
   var chips="";
-  if(t.date) chips+="<span class='chip'>&#128197; "+fmtDate(t.date)+"</span>";
+  if(t.date) chips+="<span class='chip'>&#128197; "+fmtDate(t.date,t)+"</span>";
   else chips+="<span class='chip' style='color:#0369a1;background:#f0f9ff;border-color:#bae6fd'>&#128197; Datum noch offen</span>";
   if(t.ort){
     if(t.mapsUrl){
