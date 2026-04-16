@@ -1654,6 +1654,14 @@ function setAv(el,name){
     el.textContent=nameInit(name);
   }
 }
+function avHtmlChat(name){
+  var avatar=userAvatars[name];
+  if(avatar){
+    return "<div class='av av-sm' style='display:flex;align-items:center;justify-content:center;background:transparent;background-image:url(\""+avatar+"\");background-size:cover;background-position:center;color:transparent;flex-shrink:0'></div>";
+  }
+  return "<div class='av av-sm' style='display:flex;align-items:center;justify-content:center;background:"+nameColor(name||"?")+";flex-shrink:0'>"+nameInit(name||"?")+"</div>";
+}
+
 function avHtml(name, sizeClass){
   sizeClass=sizeClass||"av-md";
   var avatar=userAvatars[name];
@@ -2243,6 +2251,9 @@ function startPolling(){
           dpConfirmed:dp.confirmed||null
         };
       });
+      // Re-check saveLock before overwriting state — prevents race condition
+      // where saveState() started while this fetch was in flight
+      if(saveLock) return;
       state=rows[0].data;
       if(!state.userColors) state.userColors={};
       checkStichtag();
@@ -3356,7 +3367,7 @@ function buildChatMsgs(t){
       dateStamp="<div style='text-align:center;margin:8px 0'><span style='font-size:.65rem;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-weight:600'>"+fmtDateStamp(m.ts)+"</span></div>";
     }
     return dateStamp+"<div class='msg-row"+(mine?" mine":"")+"'>"
-      +avHtml(m.author,"av-sm").replace("class='av","class='av' style='display:"+(mine?"none":"flex")+";align-items:center;justify-content:center' class='av")
+      +(mine?"":avHtmlChat(m.author))
       +"<div class='bubble'>"+nameDiv+h(m.text)+"<div class='bubble-time'>"+fmtTime(m.ts)+"</div></div>"
       +"</div>";
   }).join("");
@@ -3854,6 +3865,7 @@ async function startDatePoll(tid){
   t.datePoll.startedBy=currentName;
   t.datePoll.startedTs=new Date().toISOString();
   if(!t.datePoll.slots) t.datePoll.slots=[];
+  saveLock=true;
   rerenderCard(tid); saveState(); toast("Terminabstimmung gestartet 📅");
   if(!t.privat) sendDatePollStartNotif(t);
 }
@@ -4081,6 +4093,7 @@ function addAllQueuedSlots(tid){
   });
   dpollQueue[tid]=[];
   if(added===0){ toast("Alle Vorschläge bereits vorhanden."); return; }
+  saveLock=true;
   rerenderCard(tid); saveState(); toast(added+" Vorschlag"+(added>1?"schläge":"")+" hinzugefügt ✓");
   // E-Mail an alle Teilnehmer (außer dem der hinzugefügt hat)
   if(!t.privat) sendDatePollNotif(t, addedLabels);
