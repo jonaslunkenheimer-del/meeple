@@ -69,6 +69,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue'
 .btn-name:active{transform:scale(.98)}
 /* HEADER */
 header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:0.5px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:100;min-width:0}
+[data-theme="dark"] header{background:rgba(18,18,20,.88)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) header{background:rgba(18,18,20,.88)}}
 .brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
 .brand-icon{font-size:1.4rem}
 .brand-name{font-size:.95rem;font-weight:700;letter-spacing:-.3px}
@@ -465,7 +467,6 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
       <button class="notif-btn" id="notif-btn" onclick="reopenWhatsnew()" title="Neuigkeiten anzeigen">
         🔔<div class="notif-badge" id="notif-badge"></div>
       </button>
-      <button class="notif-btn" id="darkmode-btn" onclick="toggleDarkMode()" title="Dark Mode umschalten" style="font-size:1rem">☀️</button>
       <div class="profile-trigger" onclick="openProfileModal()">
         <div class="av av-md" id="hdr-av"></div>
         <span style="font-size:.88rem;font-weight:600" id="hdr-name"></span>
@@ -981,7 +982,21 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
         <div class="form-field" style="margin-bottom:8px"><label>Neues Passwort</label><input class="input-field" id="profil-pw" type="password" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
         <button class="btn btn-outline btn-sm" style="width:100%;" onclick="savePassword()">🔑 Passwort ändern</button>
-      <!-- ACHIEVEMENTS -->
+      <!-- DARSTELLUNG -->
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;margin-bottom:16px">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:12px">🌗 Darstellung</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <button id="theme-btn-auto" onclick="setTheme('auto')" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="font-size:1.2rem">🔄</span>Automatisch
+          </button>
+          <button id="theme-btn-light" onclick="setTheme('light')" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="font-size:1.2rem">☀️</span>Hell
+          </button>
+          <button id="theme-btn-dark" onclick="setTheme('dark')" style="padding:10px 6px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-family:inherit;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--text-2);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="font-size:1.2rem">🌙</span>Dunkel
+          </button>
+        </div>
+      </div>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;margin-bottom:16px">
         <div style="font-weight:700;font-size:.9rem;margin-bottom:12px">🏆 Achievements</div>
         <div id="profil-achievements"></div>
@@ -1581,26 +1596,34 @@ function initDarkMode(){
   var prefersDark=window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;
   var isDark=(saved==="dark")||(saved===null&&prefersDark);
   document.documentElement.setAttribute("data-theme",isDark?"dark":"light");
-  updateDarkModeBtn(isDark);
-  // Listen for system changes (only applies when no manual override)
   if(window.matchMedia) window.matchMedia("(prefers-color-scheme:dark)").addEventListener("change",function(e){
-    if(!localStorage.getItem("meeples_theme")){ // only if auto
+    if(!localStorage.getItem("meeples_theme")){
       document.documentElement.setAttribute("data-theme",e.matches?"dark":"light");
-      updateDarkModeBtn(e.matches);
+      updateThemeBtns();
     }
   });
 }
-function updateDarkModeBtn(isDark){
-  var btn=document.getElementById("darkmode-btn");
-  if(btn) btn.textContent=isDark?"☀️":"🌙";
+function updateThemeBtns(){
+  var saved=localStorage.getItem("meeples_theme");
+  var current=saved||"auto";
+  ["auto","light","dark"].forEach(function(k){
+    var btn=document.getElementById("theme-btn-"+k); if(!btn) return;
+    var active=current===k;
+    btn.style.border=active?"1.5px solid var(--blue)":"1.5px solid var(--border)";
+    btn.style.background=active?"rgba(0,122,255,.1)":"var(--surface2)";
+    btn.style.color=active?"var(--blue)":"var(--text-2)";
+  });
 }
-function toggleDarkMode(){
-  var current=document.documentElement.getAttribute("data-theme");
-  var isDark=current==="dark";
-  var next=isDark?"light":"dark";
-  document.documentElement.setAttribute("data-theme",next);
-  localStorage.setItem("meeples_theme",next);
-  updateDarkModeBtn(next==="dark");
+function setTheme(mode){
+  if(mode==="auto"){
+    localStorage.removeItem("meeples_theme");
+    var prefersDark=window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;
+    document.documentElement.setAttribute("data-theme",prefersDark?"dark":"light");
+  } else {
+    localStorage.setItem("meeples_theme",mode);
+    document.documentElement.setAttribute("data-theme",mode);
+  }
+  updateThemeBtns();
 }
 initDarkMode();
 
@@ -2364,6 +2387,7 @@ function openProfileModal(){
   document.getElementById("profil-bgg").value=bggUser;
   var currentColor=nameColor(currentName);
   setAv(document.getElementById("profil-av"),currentName);
+  updateThemeBtns();
   var picker=document.getElementById("profil-color-picker");
   if(picker) picker.value=currentColor;
   var preview=document.getElementById("profil-av-preview");
