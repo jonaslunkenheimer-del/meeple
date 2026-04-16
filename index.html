@@ -1703,6 +1703,8 @@ async function startApp(name){
   renderTermine();
   var fab=document.getElementById("fab-new-termin"); if(fab) fab.classList.add("fab-active");
   startPolling();
+  cleanupExpiredTermine();
+  setInterval(cleanupExpiredTermine, 5*60*1000); // check every 5 min
   startWhatsnewPolling();
   await loadNachrichten();
   updateNachrBadge();
@@ -2122,6 +2124,17 @@ async function saveMarkt(){
   }catch(e){ console.error("saveMarkt error:",e); toast("Netzwerkfehler beim Speichern"); }
 }
 var pollingLastHash="";
+function cleanupExpiredTermine(){
+  var now=new Date();
+  var before=state.termine.length;
+  state.termine=state.termine.filter(function(t){
+    if(!t.date) return true; // Datum offen → nie löschen
+    var start=new Date(t.date);
+    return (now - start) < 24*60*60*1000; // älter als 24h → raus
+  });
+  if(state.termine.length < before){ saveState(); renderTermine(); }
+}
+
 function startPolling(){
   setInterval(async function(){
     try{
