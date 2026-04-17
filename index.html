@@ -1705,6 +1705,28 @@ function saveSession(sess, name){
 function clearSession(){
   try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
 }
+var _sessionRefreshTimer=null;
+function startSessionRefreshTimer(){
+  if(_sessionRefreshTimer) clearInterval(_sessionRefreshTimer);
+  _sessionRefreshTimer=setInterval(async function(){
+    if(!session) return;
+    var raw=localStorage.getItem(SESSION_KEY);
+    if(!raw) return;
+    try{
+      var obj=JSON.parse(raw);
+      if(!obj||!obj.sess||!obj.sess.refresh_token) return;
+      var r=await fetch(SB_URL+'/auth/v1/token?grant_type=refresh_token',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SB_ANON},
+        body:JSON.stringify({refresh_token:obj.sess.refresh_token})
+      });
+      if(r.ok){
+        var d=await r.json();
+        if(d.access_token){ session=d; saveSession(d,currentName); }
+      }
+    }catch(e){}
+  },50*60*1000);
+}
 function loadSavedSession(){
   try{
     var raw=localStorage.getItem(SESSION_KEY);
@@ -1773,6 +1795,7 @@ async function doLogin(){
 
 async function startApp(name){
   currentName = name;
+  startSessionRefreshTimer();
   loadMyAddedSpiele();
   document.getElementById("name-screen").style.display="none";
   document.getElementById("app-screen").style.display="block";
@@ -1817,6 +1840,7 @@ async function startApp(name){
 }
 
 async function switchUser(){
+  if(_sessionRefreshTimer){ clearInterval(_sessionRefreshTimer); _sessionRefreshTimer=null; }
   if(session){ try{ await fetch(SB_URL+"/auth/v1/logout",{method:"POST",headers:{"Content-Type":"application/json","apikey":SB_ANON,"Authorization":"Bearer "+(session.access_token||"")}}); }catch(e){} }
   clearSession();
   session=null; isAdmin=false; currentName=""; state={termine:[],nextId:1}; mData=[];
