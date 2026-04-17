@@ -831,7 +831,7 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
 <div id="profil-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:800;align-items:center;justify-content:center;padding:16px">
   <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:420px;max-height:90vh;display:flex;flex-direction:column;animation:up .2s ease;overflow:hidden">
     <!-- Sticky header -->
-    <div style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0;position:relative">
+    <div id="profil-header-wrap" style="background:linear-gradient(135deg,var(--blue),#6a9af8);padding:20px 24px;text-align:center;flex-shrink:0;position:relative">
       <button onclick="closeProfileModal()" style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center" title="Schließen">✕</button>
       <button onclick="switchUser()" style="position:absolute;top:10px;left:10px;height:28px;padding:0 10px;border-radius:14px;background:rgba(255,255,255,.2);border:none;color:#fff;cursor:pointer;font-size:.72rem;font-weight:600;display:flex;align-items:center;gap:4px" title="Abmelden">⏻ Abmelden</button>
       <div id="profil-av" class="av av-lg" style="margin:0 auto 8px;position:relative;overflow:visible">
@@ -840,7 +840,7 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
       <div style="font-size:1.05rem;font-weight:800;color:#fff" id="profil-name-lbl"></div>
     </div>
     <!-- Scrollable body -->
-    <div style="padding:20px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0">
+    <div id="profil-scroll-body" style="padding:20px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0;height:0">
       <!-- Avatar section -->
       <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:16px">
         <label style="font-size:.75rem;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px">Profilbild</label>
@@ -2390,6 +2390,17 @@ document.addEventListener("click",function(e){
 
 // ── Profile ──
 function openProfileModal(){
+  document.getElementById("profil-modal").style.display="flex";
+  // Chrome fix: manually set scroll body height after render
+  requestAnimationFrame(function(){
+    var modal=document.querySelector("#profil-modal > div");
+    var header=document.getElementById("profil-header-wrap");
+    var body=document.getElementById("profil-scroll-body");
+    if(modal&&header&&body){
+      var maxH=Math.min(window.innerHeight*0.9, modal.getBoundingClientRect().height||window.innerHeight*0.9);
+      body.style.height=(maxH - header.offsetHeight)+"px";
+    }
+  });
   document.getElementById("profil-displayname").value=currentName;
   document.getElementById("profil-name-lbl").textContent=currentName;
   document.getElementById("profil-msg").style.display="none";
