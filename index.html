@@ -1099,11 +1099,11 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px">
         <div><div style="font-weight:600;font-size:.88rem">👍 Spieleabstimmung</div></div>
-        <label class="toggle-wrap"><input type="checkbox" id="edit-vote-on" onchange="if(this.checked){var d=document.getElementById('edit-dice-on');if(d)d.checked=false;}"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+        <label class="toggle-wrap"><input type="checkbox" id="edit-vote-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:18px">
         <div><div style="font-weight:600;font-size:.88rem">🎲 Spiel auswürfeln</div></div>
-        <label class="toggle-wrap"><input type="checkbox" id="edit-dice-on" onchange="if(this.checked){var v=document.getElementById('edit-vote-on');if(v)v.checked=false;}"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+        <label class="toggle-wrap"><input type="checkbox" id="edit-dice-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
       </div>
       <div style="display:flex;gap:10px">
         <button class="btn btn-ghost" onclick="closeEditModal()" style="flex:1">Abbrechen</button>
@@ -1215,14 +1215,14 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
             <div style="font-weight:600;font-size:.9rem">👍 Spieleabstimmung</div>
             <div style="font-size:.72rem;color:var(--text-3);margin-top:2px">Teilnehmer stimmen für Spiele ab</div>
           </div>
-          <label class="toggle-wrap"><input type="checkbox" id="new-vote-on" onchange="if(this.checked){var d=document.getElementById('new-dice-on');if(d)d.checked=false;}"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          <label class="toggle-wrap"><input type="checkbox" id="new-vote-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:4px">
           <div>
             <div style="font-weight:600;font-size:.9rem">🎲 Spiel auswürfeln</div>
             <div style="font-size:.72rem;color:var(--text-3);margin-top:2px">Zufälliges Spiel per Würfelbutton wählen</div>
           </div>
-          <label class="toggle-wrap"><input type="checkbox" id="new-dice-on" onchange="if(this.checked){var v=document.getElementById('new-vote-on');if(v)v.checked=false;}"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
+          <label class="toggle-wrap"><input type="checkbox" id="new-dice-on"><span class="toggle-track"><span class="toggle-thumb"></span></span></label>
         </div>
       </div>
 
@@ -2925,6 +2925,12 @@ function toggleTermin(tid){
 }
 function updateSpielSection(tid){
   var t=getT(tid); if(!t) return;
+  // Clean stale IDs from dicePool (games that were removed)
+  if(t.dicePool&&t.dicePool.length){
+    var ids=t.spiele.map(function(s){ return s.id; });
+    t.dicePool=t.dicePool.filter(function(id){ return ids.indexOf(id)!==-1; });
+    if(t.dicePool.length===t.spiele.length) t.dicePool=[];
+  }
   var sortedS=[].concat(t.spiele).sort(function(a,b){ return score(b)-score(a); });
   var spieleHtml=t.spiele.length
     ? "<div class='spiele-grid'>"+sortedS.map(function(s){ return buildSpielCard(t,s); }).join("")+"</div>"
@@ -2936,9 +2942,12 @@ function updateSpielSection(tid){
   card.querySelectorAll(".chip").forEach(function(c){
     if(c.innerHTML.indexOf("&#127918;")!==-1) c.innerHTML="&#127918; "+t.spiele.length+" Spiele";
   });
+  // Update dice pool section
+  var dicePoolEl=document.getElementById("dice-pool-"+tid);
+  if(dicePoolEl) dicePoolEl.innerHTML=buildDicePoolSection(t);
   // Update dice button live
   var diceBtn=card.querySelector(".dice-toggle-btn");
-  var showDice=t.diceOn&&t.spiele.length>1;
+  var showDice=t.diceOn&&t.spiele.length>0;
   if(diceBtn){
     diceBtn.style.display=showDice?"":"none";
   } else if(showDice){
@@ -3134,10 +3143,11 @@ function buildTerminCard(t, open){
   var userCanAdd=isAdmin||t.personen.includes(currentName);
   var addSection="";
   if(userCanAdd&&(t.offen!==false||t.creator===currentName)){
-    addSection="<div style='display:flex;gap:8px;margin-bottom:"+(t.spiele.length?"18px":"0")+"'>"
+    addSection="<div style='display:flex;gap:8px;margin-bottom:8px'>"
       +"<button class='btn btn-blue btn-sm' onclick='openAddModal("+t.id+")'>+ Spiel hinzuf\u00fcgen</button>"
-      +(t.diceOn&&t.spiele.length>1?"<button class='btn btn-sm dice-toggle-btn' onclick='rollDice("+t.id+")' title='Zuf\u00e4lliges Spiel ausw\u00e4hlen' style='background:#7c3aed;color:#fff;border-color:#7c3aed;font-size:1rem;padding:0 12px'>&#127922;</button>":"")
-      +"</div>";
+      +(t.diceOn&&t.spiele.length>0?"<button class='btn btn-sm dice-toggle-btn' onclick='rollDice("+t.id+")' title='Zuf\u00e4lliges Spiel ausw\u00e4hlen' style='background:#7c3aed;color:#fff;border-color:#7c3aed;font-size:1rem;padding:0 12px'>&#127922;</button>":"")
+      +"</div>"
+      +"<div id='dice-pool-"+t.id+"'>"+buildDicePoolSection(t)+"</div>";
   } else if(!userCanAdd) {
     addSection="<p style='font-size:.82rem;color:var(--text-3);margin-bottom:16px;padding:10px 12px;background:#f0fdf4;border:1px solid var(--green-bd);border-radius:var(--radius-sm)'>&#10004; Erst zusagen um Spiele vorzuschlagen!</p>";
   } else {
@@ -3405,12 +3415,73 @@ function buildQrList(t){
   }).join("");
 }
 
+// ── Dice Pool Selection ──
+function buildDicePoolSection(t){
+  if(!t.diceOn||!t.spiele.length) return "";
+  var pool=t.dicePool; // null/[] = all; [id,id,...] = subset
+  var allSelected=!pool||pool.length===0;
+  var selectedCount=allSelected?t.spiele.length:pool.length;
+  var spielePills=t.spiele.map(function(s){
+    var inPool=allSelected||(pool.indexOf(s.id)!==-1);
+    var shortName=s.name.length>20?s.name.slice(0,20)+"\u2026":s.name;
+    return "<label style='display:inline-flex;align-items:center;gap:5px;padding:4px 10px;"
+      +"border:1.5px solid "+(inPool?"#7c3aed":"var(--border)")+";background:"+(inPool?"#f5f3ff":"var(--surface2)")+";border-radius:20px;"
+      +"cursor:pointer;font-size:.75rem;font-weight:600;color:"+(inPool?"#7c3aed":"var(--text-3)")+";transition:all .15s'>"
+      +"<input type='checkbox' "+(inPool?"checked":"")+" style='display:none' onchange='toggleDicePool("+t.id+",\""+s.id+"\")'>"
+      +(inPool?"&#10003; ":"")+h(shortName)
+      +"</label>";
+  }).join("");
+  return "<div style='background:#f5f3ff;border:1px solid #ddd6fe;border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px'>"
+    +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:8px'>"
+    +"<div style='font-size:.7rem;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:.04em'>&#127922; W\u00fcrfel-Auswahl <span style='font-weight:400;opacity:.7'>("+selectedCount+"/"+t.spiele.length+")</span></div>"
+    +"<button onclick='toggleDicePoolAll("+t.id+")' style='background:none;border:1px solid #7c3aed;color:#7c3aed;border-radius:6px;padding:2px 8px;font-size:.68rem;font-weight:600;cursor:pointer'>Alle</button>"
+    +"</div>"
+    +"<div style='display:flex;flex-wrap:wrap;gap:5px'>"+spielePills+"</div>"
+    +"</div>";
+}
+
+function toggleDicePool(tid, spielId){
+  var t=getT(tid); if(!t) return;
+  var allIds=t.spiele.map(function(s){ return s.id; });
+  if(!t.dicePool||t.dicePool.length===0){
+    // From "all" → exclude the clicked one
+    t.dicePool=allIds.filter(function(id){ return id!==spielId; });
+  } else {
+    var idx=t.dicePool.indexOf(spielId);
+    if(idx>-1){
+      t.dicePool.splice(idx,1); // deselect
+    } else {
+      t.dicePool.push(spielId); // select
+    }
+    // If all selected again → reset to empty (= all)
+    if(t.dicePool.length===t.spiele.length) t.dicePool=[];
+  }
+  var dicePoolEl=document.getElementById("dice-pool-"+tid);
+  if(dicePoolEl) dicePoolEl.innerHTML=buildDicePoolSection(t);
+  saveState();
+}
+
+function toggleDicePoolAll(tid){
+  var t=getT(tid); if(!t) return;
+  // Always reset to all selected
+  t.dicePool=[];
+  var dicePoolEl=document.getElementById("dice-pool-"+tid);
+  if(dicePoolEl) dicePoolEl.innerHTML=buildDicePoolSection(t);
+  saveState();
+}
+
 // ── Dice Roll ──
 var rolledSpiel={};  // tid -> sid
 
 function rollDice(tid){
   var t=getT(tid); if(!t||!t.spiele.length) return;
-  var picked=t.spiele[Math.floor(Math.random()*t.spiele.length)];
+  // Filter by dicePool: empty/null = all; otherwise only listed IDs
+  var eligible=t.spiele;
+  if(t.dicePool&&t.dicePool.length>0){
+    eligible=t.spiele.filter(function(s){ return t.dicePool.indexOf(s.id)!==-1; });
+  }
+  if(!eligible.length){ toast("Keine Spiele in der Würfel-Auswahl!"); return; }
+  var picked=eligible[Math.floor(Math.random()*eligible.length)];
   rolledSpiel[tid]=picked.id;
   updateSpielSection(tid);
   // Flash animation on selected card
