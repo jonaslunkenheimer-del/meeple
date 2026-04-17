@@ -136,10 +136,10 @@ header{background:rgba(242,242,247,.92);backdrop-filter:saturate(180%) blur(20px
 .rm{cursor:pointer;color:var(--text-3);font-size:.75rem;margin-left:2px}.rm:hover{color:var(--red)}
 /* SPIELE */
 .spiele-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:8px}
-.spiel-card{background:var(--surface);border-radius:16px;overflow:hidden;transition:transform .15s,box-shadow .15s;box-shadow:var(--shadow-card)}
+.spiel-card{background:var(--surface);border-radius:16px;overflow:hidden;transition:transform .15s,box-shadow .15s;box-shadow:var(--shadow-card);border:1px solid var(--border)}
 .spiel-card:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
-.spiel-card.top-pick{box-shadow:0 0 0 2px var(--gold),var(--shadow-card)}
-.spiel-card.dice-pick{box-shadow:0 0 0 2px var(--purple),var(--shadow-card)}
+.spiel-card.top-pick{box-shadow:0 0 0 2px var(--gold),var(--shadow-card);border-color:transparent}
+.spiel-card.dice-pick{box-shadow:0 0 0 2px var(--purple),var(--shadow-card);border-color:transparent}
 @keyframes dice-flash{0%,100%{transform:scale(1)}30%{transform:scale(1.04)}70%{transform:scale(.97)}}
 .dice-flash{animation:dice-flash .5s ease}
 @keyframes dice-winner-in{0%{opacity:0;transform:scale(.5) translateY(30px)}70%{transform:scale(1.05) translateY(-4px)}100%{opacity:1;transform:scale(1) translateY(0)}}
