@@ -1,5 +1,5 @@
 // Die Meeples – Service Worker v2
-const CACHE = 'meeples-v2';
+const CACHE = 'meeples-v3';
 
 self.addEventListener('install', function(e){
   self.skipWaiting();
