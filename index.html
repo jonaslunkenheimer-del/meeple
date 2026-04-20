@@ -3337,7 +3337,7 @@ function buildTerminCard(t, open){
         +(isMulti?"<div style='font-size:.7rem;color:var(--text-3);margin-bottom:6px'>Mehrfachauswahl möglich</div>":"")
         +optHtml+"</div>";
     }).join("");
-    var addUmfrageBtn=canManage?"<button class='btn btn-outline btn-sm' onclick='openUmfrageModal("+t.id+")' style='margin-top:4px'>🗳 Umfrage erstellen</button>":"";
+    var addUmfrageBtn=(canManage||isParticipant)?"<button class='btn btn-outline btn-sm' onclick='openUmfrageModal("+t.id+")' style='margin-top:4px'>🗳 Umfrage erstellen</button>":"";
     umfragenHtml="<hr class='divider'>"
       +"<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:8px'>"
       +"<div class='lbl' style='margin-bottom:0'>🗳 Umfragen</div>"+addUmfrageBtn+"</div>"
