@@ -4438,6 +4438,7 @@ function renderKalender(){
     c.dataset.day=String(d);
     c.innerHTML="<div class='cal-day-num'>"+d+"</div>";
     var dayTermine=state.termine.filter(function(t){
+      if(!t.personen.includes(currentName)&&!isAdmin) return false;
       if(t.privat&&!isAdmin&&!t.personen.includes(currentName)) return false;
       if(!t.date) return false;
       var td=new Date(t.date);
